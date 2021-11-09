@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+	/* @import url(//fonts.googleapis.com/css?family=Open+Sans:400,600,700,300);
+	@import url(//fonts.googleapis.com/css?family=Raleway:400,300,600,700);
+	
+	
+	body {
+		font-family: 'Raleway', 'Open Sans', sans-serif;
+		font-size: 62.5%;
+		font-weight: 400;
+	}
+
+	a {
+    text-decoration: none;
+    color: #0f394f;
+	}
+	a:hover,
+	a:focus {
+	    text-decoration: underline;
+	}
+	
+
+	#circle circle {
+	  fill: none;
+	  pointer-events: all;
+	}
+
+	.group:hover .donor {
+		font-size: 1.3em;
+		font-weight: 700;
+	}
+				
+	.label {
+		cursor: pointer;
+		padding: 15px;
+		color: rgba(0,0,0,.8);
+		font-weight: 700;
+	}
+
+	.party {
+		font-size: 1.5em;
+		font-weight: 700;
+	}
+
+	.donor {
+		font-size: 1.1em;
+	}		
+
+	.chord {
+		fill-opacity: .9;
+		stroke-opacity: .25;
+	}
+
+	.chord:hover {
+		stroke-width: 5;
+		stroke-opacity: 1;
+		stroke: black;
+	}
+
+	text.entity.party {
+		font-size: 3em;
+		fill: rgba(170,170,170,1);
+		font-weight: 700;						
+	}
+
+	text.entity.donor {
+		font-size: 3em;
+		fill: rgba(170,170,170,1);
+		font-weight: 700;
+	}
+
+	text.notes {
+		font-size: 1em;
+		fill: rgba(0,0,0,1);
+		opacity: 1;
+	}
+
+	#chart {
+		margin: 0 50px;
+	}
+
+	.tooltip {
+	  background: rgba(0,0,0,.8);
+	  width: 250px;
+	  text-align: center;
+	  padding: 5px; 
+	  border-radius: 2px; 
+	  box-shadow: 0px 0px 2px 0px #aabbcc; 
+	  opacity: 1; 
+	  position: absolute;
+	  font-weight: 400;
+	  color: #fff;
+	  font-size: 1.4em
+	}
+
+	.hidden {
+		visibility: hidden;
+	}
+
+	.tooltip.group {
+		margin: 5px 0;
+		width: 150px;
+		color: #fff;
+	  font-size: 1.8em;
+	  background: rgba(0,0,0,.8);
+	}
+
+	.aside {
+		font-size: 1.6em;
+		width:100%;
+		margin: 1.625%;
+	}
+
+  @media screen and (min-width:1250px ) {
+  	.aside {
+  		width: 18%;
+  		margin-right: 2.625%;
+  		float: left;
+  	}
+  } */
+  #chord-chart {
+            width: 600px;
+            height: 600px;
+            margin: 0 auto;
+        }
+        text {
+            fill: #000 !important;
+        }
+
+        .chart-title {
+            width: 98%;
+            line-height: 100px;
+            margin: 0 auto;
+            color: #ccc;
+        }
+  </style>
+
+  <title>Global international migration flows</title>
+</head>
+
+<body>
+	
+	<!-- <aside class="aside">
+		<h2>The top 100 donors</h2>
+ 		<p>Just how reliant are Labour, the Conservatives and the Liberal Democrats on a few rich benefactors? 70% of all donations received by the parties since the 2010 general election came from these 100 donor groups. 
+Labour's reliance on the unions is clear, with 90% of its cash coming from these sources. The Conservatives meanwhile have a wider spread of sources with a long list of wealthy business people, from ‘cash and carry’ owners to hedge fund directors.
+
+</p><p>Hover over a name or connection to see how much each donor gave and to which party.
+</p>
+ 		<p>Donations from members of the same family are grouped together as are donations from companies under the control of individual donors.</p>
+ 	</aside> -->
+ 	<!-- <div id="donationInfo"></div> -->
+	<select id="selectButton"></select>
+	<div id="chart"></div>
+	<script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script>
+
+	<script src="https://d3js.org/d3.v7.min.js"></script>
+
+	<script src="chord-chart.js"></script>
+	<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script> -->
+	<!-- <script>window.jQuery || document.write('<script src="js/jquery2.0.3.min.js"><\/script>')</script> -->
+
+</body>
+</html>
