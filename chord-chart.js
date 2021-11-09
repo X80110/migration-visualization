@@ -123,9 +123,10 @@ d3.csv("gf_od.csv").then( (data) => {
 
         // List al years and pass them to the selector
         const allYears = [...new Set(data.raw.map((d) => d.year))];
+        
         d3.select("#selectButton")
           .selectAll('myOptions')
-            .data(allYears)
+            .data(allYears.reverse())
             .enter()
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu
@@ -139,26 +140,8 @@ d3.csv("gf_od.csv").then( (data) => {
         input_data['columns'] = columns
 
         var names = Array.from(new Set(input_data.flatMap(d => [d.source, d.target])));
+
         
-
-        function update(selectedGroup) {
-            // Create new data with the selection?
-            var dataFilter = input_data.filter(d=>{return d.year==selectedGroup})
-            
-            // Give these new data to update line
-            svg
-            .attr("fill-opacity", 0.75)
-            .selectAll("g")
-            .data(dataFilter)
-            .join("path")
-            .attr("class", "path-item")
-            .attr("d", ribbon)
-            .attr("fill", d => color(names[d.source.index]))
-            .style("mix-blend-mode", "multiply")
-            .append("title")
-            .text(d => `${names[d.source.index]} inflow ${names[d.target.index]} ${formatValue(d.source.value)}`);
-
-          }
         var matrix = getMatrix(names,input_data);
         // console.log(matrix)
         const chords = chord(matrix);
@@ -168,67 +151,101 @@ d3.csv("gf_od.csv").then( (data) => {
             names,
             ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
 
-
-        console.log(getMatrix(names,input_data.filter(d=> d.year === allYears[allYears.length - 1])))
-        console.log(svg)
+        // Get matrix from most recent period
+        // console.log( 
+        // getMatrix(names,input_data.filter(d=> d.year === allYears[allYears.length - 1])))
+        // let lastData = getMatrix(names,input_data.filter(d=> d.year === allYears[allYears.length - 1]))
         
-        // Create a non-visible arc where we'll tie after the region names
-        svg.append("path")
+        function filterData(year){
+            const data = getMatrix(names,input_data.filter(d=> d.year === year))
+            return data
+        } 
+        console.log(filterData("2000"))
+
+        // Get matrix from most recent period
+        // console.log(
+            // getMatrix(names,input_data.filter(d=> d.year === allYears[0])))
+        // var firstData = getMatrix(names,input_data.filter(d=> d.year === allYears[0]))
+        
+        function draw(year){
+            svg.append("path")
             .attr("id", textId)
             .attr("fill", "none")
             .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle: 2 * Math.PI }));
         
-        // Add ribbons for each chord and its tooltip content <g> <path> <title>
-        svg.append("g")
-            .attr("fill-opacity", 0.75)
-            .selectAll("g")
-            .data(chord(getMatrix(names,input_data.filter(d=> d.year === allYears[0]))))
-            .join("path")
-            .attr("class", "path-item")
-            .attr("d", ribbon)
-            .attr("fill", d => color(names[d.source.index]))
-            .style("mix-blend-mode", "multiply")
-            .append("title")
-            .text(d => `${names[d.source.index]} inflow ${names[d.target.index]} ${formatValue(d.source.value)}`);
-        
-        // Add outter arcs for each region and its titles
-        svg.append("g")
-            .attr("font-family", "sans-serif")
-            .attr("font-size", 10)
-            .selectAll("g")
-            .data(chord(getMatrix(names,input_data.filter(d=> d.year === allYears[0]))).groups)
-            .join("g")
-            // On each <g> we set a <path> for the arc
-            .call(g => g.append("path")
-                .attr("d", arc)
-                .attr("fill", d => color(names[d.index]))
-                .attr("stroke", "#fff")
-                .attr("stroke-width", 3))
-            // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id 
-            .call(g => g.append("text")
-                .attr("dy", -3)
-                .append("textPath")
-                .attr("xlink:href", "#"+textId)
-                .attr("startOffset", d => d.startAngle * outerRadius)   /*  this helps   */
-                .text(d => names[d.index]))
-            // On each <g> we set a <title> for the region outflow
-            .call(g => g.append("title")
-                .text(d => {
-                    return `${names[d.index]} outflow ${formatValue(d3.sum(matrix[d.index]))} people and inflow ${formatValue(d3.sum(matrix, row => row[d.index]))} people`
-                }));
+            // Add ribbons for each chord and its tooltip content <g> <path> <title>
+            svg.append("g")
+                .attr("fill-opacity", 0.75)
+                .selectAll("g")
+                .data(chord(filterData(year)))
+                .join("path")
+                .attr("class", "path-item")
+                .attr("d", ribbon)
+                .attr("fill", d => color(names[d.source.index]))
+                .style("mix-blend-mode", "multiply")
+                .append("title")
+                .text(d => `${names[d.source.index]} inflow ${names[d.target.index]} ${formatValue(d.source.value)}`);
+            
+            // Add outter arcs for each region and its titles
+            svg.append("g")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10)
+                .selectAll("g")
+                .data(chord(filterData(year)).groups)
+                .join("g")
+                // On each <g> we set a <path> for the arc
+                .call(g => g.append("path")
+                    .attr("d", arc)
+                    .attr("fill", d => color(names[d.index]))
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 3))
+                // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id 
+                .call(g => g.append("text")
+                    .attr("dy", -3)
+                    .append("textPath")
+                    .attr("xlink:href", "#"+textId)
+                    .attr("startOffset", d => d.startAngle * outerRadius)   /*  this helps   */
+                    .text(d => names[d.index]))
+                // On each <g> we set a <title> for the region outflow
+                .call(g => g.append("title")
+                    .text(d => {
+                        return `${names[d.index]} outflow ${formatValue(d3.sum(matrix[d.index]))} people and inflow ${formatValue(d3.sum(matrix, row => row[d.index]))} people`
+                    }));
 
-        svg.selectAll(".path-item")
-            .on("mouseover", function (evt, d) {
-                svg.selectAll(".path-item")
-                    .style("opacity", 0.2);
+            svg.selectAll(".path-item")
+                .on("mouseover", function (evt, d) {
+                    svg.selectAll(".path-item")
+                        .style("opacity", 0.2);
 
-                d3.select(this)
-                    .style("opacity", 1)
-            })
-            .on("mouseout", function (evt, d) {
-                svg.selectAll(".path-item")
-                    .style("opacity", 1);
-            });
+                    d3.select(this)
+                        .style("opacity", 1)
+                })
+                .on("mouseout", function (evt, d) {
+                    svg.selectAll(".path-item")
+                        .style("opacity", 1);
+                });
+         
+            
+        }
+        // Create a non-visible arc where we'll tie after the region names
         
+        draw(allYears[0])
+        d3.select("#selectButton").on("change", function(d) {
+                d3.selectAll("g")
+                    .remove()
+                    .transition()
+                    .duration(1000)
+                // recover the option that has been chosen
+                var selectedOption = d3.select(this).property("value")
+                // var selectedData = getMatrix(names,input_data.filter(d=> d.year === selectedOption))
+                draw(selectedOption)
+                // run the updateChart function with this selected option
+                // function update(selected){
+                //     d3.selectAll("g")
+                //         .data(selectedData)
+                //         .join()
+
+                // }
+            })      
     });
 })
