@@ -273,10 +273,14 @@ function getCurrentAngle(el) {
 // - Tween arcs && ribbons
 // - Click -> Countries + regions matrix
 // - Arc (text names) -> from 0.5 to 1.5 rads text for names: reverse vertically
+// - Global styles and selectors
 
 // Data 
 // - Data_input -> json structure (ask Guy)
-// - Add new filters
-// - 
+// - Filters: 
+//      (X) Year
+//      Type
+//      Gender
+
 
 
