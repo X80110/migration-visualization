@@ -47,7 +47,7 @@ function getMatrix(names,data) {
 //-----------------//
 // GET SOURCE DATA //
 //-----------------//
-d3.csv("gf_od.csv").then( (data) => {
+scope =d3.csv("gf_od.csv").then( (data) => {
    raw_data = data.map(d=>{return{
       source : d.orig,
       target : d.dest,
@@ -67,7 +67,7 @@ d3.csv("gf_od.csv").then( (data) => {
 //--------------------------------//
 // PIPE SOURCE DATA WITH METADATA //
 //--------------------------------//
-    .then(raw=>{                                
+    .then(raw =>{                                
         // the use of then serves the ongoing processes to the function vars 
         // required for sequenced steps
         let metadata = d3.csv("data/country-metadata.csv")
@@ -120,21 +120,27 @@ d3.csv("gf_od.csv").then( (data) => {
     //----------------------------------//
     //         Start diagram flow       //
     //----------------------------------//
-    .then( data  => {
+    .then(data => {
     ////// FILTERS
         // List all years 
-        const allYears = [...new Set(data.raw.map((d) => d.year))];
-        
-        // Selector with years
-        d3.select("#selectButton")
-        .selectAll('myOptions')
-            .data(allYears.reverse())
-            .enter()
-            .append('option')
-            .text(d=>{ return d; })    // text showed in the menu
-            .attr("value",d=> { return d; }) 
-
+    const allYears = [...new Set(data.raw.map((d) => d.year))];
+    
+    // Selector with years
+    d3.select("#selectButton")
+    .selectAll('myOptions')
+        .data(allYears.reverse())
+        .enter()
+        .append('option')
+        .text(d=>{ return d; })    // text showed in the menu
+        .attr("value",d=> { return d; }) 
+    
     ////// DIAGRAM DATA STUCUTRE
+    // optimal data structure = { matrix: [ { year: [value] } ],       --- source-target value for their relative index as specified in 'names'
+    //                  should we switch year-type to minimize headers for data groups? Years add up more easily than methods 
+    //                            names : [names],                     --- each index de
+    //                            regions: [regions]                   --- regions index is positioned on head of their subcountries  
+    //                            type: [dataset] }                    --- type are indexs in matix.value
+
     let columns =  {0: "source",1:"target",2:"value"}
     let input_data = aq.from(data.region).rename({source_region: 'source',target_region: 'target'}).objects()
     input_data['columns'] = columns
@@ -145,7 +151,7 @@ d3.csv("gf_od.csv").then( (data) => {
     function draw(year){
         // Get de data matrix
         const data = getMatrix(names,input_data.filter(d=> d.year === year))    
-
+        
         // Visualization settings
         var color = d3.scaleOrdinal(
             names,
@@ -176,24 +182,25 @@ d3.csv("gf_od.csv").then( (data) => {
             .selectAll("g")
             .data(chord(data).groups)
             .join("g")
-            // On each <g> we set a <path> for the arc
+            .attr("class","chord")
             .call(g => g.append("path")
-                .attr("d", arc)
-                .attr("fill", d => color(names[d.index]))
-                .attr("stroke", "#fff")
-                .attr("stroke-width", 3))
+            .attr("d", arc)
+            .attr("fill", d => color(names[d.index]))
+            // On each <g> we set a <path> for the arc
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 3))
             // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
             .call(g => g.append("text")
-                .attr("dy", -3)
-                .append("textPath")
-                .attr("xlink:href", "#"+textId)
-                .attr("startOffset", d => d.startAngle * outerRadius)   /*  this helps   */
-                .text(d => names[d.index]))
+            .attr("dy", -3)
+            .append("textPath")
+            .attr("xlink:href", "#"+textId)
+            .attr("startOffset", d => d.startAngle * outerRadius)   /*  this helps   */
+            .text(d => names[d.index]))
             // On each <g> we set a <title> for the region outflow
             .call(g => g.append("title")
-                .text(d => {
-                    return `${names[d.index]} outflow ${formatValue(d3.sum(data[d.index]))} people and inflow ${formatValue(d3.sum(data, row => row[d.index]))} people`
-                }))
+            .text(d => {
+                return `${names[d.index]} outflow ${formatValue(d3.sum(data[d.index]))} people and inflow ${formatValue(d3.sum(data, row => row[d.index]))} people`
+            }))
         // Interaction
         svg.selectAll(".path-item")
             .on("mouseover", function (evt, d) {
@@ -210,9 +217,16 @@ d3.csv("gf_od.csv").then( (data) => {
                 svg.selectAll(".path-item")
                     .transition()
                     .style("opacity", 1);
+                })
+            
+              
+
+        svg.selectAll(".chord")            
+            .on("click", function (evt, d) {
+                console.log(names[d.index])
             });   
-    }
-        
+    }   
+     
         // Filter input chart data
         d3.select("#selectButton")
             .on("change", function(d) {
@@ -257,7 +271,7 @@ d3.csv("gf_od.csv").then( (data) => {
                 draw(selectedOption)
             })
             
-        
+        console.log(raw)
         // Run initial chart
         draw(allYears[0])
     });
