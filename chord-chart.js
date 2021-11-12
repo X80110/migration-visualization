@@ -98,6 +98,7 @@ inputData = d3.csv("gf_od.csv").then( (data) => {
                 }))
                 // There appear some 'undefined' iso fields, currently exluded as they break the coode
                 .filter(d => d.iso_1 != undefined  && d.iso_2 != undefined)
+                .orderby('source_region','target')
 
 
             // group by regions and sum values
@@ -143,6 +144,7 @@ inputData = d3.csv("gf_od.csv").then( (data) => {
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu
             .attr("value",d=> { return d; }) 
+    
         ////// DIAGRAM DATA STUCUTRE
         // optimal data structure = { matrix: [ { year: [value] } ],       --- source-target value for their relative index as specified in 'names'
         //                  should we switch year-type to minimize headers for data groups? Years add up more easily than methods 
@@ -159,12 +161,12 @@ inputData = d3.csv("gf_od.csv").then( (data) => {
         ////// DRAW DATA
         function draw(year,region){
             // Get de data matrix
-                
+            region = selectedRegion
             
             const dataSelection = merged.map(d=> {
                 return{
-                    source: d.source_region === "Europe" ? d.source : d.source_region,
-                    target: d.target_region === "Europe" ? d.target : d.target_region,
+                    source: d.source_region === region ? d.source : d.source_region,
+                    target: d.target_region === region ? d.target : d.target_region,
                     value: +d.value,
                     year: d.year,
             }})
@@ -173,6 +175,8 @@ inputData = d3.csv("gf_od.csv").then( (data) => {
                 .select('value','year','source','target')
                 .groupby('source','target','year')
                 .rollup( {value: d => op.sum(d.value)})
+                
+                
                 .objects()
 
             input_data = groupedValues
@@ -263,9 +267,17 @@ inputData = d3.csv("gf_od.csv").then( (data) => {
                     //     value: +d.value,
                     //     year: d.year,
                     // }})
+
                     console.log(selectedRegion,selectedYear)
                     // console.log(names[d.index])
-                    console.log(merged.map(d=>d.source_region === selectedRegion ? d.source : d.source_region ))
+                    // console.log(merged.map(d=>d.source_region === selectedRegion ? d.source : d.source_region ))
+                    console.log("REGIPM·",selectedRegion)
+                    d3.selectAll("g")
+                        .transition()
+                        .duration(1500)
+                        .style('opacity',0)
+                        .remove()
+                    draw(selectedYear,selectedRegion)
                 });   
         }   
     
@@ -275,13 +287,13 @@ inputData = d3.csv("gf_od.csv").then( (data) => {
             .on("change", function(d) {
                 // Get selected value
                 selectedYear = d3.select(this).property("value")
-                let majorRadius = 0;
+
                 data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                 // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                 // Remove previous
                 d3.selectAll("g")
                     .transition()
-                    .duration(500)
+                    .duration(1500)
                     .style('opacity', 0)
                     .remove();
                     /* .tween('circumference', function(d) {
@@ -306,12 +318,13 @@ inputData = d3.csv("gf_od.csv").then( (data) => {
                                 .attr('cy', majorRadius * Math.sin(angle));
                         }
                     }); */
+                    draw(selectedYear,selectedRegion)
                 // d3.select(svg)
                 //     .transition()
                 //     .delay(1000)
                 //     .call(draw(selectedOption))
                 // Run new selectedYear
-                draw(selectedYear)
+                
             })
             
 
