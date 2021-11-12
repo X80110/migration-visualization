@@ -47,27 +47,28 @@ function getMatrix(names,data) {
 //-----------------//
 // GET SOURCE DATA //
 //-----------------//
-scope =d3.csv("gf_od.csv").then( (data) => {
-   raw_data = data.map(d=>{return{
-      source : d.orig,
-      target : d.dest,
-      year : d.year0,
-      value : +d.mig_rate,
-      //   value : {mig_rate : +d.mig_rate, da_pb_closed: +d.da_pb_closed},
-    };})
-    // Filter here to be removed. If data reach svg rendering
-    // without filtering it collapses browser's memory
+inputData = d3.csv("gf_od.csv").then( (data) => {
+    raw_data = data.map(d=>{return{
+        source : d.orig,
+        target : d.dest,
+        year : d.year0,
+        value : +d.mig_rate,
+        //   value : {mig_rate : +d.mig_rate, da_pb_closed: +d.da_pb_closed},
+        };})
+        // Filter here to be removed. If data reach svg rendering
+        // without filtering it collapses browser's memory
     .filter(d=> d.value >1  /* && d.year === "2010" */ && d.source.includes("L") )//|| d.source.includes("S") )//||"1990")
     // console.log(raw_data)
     return raw_data
-})
+    })
+
 //--------------------------------//
 
 
 //--------------------------------//
 // PIPE SOURCE DATA WITH METADATA //
 //--------------------------------//
-    .then(raw =>{                                
+.then(raw =>{                                
         // the use of then serves the ongoing processes to the function vars 
         // required for sequenced steps
         let metadata = d3.csv("data/country-metadata.csv")
@@ -98,6 +99,7 @@ scope =d3.csv("gf_od.csv").then( (data) => {
                 // There appear some 'undefined' iso fields, currently exluded as they break the coode
                 .filter(d => d.iso_1 != undefined  && d.iso_2 != undefined)
 
+
             // group by regions and sum values
             let grouped = merged
                 .select('value','year','source_region','target_region')
@@ -113,127 +115,168 @@ scope =d3.csv("gf_od.csv").then( (data) => {
             
 
             }})
-        return {country: country_data, region: grouped, raw: raw}
+        return {country: country_data, region: grouped, raw: raw, merged: merged.objects()}
     })
     //--------------------------------//
     
+
     //----------------------------------//
     //         Start diagram flow       //
     //----------------------------------//
-    .then(data => {
-    ////// FILTERS
-        // List all years 
-    const allYears = [...new Set(data.raw.map((d) => d.year))];
+    .then(src => {
+        ////// FILTERS
+            // List all years 
+        const allYears = [...new Set(src.raw.map((d) => d.year))];
+
+        const merged = src.merged
+        console.log(merged)
+        var selectedYear = allYears.reverse()[0]
+        // console.log(selectedYear)
+
+        var selectedRegion = []
     
     // Selector with years
-    d3.select("#selectButton")
-    .selectAll('myOptions')
-        .data(allYears.reverse())
-        .enter()
-        .append('option')
-        .text(d=>{ return d; })    // text showed in the menu
-        .attr("value",d=> { return d; }) 
-    
-    ////// DIAGRAM DATA STUCUTRE
-    // optimal data structure = { matrix: [ { year: [value] } ],       --- source-target value for their relative index as specified in 'names'
-    //                  should we switch year-type to minimize headers for data groups? Years add up more easily than methods 
-    //                            names : [names],                     --- each index de
-    //                            regions: [regions]                   --- regions index is positioned on head of their subcountries  
-    //                            type: [dataset] }                    --- type are indexs in matix.value
+        d3.select("#selectButton")
+        .selectAll('myOptions')
+            .data(allYears)
+            .enter()
+            .append('option')
+            .text(d=>{ return d; })    // text showed in the menu
+            .attr("value",d=> { return d; }) 
+        ////// DIAGRAM DATA STUCUTRE
+        // optimal data structure = { matrix: [ { year: [value] } ],       --- source-target value for their relative index as specified in 'names'
+        //                  should we switch year-type to minimize headers for data groups? Years add up more easily than methods 
+        //                            names : [names],                     --- each index de
+        //                            regions: [regions]                   --- regions index is positioned on head of their subcountries  
+        //                            type: [dataset] }                    --- type are indexs in matix.value
 
-    let columns =  {0: "source",1:"target",2:"value"}
-    let input_data = aq.from(data.region).rename({source_region: 'source',target_region: 'target'}).objects()
-    input_data['columns'] = columns
-    console.log(input_data)
-    let names = Array.from(new Set(input_data.flatMap(d => [d.source, d.target])));
-    
-    ////// DRAW DATA
-    function draw(year){
-        // Get de data matrix
-        const data = getMatrix(names,input_data.filter(d=> d.year === year))    
+        let columns =  {0: "source",1:"target",2:"value"}
+        let input_data = aq.from(src.region).rename({source_region: 'source',target_region: 'target'}).objects()
+        input_data['columns'] = columns
+
+        let names = Array.from(new Set(input_data.flatMap(d => [d.source, d.target])));
         
-        // Visualization settings
-        var color = d3.scaleOrdinal(
-            names,
-            ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
-
-        svg.append("path")
-        .attr("id", textId)
-        .attr("fill", "none")
-        .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle: 2 * Math.PI }));
-    
-        // Add ribbons for each chord and its tooltip content <g> <path> <title>
-        chords = svg.append("g")
-            .attr("fill-opacity", 0.75)
-            .selectAll("g")
-            .data(chord(data))
-            .join("path")
-            .attr("class", "path-item")
-            .attr("d", ribbon)
-            .attr("fill", d => color(names[d.source.index]))
-            .style("mix-blend-mode", "multiply")
-            .append("title")
-            .text(d => `${names[d.source.index]} inflow ${names[d.target.index]} ${formatValue(d.source.value)}`);
-        
-        // Add outter arcs for each region and its titles
-        arcs = svg.append("g")
-            .attr("font-family", "sans-serif")
-            .attr("font-size", 10)
-            .selectAll("g")
-            .data(chord(data).groups)
-            .join("g")
-            .attr("class","chord")
-            .call(g => g.append("path")
-            .attr("d", arc)
-            .attr("fill", d => color(names[d.index]))
-            // On each <g> we set a <path> for the arc
-            .attr("stroke", "#fff")
-            .attr("stroke-width", 3))
-            // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
-            .call(g => g.append("text")
-            .attr("dy", -3)
-            .append("textPath")
-            .attr("xlink:href", "#"+textId)
-            .attr("startOffset", d => d.startAngle * outerRadius)   /*  this helps   */
-            .text(d => names[d.index]))
-            // On each <g> we set a <title> for the region outflow
-            .call(g => g.append("title")
-            .text(d => {
-                return `${names[d.index]} outflow ${formatValue(d3.sum(data[d.index]))} people and inflow ${formatValue(d3.sum(data, row => row[d.index]))} people`
-            }))
-        // Interaction
-        svg.selectAll(".path-item")
-            .on("mouseover", function (evt, d) {
-                svg.selectAll(".path-item")
-                    .transition()
-                    .style("opacity", 0.2);
-
-                d3.select(this)
-                    .transition()
-                    .style("opacity", 1)
-                })
+        ////// DRAW DATA
+        function draw(year,region){
+            // Get de data matrix
                 
-            .on("mouseout", function (evt, d) {
-                svg.selectAll(".path-item")
-                    .transition()
-                    .style("opacity", 1);
-                })
             
-              
+            const dataSelection = merged.map(d=> {
+                return{
+                    source: d.source_region === "Europe" ? d.source : d.source_region,
+                    target: d.target_region === "Europe" ? d.target : d.target_region,
+                    value: +d.value,
+                    year: d.year,
+            }})
+            
+            const groupedValues = aq.from(dataSelection)
+                .select('value','year','source','target')
+                .groupby('source','target','year')
+                .rollup( {value: d => op.sum(d.value)})
+                .objects()
 
-        svg.selectAll(".chord")            
-            .on("click", function (evt, d) {
-                console.log(names[d.index])
-            });   
-    }   
-     
+            input_data = groupedValues
+            
+            aq.from(input_data).print()
+            groupedValues['columns'] = columns
+            names = Array.from(new Set(groupedValues.flatMap(d => [d.source, d.target])));
+            console.log(names)
+            const data = getMatrix(names,groupedValues.filter(d=> d.year === year))    
+            
+
+
+            // Visualization settings
+            var color = d3.scaleOrdinal(
+                names,
+                ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
+
+            svg.append("path")
+            .attr("id", textId)
+            .attr("fill", "none")
+            .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle: 2 * Math.PI }));
+        
+            // Add ribbons for each chord and its tooltip content <g> <path> <title>
+            chords = svg.append("g")
+                .attr("fill-opacity", 0.75)
+                .selectAll("g")
+                .data(chord(data))
+                .join("path")
+                .attr("class", "path-item")
+                .attr("d", ribbon)
+                .attr("fill", d => color(names[d.source.index]))
+                .style("mix-blend-mode", "multiply")
+                .append("title")
+                .text(d => `${names[d.source.index]} inflow ${names[d.target.index]} ${formatValue(d.source.value)}`);
+            
+            // Add outter arcs for each region and its titles
+            arcs = svg.append("g")
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10)
+                .selectAll("g")
+                .data(chord(data).groups)
+                .join("g")
+                .attr("class","chord")
+                .call(g => g.append("path")
+                .attr("d", arc)
+                .attr("fill", d => color(names[d.index]))
+                // On each <g> we set a <path> for the arc
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 3))
+                // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
+                .call(g => g.append("text")
+                .attr("dy", -3)
+                .append("textPath")
+                .attr("xlink:href", "#"+textId)
+                .attr("startOffset", d => d.startAngle * outerRadius)   /*  this helps   */
+                .text(d => names[d.index]))
+                // On each <g> we set a <title> for the region outflow
+                .call(g => g.append("title")
+                .text(d => {
+                    return `${names[d.index]} outflow ${formatValue(d3.sum(data[d.index]))} people and inflow ${formatValue(d3.sum(data, row => row[d.index]))} people`
+                }))
+            // Interaction
+            svg.selectAll(".path-item")
+                .on("mouseover", function (evt, d) {
+                    svg.selectAll(".path-item")
+                        .transition()
+                        .style("opacity", 0.2);
+
+                    d3.select(this)
+                        .transition()
+                        .style("opacity", 1)
+                    })
+                    
+                .on("mouseout", function (evt, d) {
+                    svg.selectAll(".path-item")
+                        .transition()
+                        .style("opacity", 1);
+                    })
+                
+                
+
+            svg.selectAll(".chord")            
+                .on("click", function (evt, d) {
+                    selectedRegion = names[d.index]
+                    // filtered = src.map(a=>{return{
+                    //     source: d.source,
+                    //     target: d.target,
+                    //     value: +d.value,
+                    //     year: d.year,
+                    // }})
+                    console.log(selectedRegion,selectedYear)
+                    // console.log(names[d.index])
+                    console.log(merged.map(d=>d.source_region === selectedRegion ? d.source : d.source_region ))
+                });   
+        }   
+    
+    
         // Filter input chart data
         d3.select("#selectButton")
             .on("change", function(d) {
                 // Get selected value
-                var selectedOption = d3.select(this).property("value")
+                selectedYear = d3.select(this).property("value")
                 let majorRadius = 0;
-                data = getMatrix(names,input_data.filter(d=> d.year === selectedOption))
+                data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                 // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                 // Remove previous
                 d3.selectAll("g")
@@ -267,13 +310,14 @@ scope =d3.csv("gf_od.csv").then( (data) => {
                 //     .transition()
                 //     .delay(1000)
                 //     .call(draw(selectedOption))
-                // Run new chart
-                draw(selectedOption)
+                // Run new selectedYear
+                draw(selectedYear)
             })
             
-        console.log(raw)
+
         // Run initial chart
         draw(allYears[0])
+        
     });
 })
 
