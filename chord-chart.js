@@ -53,30 +53,166 @@ function getMatrix(names,data) {
 //                            names : [names],                     --- each index de
 //                            regions: [regions]                   --- regions index is positioned on head of their subcountries  
 //                            type: [dataset] }                    --- type are indexs in matix.value
+const getData = async () => {
+    try {
+      // this parse may fail
+      const raw_data = await d3.csv("gf_od.csv");
+      const metadata = await d3.csv("data/country-metadata.csv");
+      data = {raw_data,metadata}
+      return  data
+    } catch (err) {
+      console.log(err)
+      throw Error("Failed to load data")
+    }
+  }
+  
+async function prepareData(data,metadata) {
+    // format the data
+    let labels = metadata.map(d=>{ 
+        let countries = {[d.origin_iso] : d.origin_name}
+        let regions = {[d.origin_iso] : d.originregion_name}
+        
+        return {
+            countries, 
+            regions,
+        }
+    })
+   
+    
+    let raw_data = data.map(d=>{/* console.log(d) */
+        
+        return{
+            source : d.orig,
+            target : d.dest,
+            year : d.year0,
+            values : ({
+                mig_rate: +d.mig_rate,
+                da_min_closed: +d.da_min_closed,
+                da_min_open: +d.da_min_open,
+                da_pb_closed: +d.da_pb_closed,
+                sd_rev_neg: +d.sd_rev_neg,
+                sd_drop_neg: +d.sd_drop_neg
+                })
+            // value:  +d.mig_rate,
+            // mig_rate: +d.mig_rate,
+            // da_min_closed: +d.da_min_closed,
+            // da_min_open: +d.da_min_open,
+            // da_pb_closed: +d.da_pb_closed,
+            // sd_rev_neg: +d.sd_rev_neg,
+            // sd_drop_neg: +d.sd_drop_neg,
+        };
+    })
+    function getLabels(data) { 
+        // console.log(data)
+        console.log(labels)
+        // console.log(labels.filter(a=>a.countries["BEL"]).map(a=>Object.values(a.countries)).flat())
+        data.label = data.map(d=>{
+            let label = labels
+                .filter(a=>a.countries[d])
+                .map(a=>Object.values(a.countries))
+                .flat()
+            // console.log(d)
+            // console.log(label)
+             
+            return{ label
+        }})
+        
+        
+        
+        console.log(data.label,data)
+    }
+    getLabels(raw_data.map(d=>d.source))
+    
+    
+    /* function lookupLabel(iso){
+        console.log(countries.map(d=>d[iso]))
+        result = labels.map(d=>{
+            let label = d[iso]  
+            console.log(d[iso])
+            return {label}
+        })
+        console.log(result)
+        // return result
+    }
+
+    lookupLabel(labels.map(d=>d.countries)) */
+    /*
+    let source = aq.from(raw_data)
+        .select('source',selectedValue,'year')
+        .join_left(aq.from(labels),['source','iso'])
+        // .select(aq.not('iso'))
+    let target = aq.from(raw_data)
+        .select('target',selectedValue)
+        .join_left(aq.from(labels),['target','iso','year'])
+        // .select(aq.not('iso'))
+     let merged = source.join_left(target,selectedValue)
+        .rename(({
+            region_1: 'source_region',
+            country_1: 'source', 
+            region_2: 'target_region',
+            country_2: 'target',
+            [selectedValue]: 'value'
+        }))
+        // There appear some 'undefined' iso fields, currently exluded as they break the coode
+        .filter(d => d.iso_1 != undefined  && d.iso_2 != undefined)
+        .orderby('source_region','target')
+    // group by regions and sum values
+    let grouped = merged
+        .select('value','year','source_region','target_region')
+        .groupby('source_region','target_region','year')
+        .rollup( {value: d => op.sum(d.value)})
+        .objects()
+        // .print()
+    let country_data = merged.objects().map(d=> {
+        return {
+            source: d.source,
+            target: d.target,
+            value: +d.value,
+            year: d.year 
+        }
+    })
+    let result =  {
+        country: country_data, 
+        region: grouped, 
+        raw: raw_data, 
+        merged: merged.objects()
+    }
+    return result
+    */
+
+    console.log(target.objects()) 
+}
+getData().then(data=> prepareData(data.raw_data,data.metadata))
+  
 
 let mainData = d3.csv("gf_od.csv").then( (data) => {
+
     raw_data = data.map(d=>{/* console.log(d) */
         return{
-        
-        source : d.orig,
-        target : d.dest,
-        year : d.year0,
-        values : ([{
+            source : d.orig,
+            target : d.dest,
+            year : d.year0,
+            values : ({
+                mig_rate: +d.mig_rate,
+                da_min_closed: +d.da_min_closed,
+                da_min_open: +d.da_min_open,
+                da_pb_closed: +d.da_pb_closed,
+                sd_rev_neg: +d.sd_rev_neg,
+                sd_drop_neg: +d.sd_drop_neg,
+                    
+                }),
+            value:  +d.mig_rate,
             mig_rate: +d.mig_rate,
             da_min_closed: +d.da_min_closed,
             da_min_open: +d.da_min_open,
             da_pb_closed: +d.da_pb_closed,
             sd_rev_neg: +d.sd_rev_neg,
             sd_drop_neg: +d.sd_drop_neg,
-            mig_rate: +d.mig_rate,
-                  
-        }]),
-        value:  +d.mig_rate,
-        //   value : {mig_rate : +d.mig_rate, da_pb_closed: +d.da_pb_closed},
         };})
+        // .filter(d=> d.value >1  /* && d.year === "2010" */ && d.source.includes("L") )//|| d.source.includes("S") )//||"1990")
         // Filter here to be removed. If data reach svg rendering
         // without filtering it collapses browser's memory
-    .filter(d=> d.value >1  /* && d.year === "2010" */ && d.source.includes("L") )//|| d.source.includes("S") )//||"1990")
+
     // console.log(raw_data)
     return raw_data
     })
@@ -91,32 +227,89 @@ let metaData = d3.csv("data/country-metadata.csv").then(meta =>{
     return labels
     })
 
+/* function finale(){
+    let finalData = metaData.then(labels => {
+        selectedValue = 'values'
+        result = mainData.then(raw_data => {
+            // console.log(raw_data,labels)x
+            // join contry names and regions to the iso codes, for both source and target
+            let source = aq.from(raw_data)
+                .select('source',selectedValue,'year')
+                .join_left(aq.from(labels),['source','iso'])
+                // .select(aq.not('iso'))
+            let target = aq.from(raw_data)
+                .select('target',selectedValue)
+                .join_left(aq.from(labels),['target','iso','year'])
+                // .select(aq.not('iso'))
+            let merged = source.join_left(target,selectedValue)
+                .rename(({
+                    region_1: 'source_region',
+                    country_1: 'source', 
+                    region_2: 'target_region',
+                    country_2: 'target',
+                    [selectedValue]: 'value'
+                }))
+                // There appear some 'undefined' iso fields, currently exluded as they break the coode
+                .filter(d => d.iso_1 != undefined  && d.iso_2 != undefined)
+                .orderby('source_region','target')
+
+            
+            // group by regions and sum values
+            let grouped = merged
+                .select('value','year','source_region','target_region')
+                .groupby('source_region','target_region','year')
+                .rollup( {value: d => op.sum(d.value)})
+                .objects()
+            
+
+            let country_data = merged.objects().map(d=> {return{
+                source: d.source,
+                target: d.target,
+                value: +d.value,
+                year: d.year,
+    
+            }})
+            parsedData = {
+                country: country_data, 
+                region: grouped, 
+                raw: raw_data, 
+                merged: merged.objects()
+            }
+            return parsedData
+        })
+        
+        return result
+    })
+    return finalData
+} */
+
 
 let finalData = metaData.then(labels => {
+    selectedValue = 'values'
     result = mainData.then(raw_data => {
-        // console.log(raw_data,labels)
-
-        // join contry names and regions to the iso codes, for both source and target
+        // console.log(raw_data,labels)x
+        raw_data = raw_data.filter(d=> d.value >1  /* && d.year === "2010" */ && d.source.includes("L") )//|| d.source.includes("S") )//||"1990")// join contry names and regions to the iso codes, for both source and target
         let source = aq.from(raw_data)
-        .select('source','value','year')
-        .join_left(aq.from(labels),['source','iso'])
-        // .select(aq.not('iso'))
-        let target = aq.from(raw_data).
-            select('target','value')
+            .select('source',selectedValue,'year')
+            .join_left(aq.from(labels),['source','iso'])
+            // .select(aq.not('iso'))
+        let target = aq.from(raw_data)
+            .select('target',selectedValue)
             .join_left(aq.from(labels),['target','iso','year'])
             // .select(aq.not('iso'))
-        let merged = source.join_left(target,'value')
+        let merged = source.join_left(target,selectedValue)
             .rename(({
                 region_1: 'source_region',
                 country_1: 'source', 
                 region_2: 'target_region',
-                country_2: 'target' 
+                country_2: 'target',
+                [selectedValue]: 'value'
             }))
             // There appear some 'undefined' iso fields, currently exluded as they break the coode
             .filter(d => d.iso_1 != undefined  && d.iso_2 != undefined)
             .orderby('source_region','target')
 
-
+        
         // group by regions and sum values
         let grouped = merged
             .select('value','year','source_region','target_region')
@@ -124,6 +317,7 @@ let finalData = metaData.then(labels => {
             .rollup( {value: d => op.sum(d.value)})
             .objects()
         
+
         let country_data = merged.objects().map(d=> {return{
             source: d.source,
             target: d.target,
@@ -139,6 +333,7 @@ let finalData = metaData.then(labels => {
         }
         return parsedData
     })
+    
     return result
 })
 //--------------------------------//
@@ -150,15 +345,16 @@ let finalData = metaData.then(labels => {
 finalData.then(src => {
     // prepare input data matix
    
+    console.log(src)
     
-    
-    // Selector with years
+    // Selector for years
     const allYears = [...new Set(src.raw.map((d) => d.year))];
+    const allValues = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
     var selectedYear = allYears.reverse()[0]
     var selectedRegion = []
-    var selectedValues = []
+    var selectedValues = 'mig_rate'
 
-    d3.select("#selectButton")
+    d3.select("#selectYear")
         .selectAll('myOptions')
         .data(allYears)
         .enter()
@@ -166,6 +362,13 @@ finalData.then(src => {
         .text(d=>{ return d; })    // text showed in the menu
         .attr("value",d=> { return d; }) 
     
+    d3.select("#selectValues")
+        .selectAll('myOptions')
+        .data(allValues)
+        .enter()
+        .append('option')
+        .text(d=>{ return d; })    // text showed in the menu
+        .attr("value",d=> { return d; }) 
    
     
     ////// Draw diagram
@@ -173,23 +376,23 @@ finalData.then(src => {
         // Prepare data matrix    
         const merged = src.merged
         region = selectedRegion             // will be [] unless a region is clicked
-        values = selectedValues             // will be [] unless a region is clicked
+        values = selectedValues 
         const dataSelection = merged.map(d=> {
             // returns all values, but with region name as source and target for regions selected
             return{
                 source: d.source_region === region ? d.source : d.source_region,
                 target: d.target_region === region ? d.target : d.target_region,
-                value: +d.value,
+                value: +d.value[values],
                 year: d.year,
             }})
-            
+        console.log(dataSelection)
         const groupedValues = aq.from(dataSelection)
             .select('value','year','source','target')
             .groupby('source','target','year')
             .rollup( {value: d => op.sum(d.value)})                
             .objects()
         
-        input_data = groupedValues
+        // input_data = groupedValues
         // console.log(region,input_data)
         
         // aq.from(input_data).print()
@@ -197,7 +400,7 @@ finalData.then(src => {
         groupedValues['columns'] = columns
         names = Array.from(new Set(groupedValues.flatMap(d => [d.source, d.target])));
         const data = getMatrix(names,groupedValues.filter(d=> d.year === year))    
-        
+        // console.log(data)
 
 
         // Visualization settings
@@ -275,9 +478,9 @@ finalData.then(src => {
         svg.selectAll(".chord")            
             .on("click", function (evt, d) {
                 selectedRegion = names[d.index]
-
+                
                 // print selected criteria on console
-                console.log(selectedRegion,selectedYear)
+                console.log(selectedRegion,selectedYear,selectedValues)
                 
                 // remove current graphics
                 d3.selectAll("g")
@@ -288,15 +491,16 @@ finalData.then(src => {
                 
                 // print selected region on screen
                 d3.selectAll("#activeData")
-                    .text("selected region: "+selectedRegion+ " | selected year: "+selectedYear)
+                    .text("region: "+selectedRegion+ " | year: "+selectedYear +"| value: "+selectedValues)
                 
                 // draw new chart 
-                draw(selectedYear,selectedRegion)
+                draw(selectedYear,selectedRegion,selectedValues)
             });   
-        d3.select("#selectButton")
+        d3.selectAll("#selectYear")
             .on("change", function(d) {
                 // Get selected value
                 selectedYear = d3.select(this).property("value")
+
 
                 // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                 // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
@@ -307,44 +511,67 @@ finalData.then(src => {
                     .style('opacity', 0)
                     .remove();
 
-                draw(selectedYear,selectedRegion)
-                    /* .tween('circumference', function(d) {
-                        let currentAngle = getCurrentAngle(this);
-                        let targetAngle = d;
-            
-                        // Ensure shortest path is taken
-                        if (targetAngle - currentAngle > Math.PI) {
-                            targetAngle -= 2 * Math.PI;
-                        }
-                        else if (targetAngle - currentAngle < -Math.PI) {
-                            targetAngle += 2 * Math.PI;
-                        }
-            
-                        let i = d3.interpolate(currentAngle, targetAngle);
-            
-                        return function(t) {
-                            let angle = i(t);
-            
-                            d3.select(this)
-                                .attr('cx', majorRadius * Math.cos(angle))
-                                .attr('cy', majorRadius * Math.sin(angle));
-                        }
-                    }); */
-            
-          })
-    }   
+                draw(selectedYear,selectedRegion,selectedValues)
+                
+            })        
+        d3.selectAll("#selectValues")
+            .on("change", function(d) {
+                // Get selected value
+                selectedValues = d3.select(this).property("value")
 
 
-    // Filter input chart data
-    
+                // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
+                // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
+                // Remove previous
+                d3.selectAll("g")
+                    .transition()
+                    .duration(1500)
+                    .style('opacity', 0)
+                    .remove();
+
+                draw(selectedYear,selectedRegion,selectedValues)    
+            })
+        let table =aq.from(groupedValues).toHTML()
+         
         
+        // console.log(aq.from(groupedValues).print())
+        
+        }   
 
-    // Run initial chart
-    draw(allYears[0])
+        
+        
+        // Filter input chart data
+        
+        
+        
+        // Run initial chart
+        draw(allYears[0])
+        
+    });
+    // })
     
-});
-// })
+    /* .tween('circumference', function(d) {
+        let currentAngle = getCurrentAngle(this);
+        let targetAngle = d;
 
+        // Ensure shortest path is taken
+        if (targetAngle - currentAngle > Math.PI) {
+            targetAngle -= 2 * Math.PI;
+        }
+        else if (targetAngle - currentAngle < -Math.PI) {
+            targetAngle += 2 * Math.PI;
+        }
+
+        let i = d3.interpolate(currentAngle, targetAngle);
+
+        return function(t) {
+            let angle = i(t);
+
+            d3.select(this)
+                .attr('cx', majorRadius * Math.cos(angle))
+                .attr('cy', majorRadius * Math.sin(angle));
+        }
+    }); */
 // function getCurrentAngle(el) {
 // 	let x = d3.select(el).attr('cx');
 // 	let y = d3.select(el).attr('cy');
