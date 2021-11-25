@@ -48,42 +48,50 @@ function getMatrix(names,data) {
 //       GET & PREPARE DATA       //
 //--------------------------------//
 ////// DIAGRAM DATA STUCUTRE
-// optimal data structure = { matrix: [ { year: [value] } ],       --- source-target value for their relative index as specified in 'names'
-//                  should we switch year-type to minimize headers for data groups? Years add up more easily than methods 
-//                            names : [names],                     --- each index de
-//                            regions: [regions]                   --- regions index is positioned on head of their subcountries  
-//                            type: [dataset] }                    --- type are indexs in matix.value
+// optimal data structure = { matrix: [ {
+    //                           year0: {
+    //                              dimension1: [values],
+    //                              dimension2: [values]
+    //                              ... },                                  --- source-target value for their relative index as specified in 'names'
+    //                           year1: {
+    //                              dimension1: [values],
+    //                              dimension2: [values]
+    //                              ... },  
+//                               } ]                                        --- should we switch year-type to minimize headers for data groups? Years add up more easily than methods 
+//                            names : [names],                              
+//                            regions: [regions],                           --- regions index is positioned on head of their subcountries  
+//                            dimensions: [dimension1,dimension2...]
+//                            type: [dataset] }                             --- type are indexs in matix.value
+
 const getData = async () => {
     try {
-      // this parse may fail
-      const raw_data = await d3.csv("gf_od.csv");
-      const metadata = await d3.csv("data/country-metadata.csv");
-      data = {raw_data,metadata}
-      return  data
-    } catch (err) {
-      console.log(err)
-      throw Error("Failed to load data")
-    }
-  }
-  
-async function prepareData(data,metadata) {
-    // format the data
-    let labels = metadata.map(d=>{ 
-        let countries = {[d.origin_iso] : d.origin_name}
-        let regions = {[d.origin_iso] : d.originregion_name}
+        // this parse may fail
+        const raw_data = await d3.csv("gf_od.csv");
+        const metadata = await d3.csv("data/country-metadata-flags.csv");
+        // example json data structure
+        //   const ref = await d3.json("json/migrations.json");
+        //   console.log("JSON",ref)
         
-        return {
-            countries, 
-            regions,
-        }
-    })
-   
-    
-    let raw_data = data.map(d=>{/* console.log(d) */
+        let labels = metadata.map(d=>{ 
+          let flag = d.origin_flag
+          let country = d.origin_name
+          let region =  d.originregion_name
         
-        return{
-            source : d.orig,
-            target : d.dest,
+          return {
+              [d.origin_iso]:  d.origin_iso,
+              iso :  d.origin_iso,
+              country: flag + " " + country ,
+              region: region
+          }
+        })
+        
+
+        let result = raw_data.map(d=>{
+            let label_source = new Object(labels.filter(a=>a[d.orig])[0])
+            let label_target = new Object(labels.filter(a=>a[d.dest])[0])
+            return{
+            source :[ label_source.country , label_source.region],
+            target : [ label_target.country , label_target.region],
             year : d.year0,
             values : ({
                 mig_rate: +d.mig_rate,
@@ -93,35 +101,75 @@ async function prepareData(data,metadata) {
                 sd_rev_neg: +d.sd_rev_neg,
                 sd_drop_neg: +d.sd_drop_neg
                 })
-            // value:  +d.mig_rate,
-            // mig_rate: +d.mig_rate,
-            // da_min_closed: +d.da_min_closed,
-            // da_min_open: +d.da_min_open,
-            // da_pb_closed: +d.da_pb_closed,
-            // sd_rev_neg: +d.sd_rev_neg,
-            // sd_drop_neg: +d.sd_drop_neg,
-        };
-    })
-    function getLabels(data) { 
-        // console.log(data)
-        console.log(labels)
-        // console.log(labels.filter(a=>a.countries["BEL"]).map(a=>Object.values(a.countries)).flat())
-        data.label = data.map(d=>{
-            let label = labels
-                .filter(a=>a.countries[d])
-                .map(a=>Object.values(a.countries))
-                .flat()
-            // console.log(d)
-            // console.log(label)
-             
-            return{ label
-        }})
-        
-        
-        
-        console.log(data.label,data)
+        }
+        }) 
+
+        data = {raw_data:result,labels}
+        return  data
     }
-    getLabels(raw_data.map(d=>d.source))
+    catch (err) {
+        console.log(err)
+        throw Error("Failed to load data")
+    }
+}
+  
+// async function prepareData(data,metadata) {
+//     // format the data
+//     let labels = Object.values(metadata)
+    
+//     const getLabels = (isocode)=> { 
+//         if (typeof isocode !== undefined){
+//             let country = []
+//             let region = []
+//             let label = new Array(labels
+//                     // .flat()
+//                     .filter(a=>a[isocode])[0])[0]
+            
+//                 country.push(label[isocode])
+//                 region.push(label.region)
+//         return  { country, region }
+
+//         }
+        
+        
+//         /* et flag = label.map(d=>d.flag)
+//         let country = label.map(d=>d.country)
+//         let region = label.map(d=>d.region)
+//         let result = {flag,country,region} */
+//     }
+//     console.log(getLabels("BEL"))
+
+
+//     let raw_data = data.map(d=>{
+//         // let target_labels = getLabels(d.orig)
+//         // let source_labels
+        
+        
+//         // let source_labels = labels.flat().filter(a=> a[d.orig])[0][d.orig]
+//         // let src = Object.values(d.orig)
+//         // obj.push(getLabels(src))
+
+//         // let source = d === undefined? '' : getLabels(d.orig).country
+//         // console.log("HEEH",getLabels("BEL"))
+//         // let source_label = getLabels(d.orig)
+//         // console.log(source_labels)
+
+//         return {...result
+//             // label : source,
+//             // source : source_labels === undefined? '': source_labels,
+            
+//         };
+        
+//         // console.log(this)
+//     }
+//     )
+    // console.log(getLabels(d=> d))
+    // console.log("LAB",labels)
+    // console.log("UUU",raw_data)
+    
+
+    // console.log(getLabels("BEL").country)
+    // console.log(getLabels("BEL").region)
     
     
     /* function lookupLabel(iso){
@@ -179,10 +227,38 @@ async function prepareData(data,metadata) {
     }
     return result
     */
+//     return raw_data, labels
+//     // console.log(target.objects()) 
+// }
+getData().then((data)=>{ 
+    // prepareData(data.raw_data,data.labels)
+    
+    // const getLabels = (isocode)=> { 
+    //     let country = []
+    //     let region = []
+    //     if (typeof isocode !== undefined){
+            
+            
+    //         let label = new Array(data.labels
+    //                 // .flat()
+    //                 .filter(a=>a[isocode])[0])[0]
+            
+    //         country.push(label[isocode])
+    //         region.push(label.region)
+    //     return  { country,region }
+    //     }
+    // }
+    let raw_data = data.raw_data
+    let labels = data.labels
+    console.log(raw_data)
+    // console.log(label)
+        //         /* et flag = label.map(d=>d.flag)
+        //         let country = label.map(d=>d.country)
+        //         let region = label.map(d=>d.region)
+        //         let result = {flag,country,region} */
+        //     }
 
-    console.log(target.objects()) 
-}
-getData().then(data=> prepareData(data.raw_data,data.metadata))
+})
   
 
 let mainData = d3.csv("gf_od.csv").then( (data) => {
@@ -385,15 +461,16 @@ finalData.then(src => {
                 value: +d.value[values],
                 year: d.year,
             }})
-        console.log(dataSelection)
+
         const groupedValues = aq.from(dataSelection)
             .select('value','year','source','target')
             .groupby('source','target','year')
-            .rollup( {value: d => op.sum(d.value)})                
+            .rollup( {value: d => op.sum(d.value)})       
+            
             .objects()
         
         // input_data = groupedValues
-        // console.log(region,input_data)
+
         
         // aq.from(input_data).print()
         let columns =  {0: "source",1:"target",2:"value"}
@@ -466,6 +543,7 @@ finalData.then(src => {
                     .transition()
                     .style("opacity", 1)
                 })
+                
                 
             .on("mouseout", function (evt, d) {
                 svg.selectAll(".path-item")
