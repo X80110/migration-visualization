@@ -43,6 +43,7 @@ CYM,Cayman Islands,🇰🇾,none
 CAF,Central African Republic,🇨🇫,Africa
 TCD,Chad,🇹🇩,Africa
 CHL,Chile,🇨🇱,Latin America
+CHI,Chile,🇨🇱,Latin America
 CHN,China,🇨🇳,East Asia
 CXR,Christmas Island,🇨🇽,none
 CCK,Cocos (Keeling Islands),🇨🇨,none
@@ -144,7 +145,7 @@ MYT,Mayotte,🇾🇹,Africa
 MEX,Mexico,🇲🇽,Latin America
 FSM,Micronesia,🇫🇲,Oceania
 MDA,Moldova,🇲🇩,Fmr Soviet Union
-MCO,Monaco,🇲🇨,none
+MCO,Monaco,🇲🇨,Europe
 MNG,Mongolia,🇲🇳,East Asia
 MNE,Montenegro,🇲🇪,Europe
 MSR,Montserrat,🇲🇸,none
@@ -191,11 +192,12 @@ MAF,Saint Martin,🇲🇫,none
 SPM,Saint Pierre and Miquelon,🇵🇲,none
 VCT,Saint Vincent and the Grenadines,🇻🇨,Latin America
 WSM,Samoa,🇼🇸,Oceania
-SMR,San Marino,🇸🇲,none
+SMR,San Marino,🇸🇲,Europe
 STP,Sao Tome and Principe,🇸🇹,Africa
 SAU,Saudi Arabia,🇸🇦,West Asia
 SEN,Senegal,🇸🇳,Africa
 SRB,Serbia,🇷🇸,Europe
+SCG,Serbia and Montenegro,🇷🇸,Europe
 SYC,Seychelles,🇸🇨,none
 SLE,Sierra Leone,🇸🇱,Africa
 SGP,Singapore,🇸🇬,South-East Asia
@@ -210,6 +212,7 @@ SSD,South Sudan,🇸🇸,Africa
 ESP,Spain,🇪🇸,Europe
 LKA,Sri Lanka,🇱🇰,South Asia
 SDN,Sudan,🇸🇩,Africa
+SUD,Sudan,🇸🇩,Africa
 SUR,Suriname,🇸🇷,Latin America
 SJM,Svalbard and Jan Mayen,🇸🇯,none
 SWE,Sweden,🇸🇪,Europe
