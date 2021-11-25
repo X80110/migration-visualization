@@ -76,7 +76,6 @@ const getData = async () => {
           let flag = d.origin_flag
           let country = d.origin_name
           let region =  d.originregion_name
-        
           return {
               [d.origin_iso]:  d.origin_iso,
               iso :  d.origin_iso,
@@ -84,24 +83,29 @@ const getData = async () => {
               region: region
           }
         })
-        
-
+        // console.log(raw_data)        
         let result = raw_data.map(d=>{
-            let label_source = new Object(labels.filter(a=>a[d.orig])[0])
-            let label_target = new Object(labels.filter(a=>a[d.dest])[0])
+
+            // Replace SUDAN ISO CODE "SUD" > "SDN"
+            // let origin = d.orig.replace("SUD","SDN")
+            // let destination = d.dest.replace("SUD","SDN")
+            
+            // Equivalent Vlookup or leftjoin labels <-> iso
+            let origin = new Object(labels.filter(a=>a[d.orig])[0])
+            let destination = new Object(labels.filter(a=>a[d.dest])[0])
             return{
-            source :[ label_source.country , label_source.region],
-            target : [ label_target.country , label_target.region],
-            year : d.year0,
-            values : ({
-                mig_rate: +d.mig_rate,
-                da_min_closed: +d.da_min_closed,
-                da_min_open: +d.da_min_open,
-                da_pb_closed: +d.da_pb_closed,
-                sd_rev_neg: +d.sd_rev_neg,
-                sd_drop_neg: +d.sd_drop_neg
-                })
-        }
+                source :[ origin.country , origin.region],
+                target : [ destination.country , destination.region],
+                year : d.year0,
+                values : ({
+                    mig_rate: +d.mig_rate,
+                    da_min_closed: +d.da_min_closed,
+                    da_min_open: +d.da_min_open,
+                    da_pb_closed: +d.da_pb_closed,
+                    sd_rev_neg: +d.sd_rev_neg,
+                    sd_drop_neg: +d.sd_drop_neg
+                    })
+            }
         }) 
 
         data = {raw_data:result,labels}
@@ -113,151 +117,13 @@ const getData = async () => {
     }
 }
   
-// async function prepareData(data,metadata) {
-//     // format the data
-//     let labels = Object.values(metadata)
-    
-//     const getLabels = (isocode)=> { 
-//         if (typeof isocode !== undefined){
-//             let country = []
-//             let region = []
-//             let label = new Array(labels
-//                     // .flat()
-//                     .filter(a=>a[isocode])[0])[0]
-            
-//                 country.push(label[isocode])
-//                 region.push(label.region)
-//         return  { country, region }
 
-//         }
-        
-        
-//         /* et flag = label.map(d=>d.flag)
-//         let country = label.map(d=>d.country)
-//         let region = label.map(d=>d.region)
-//         let result = {flag,country,region} */
-//     }
-//     console.log(getLabels("BEL"))
-
-
-//     let raw_data = data.map(d=>{
-//         // let target_labels = getLabels(d.orig)
-//         // let source_labels
-        
-        
-//         // let source_labels = labels.flat().filter(a=> a[d.orig])[0][d.orig]
-//         // let src = Object.values(d.orig)
-//         // obj.push(getLabels(src))
-
-//         // let source = d === undefined? '' : getLabels(d.orig).country
-//         // console.log("HEEH",getLabels("BEL"))
-//         // let source_label = getLabels(d.orig)
-//         // console.log(source_labels)
-
-//         return {...result
-//             // label : source,
-//             // source : source_labels === undefined? '': source_labels,
-            
-//         };
-        
-//         // console.log(this)
-//     }
-//     )
-    // console.log(getLabels(d=> d))
-    // console.log("LAB",labels)
-    // console.log("UUU",raw_data)
-    
-
-    // console.log(getLabels("BEL").country)
-    // console.log(getLabels("BEL").region)
-    
-    
-    /* function lookupLabel(iso){
-        console.log(countries.map(d=>d[iso]))
-        result = labels.map(d=>{
-            let label = d[iso]  
-            console.log(d[iso])
-            return {label}
-        })
-        console.log(result)
-        // return result
-    }
-
-    lookupLabel(labels.map(d=>d.countries)) */
-    /*
-    let source = aq.from(raw_data)
-        .select('source',selectedValue,'year')
-        .join_left(aq.from(labels),['source','iso'])
-        // .select(aq.not('iso'))
-    let target = aq.from(raw_data)
-        .select('target',selectedValue)
-        .join_left(aq.from(labels),['target','iso','year'])
-        // .select(aq.not('iso'))
-     let merged = source.join_left(target,selectedValue)
-        .rename(({
-            region_1: 'source_region',
-            country_1: 'source', 
-            region_2: 'target_region',
-            country_2: 'target',
-            [selectedValue]: 'value'
-        }))
-        // There appear some 'undefined' iso fields, currently exluded as they break the coode
-        .filter(d => d.iso_1 != undefined  && d.iso_2 != undefined)
-        .orderby('source_region','target')
-    // group by regions and sum values
-    let grouped = merged
-        .select('value','year','source_region','target_region')
-        .groupby('source_region','target_region','year')
-        .rollup( {value: d => op.sum(d.value)})
-        .objects()
-        // .print()
-    let country_data = merged.objects().map(d=> {
-        return {
-            source: d.source,
-            target: d.target,
-            value: +d.value,
-            year: d.year 
-        }
-    })
-    let result =  {
-        country: country_data, 
-        region: grouped, 
-        raw: raw_data, 
-        merged: merged.objects()
-    }
-    return result
-    */
-//     return raw_data, labels
-//     // console.log(target.objects()) 
-// }
 getData().then((data)=>{ 
-    // prepareData(data.raw_data,data.labels)
-    
-    // const getLabels = (isocode)=> { 
-    //     let country = []
-    //     let region = []
-    //     if (typeof isocode !== undefined){
-            
-            
-    //         let label = new Array(data.labels
-    //                 // .flat()
-    //                 .filter(a=>a[isocode])[0])[0]
-            
-    //         country.push(label[isocode])
-    //         region.push(label.region)
-    //     return  { country,region }
-    //     }
-    // }
     let raw_data = data.raw_data
-    let labels = data.labels
+    // let labels = data.labels
     console.log(raw_data)
-    // console.log(label)
-        //         /* et flag = label.map(d=>d.flag)
-        //         let country = label.map(d=>d.country)
-        //         let region = label.map(d=>d.region)
-        //         let result = {flag,country,region} */
-        //     }
-
+    console.log(raw_data.map(d=>d.source).map(a=>a[0]))  // <--- this gets the country label
+    // console.log(raw_data.map(d=>d.source).map(a=>a[1])) //  <--- this gets the region label
 })
   
 
@@ -303,61 +169,7 @@ let metaData = d3.csv("data/country-metadata.csv").then(meta =>{
     return labels
     })
 
-/* function finale(){
-    let finalData = metaData.then(labels => {
-        selectedValue = 'values'
-        result = mainData.then(raw_data => {
-            // console.log(raw_data,labels)x
-            // join contry names and regions to the iso codes, for both source and target
-            let source = aq.from(raw_data)
-                .select('source',selectedValue,'year')
-                .join_left(aq.from(labels),['source','iso'])
-                // .select(aq.not('iso'))
-            let target = aq.from(raw_data)
-                .select('target',selectedValue)
-                .join_left(aq.from(labels),['target','iso','year'])
-                // .select(aq.not('iso'))
-            let merged = source.join_left(target,selectedValue)
-                .rename(({
-                    region_1: 'source_region',
-                    country_1: 'source', 
-                    region_2: 'target_region',
-                    country_2: 'target',
-                    [selectedValue]: 'value'
-                }))
-                // There appear some 'undefined' iso fields, currently exluded as they break the coode
-                .filter(d => d.iso_1 != undefined  && d.iso_2 != undefined)
-                .orderby('source_region','target')
 
-            
-            // group by regions and sum values
-            let grouped = merged
-                .select('value','year','source_region','target_region')
-                .groupby('source_region','target_region','year')
-                .rollup( {value: d => op.sum(d.value)})
-                .objects()
-            
-
-            let country_data = merged.objects().map(d=> {return{
-                source: d.source,
-                target: d.target,
-                value: +d.value,
-                year: d.year,
-    
-            }})
-            parsedData = {
-                country: country_data, 
-                region: grouped, 
-                raw: raw_data, 
-                merged: merged.objects()
-            }
-            return parsedData
-        })
-        
-        return result
-    })
-    return finalData
-} */
 
 
 let finalData = metaData.then(labels => {
