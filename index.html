@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <style>
 	 @import url(//fonts.googleapis.com/css?family=Open+Sans:400,600,700,300);
-	@import url(//fonts.googleapis.com/css?family=Raleway:400,300,600,700);
+	@import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,300,600,700);
 	
 	
 	body {
-		font-family: 'Raleway', 'Open Sans', sans-serif;
+		font-family: 'Proxima Nova', 'Open Sans', sans-serif;
 		font-size: 62.5%;
 		font-weight: 400;
 	}
@@ -121,21 +121,43 @@
   		float: left;
   	}
   } */
-  #chord-chart {
-            width: 600px;
-            height: 600px;
-            margin: 0 auto;
-        }
-        text {
-            fill: #000 !important;
-        }
+  	#chord-chart {
+		width: 600px;
+		height: 600px;
+		margin: 0 auto;
+	}
+        
+	text {
+		fill: #000 !important;
+	}
 
-        .chart-title {
+    .chart-title {
             width: 98%;
             line-height: 100px;
             margin: 0 auto;
             color: #ccc;
-        }
+    }		
+	.grid-container {
+		width: 100%;
+		display: grid;
+		grid-template-columns: minmax(100px, 1fr) 150px 250px;
+		grid-gap: 5px;
+		background-color: #daf1f8;
+		padding: 5px;
+		}
+
+	.grid-container > div {
+		
+		background-color: rgba(255, 255, 255, 0.8);
+		text-align: center;
+		padding: 15px 15px;
+		font-size: 8.5px;
+		}
+
+	.main {
+		grid-column-start: 1;
+		grid-column-end: 3;
+		}
   </style>
 
   <title>Global international migration</title>
@@ -155,12 +177,13 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
  	<!-- <div id="donationInfo"></div> -->
 	<select id="selectYear"></select>
 	<select id="selectValues"></select>
-	<select id="table"></select>
+	<select id="selectGender"></select>
 	<div id="activeData"></div>
-	<div id="mouseOver"></div>
-	</br>
 	<div id="hoverData"></div>
-	<div id="chart"></div>
+	<div class="grid-container">
+		<div id="chart" class="main"></div>
+		<div id="table" ></div>
+	</div>
 	<script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script>
 
 	<script src="https://d3js.org/d3.v7.min.js"></script>

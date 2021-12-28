@@ -1,3 +1,7 @@
+// TODO
+    // - Care for labels alignment (countries radial, regions arc)
+    // - 
+
 // IMOPORTED FROM APP.JS
     // // arc path generator
     // var textPathArc = d3.svg.arc()
@@ -9,29 +13,29 @@
 
 
 
-// Main settings
+// MAIN SETTINGS AND HELPERS
+// Canvas
 var width = 600;
 var height = width;
-
-var innerRadius = Math.min(width, height) *0.5-30;
-var outerRadius = innerRadius + 17;
-const textId = "O-text-1";
+const textId = "O-text-1"; 
 
 // Define
+var innerRadius = Math.min(width, height) *0.5-30;
+var outerRadius = innerRadius + 13;
 const svg = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
 // Standard chord settings    
 var chord = d3.chordDirected()
-    .padAngle(12 / innerRadius)
+    // .padAngle(0 / innerRadius)
     .sortSubgroups(d3.descending)
     .sortChords(d3.descending);
 var arc = d3.arc() 
     .innerRadius(innerRadius)
     .outerRadius(outerRadius);
 var ribbon = d3.ribbonArrow()
-    .radius(innerRadius - 0.5)
+    .radius(innerRadius - 7)
     .padAngle(1 / innerRadius);
 var formatValue = x => `${x.toFixed(0)}`;
 
@@ -86,16 +90,15 @@ const getData = async () => {
         // console.log(raw_data)    
         // console.log(labels)    
         let result = raw_data.map(d=>{
-
-            // Replace SUDAN ISO CODE "SUD" -> "SDN"
-            //         CHILE ISO CODE "CHI" -> "CHL"
-            //         SERBIA AND MONTENEGRO ISO CODE "" -> "SCG"
-            //         FINALLY SOLVED DIRECTLY IN CSV
+            //        Replace SUDAN ISO CODE "SUD" -> "SDN"
+            //                CHILE ISO CODE "CHI" -> "CHL"
+            //                SERBIA AND MONTENEGRO ISO CODE "" -> "SCG"
+            //                FINALLY SOLVED DIRECTLY IN CSV
+            //        
+            //        let origin = d.orig.replace("SUD","SDN")
+            //        let destination = d.dest.replace("SUD","SDN")
             //
-            // let origin = d.orig.replace("SUD","SDN")
-            // let destination = d.dest.replace("SUD","SDN")
-            
-            // Equivalent Vlookup or leftjoin labels <-> iso
+            //        Equivalent Vlookup or leftjoin labels <-> iso
             let origin = new Object(labels.filter(a=>a[d.orig])[0])
             let destination = new Object(labels.filter(a=>a[d.dest])[0])
             return{
@@ -124,19 +127,15 @@ const getData = async () => {
   
 
 getData().then((data)=>{ 
-    const allYears = [...new Set(data.raw_data.map((d) => d.year))];
+    const allYears = [...new Set(data.raw_data.map((d) => d.year))].reverse();
     const allVars = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
     
-    let selectedYear = allYears.reverse()[0]
-    console.log("SELECTEEEDYAA!",selectedYear)
+    let selectedYear = allYears[0] 
     let selectedRegion = []
     let selectedValues = 'mig_rate'
     var raw_data = data.raw_data.flat()
     
-
-    
-    
-    // SELECTORS
+    // RUN SELECTORS
     d3.select("#selectYear")
         .selectAll('myOptions')
         .data(allYears)
@@ -160,7 +159,7 @@ getData().then((data)=>{
     //// CHART RENDERING
     function draw(year,region,values){
         let selectedData = raw_data
-            .sort((a,b) => a-b)
+            .sort((a,b) => b.source[2] - a.source[2])
             .filter(d=> d.year === year)
             .map(d=> { 
             // d.source ---> [0] isocodes // [1] countrylabels // [2] region 
@@ -196,7 +195,7 @@ getData().then((data)=>{
         svg.append("path")
             .attr("id", textId)
             .attr("fill", "none")
-            .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle: 2 * Math.PI }));
+            .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle:   2 * Math.PI  }));
 
         // Add ribbons for each chord and its tooltip content <g> <path> <title>
         chords = svg.append("g")
@@ -228,9 +227,12 @@ getData().then((data)=>{
             // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
             .call(g => g.append("text")
             .attr("dy", -3)
+            .attr("dx", 17)
             .append("textPath")
-            .attr("xlink:href", "#"+textId)
-            .attr("startOffset", d => d.startAngle * outerRadius)   /*  this helps   */
+            // .attr("startOffset", d => d.startAngle/2 * outerRadius 
+            .attr("startOffset", d=> d.startAngle*outerRadius)
+            .style("text-anchor","middle")
+            .attr("xlink:href", "#"+textId) 
             .text(d => names[d.index]))
             // On each <g> we set a <title> for the region outflow
             .call(g => g.append("title")
@@ -238,27 +240,29 @@ getData().then((data)=>{
                 return `${names[d.index]} outflow ${formatValue(d3.sum(data[d.index]))} people and inflow ${formatValue(d3.sum(data, row => row[d.index]))} people`
             }))
 
-        d3.select("body").append("table").html(table)
+        d3.select("#table").append("table").html(table)
 
     
-        svg.selectAll(".path-item")
-        .on("mouseover", function (evt, d) {
-            svg.selectAll(".path-item")
-                .transition()
-                .style("opacity", 0.2);
+        svg.selectAll(".path-item, .chord")
+            .on("mouseover", function (evt, d) {
+                svg.selectAll(".path-item, .chord")
+                    .transition()
+                    .style("opacity", 0.2);
 
-            d3.select(this)
-                .transition()
-                .style("opacity", 1)
-            })
+                d3.select(this)
+                    .call(d=> d3.select(d))
+                    .transition()
+                    .style("opacity", 1)
+                })
+                
+                         
+
+            .on("mouseout", function (evt, d) {
+                svg.selectAll(".path-item, .chord")
+                    .transition()
+                    .style("opacity", 1);
+                })
             
-            
-        .on("mouseout", function (evt, d) {
-            svg.selectAll(".path-item")
-                .transition()
-                .style("opacity", 1);
-            })
-        
   
 
         svg.selectAll(".chord")            
@@ -283,6 +287,7 @@ getData().then((data)=>{
                 // draw new chart 
                 draw(year,region,values)
             });   
+
         d3.selectAll("#selectYear")
             .on("change", function(d) {
                 // Get selected value
@@ -322,11 +327,13 @@ getData().then((data)=>{
                 draw(year,region,values)
             })
         console.log(region)
-        let activeRegion = selectedRegion === region ? 'No region selected' : region
+    
+        let activeRegion = selectedRegion === region ? '<span style="color: grey">No region selected</span>' : region
         d3.selectAll("#activeData")
             .html("<br><strong>Region:</strong>  "+activeRegion+"<br>"+
                    "<strong>Year:</strong> "+year+"<br>"+
                    "<strong>Value:</strong> "+values)
+
         
     }
 
