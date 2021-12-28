@@ -158,8 +158,9 @@ getData().then((data)=>{
     
     //// CHART RENDERING
     function draw(year,region,values){
-        let selectedData = raw_data
-            .sort((a,b) => b.source[2] - a.source[2])
+        let selectedData = aq.from(raw_data)
+            .orderby(d=>d.source[2])
+            .objects()
             .filter(d=> d.year === year)
             .map(d=> { 
             // d.source ---> [0] isocodes // [1] countrylabels // [2] region 
