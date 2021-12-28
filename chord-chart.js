@@ -131,7 +131,7 @@ getData().then((data)=>{
     console.log("SELECTEEEDYAA!",selectedYear)
     let selectedRegion = []
     let selectedValues = 'mig_rate'
-    let raw_data = data.raw_data.flat()
+    var raw_data = data.raw_data.flat()
     
 
     
@@ -159,13 +159,9 @@ getData().then((data)=>{
     
     //// CHART RENDERING
     function draw(year,region,values){
-        /* year = selectedYear
-        region = selectedRegion
-        values = selectedValues */
-
-        // raw_data = raw_data
-        const selectedData = raw_data
-            .filter(d=> d.year === year&& d.target !== 'none' && d.value !==0)
+        let selectedData = raw_data
+            .sort((a,b) => a-b)
+            .filter(d=> d.year === year)
             .map(d=> { 
             // d.source ---> [0] isocodes // [1] countrylabels // [2] region 
             return{
@@ -176,13 +172,13 @@ getData().then((data)=>{
                 value: +d.values[values],
                 year: d.year,
         }})
-
+        selectedData = selectedData.filter(d=> d.target !=='none' && d.source !== 'none' && d.value > 100)
         const groupedValues = aq.from(selectedData)
             .select('value','year','source','target')
             .groupby('source','target','year')
             .rollup( {value: d => op.sum(d.value)})       
             .objects()
-        // aq.from(groupedValues).print()
+        aq.from(groupedValues).print()
        
         let columns =  {0: "source",1:"target",2:"value"}
         groupedValues['columns'] = columns
