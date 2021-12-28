@@ -87,9 +87,9 @@ const getData = async () => {
         // console.log(labels)    
         let result = raw_data.map(d=>{
 
-            // Replace SUDAN ISO CODE "SUD" > "SDN"
-            //         CHILE ISO CODE "CHI" > "CHL"
-            //         SERBIA AND MONTENEGRO ISO CODE "" > "SCG"
+            // Replace SUDAN ISO CODE "SUD" -> "SDN"
+            //         CHILE ISO CODE "CHI" -> "CHL"
+            //         SERBIA AND MONTENEGRO ISO CODE "" -> "SCG"
             //         FINALLY SOLVED DIRECTLY IN CSV
             //
             // let origin = d.orig.replace("SUD","SDN")
@@ -113,7 +113,7 @@ const getData = async () => {
             }
         }) 
 
-        data = {raw_data:result,labels}
+        data = {raw_data:result/* ,labels */}
         return  data
     }
     catch (err) {
@@ -124,147 +124,19 @@ const getData = async () => {
   
 
 getData().then((data)=>{ 
-    let raw_data = data.raw_data.flat()
-    // let labels = data.labels
-    // console.log(raw_data)
-    // console.log(raw_data.map(d=>d.source).map(a=>a[2]))  // <--- this gets the country label
-    // console.log(raw_data.map(d=>d.source).map(a=>a[1])) //  <--- this gets the region label
-    
-    // Get label for each source-target
-    // const iso = (d) => { return { source: d.map(item => item.source[0]), target: d.map(item => item.target[0]) } }
-    // const country = (d) => { return { source: d.map(item => item.source[1]), target: d.map(item => item.target[1]) } }
-    // const region = (d) => { return { source: d.map(item => item.source[2]), target: d.map(item => item.target[2]) } }
-    // console.log(country(raw_data))
-
-    
-    const allYears = [...new Set(raw_data.map((d) => d.year))];
+    const allYears = [...new Set(data.raw_data.map((d) => d.year))];
     const allVars = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
-    var selectedYear = allYears.reverse()[0]
-    var selectedRegion = []
-    var selectedValues = 'mig_rate'
+    
+    let selectedYear = allYears.reverse()[0]
+    console.log("SELECTEEEDYAA!",selectedYear)
+    let selectedRegion = []
+    let selectedValues = 'mig_rate'
+    let raw_data = data.raw_data.flat()
+    
 
     
     
-    
- 
-    
-    /* }) */
-
-
-// let mainData = d3.csv("gf_od.csv").then( (data) => {
-
-//     raw_data = data.map(d=>{/* console.log(d) */
-//         return{
-//             source : d.orig,
-//             target : d.dest,
-//             year : d.year0,
-//             values : ({
-//                 mig_rate: +d.mig_rate,
-//                 da_min_closed: +d.da_min_closed,
-//                 da_min_open: +d.da_min_open,
-//                 da_pb_closed: +d.da_pb_closed,
-//                 sd_rev_neg: +d.sd_rev_neg,
-//                 sd_drop_neg: +d.sd_drop_neg,
-//                 }),
-//             value:  +d.mig_rate,
-//             mig_rate: +d.mig_rate,
-//             da_min_closed: +d.da_min_closed,
-//             da_min_open: +d.da_min_open,
-//             da_pb_closed: +d.da_pb_closed,
-//             sd_rev_neg: +d.sd_rev_neg,
-//             sd_drop_neg: +d.sd_drop_neg,
-//         };})
-//         // .filter(d=> d.value >1  /* && d.year === "2010" */ && d.source.includes("L") )//|| d.source.includes("S") )//||"1990")
-//         // Filter here to be removed. If data reach svg rendering
-//         // without filtering it collapses browser's memory
-
-//     // console.log(raw_data)
-//     return raw_data
-//     })
-
-// let metaData = d3.csv("data/country-metadata.csv").then(meta =>{
-//         let labels = meta.map(d=>{ return {
-//             iso : d.origin_iso,
-//             region : d.originregion_name,
-//             country : d.origin_name
-//             }
-//         })
-//     return labels
-//     })
-
-
-
-
-// let finalData = metaData.then(labels => {
-//     selectedValue = 'values'
-//     result = mainData.then(raw_data => {
-//         // console.log(raw_data,labels)x
-//         raw_data = raw_data.filter(d=> d.value >1  /* && d.year === "2010" */ && d.source.includes("L") )//|| d.source.includes("S") )//||"1990")// join contry names and regions to the iso codes, for both source and target
-//         let source = aq.from(raw_data)
-//             .select('source',selectedValue,'year')
-//             .join_left(aq.from(labels),['source','iso'])
-//             // .select(aq.not('iso'))
-//         let target = aq.from(raw_data)
-//             .select('target',selectedValue)
-//             .join_left(aq.from(labels),['target','iso','year'])
-//             // .select(aq.not('iso'))
-//         let merged = source.join_left(target,selectedValue)
-//             .rename(({
-//                 region_1: 'source_region',
-//                 country_1: 'source', 
-//                 region_2: 'target_region',
-//                 country_2: 'target',
-//                 [selectedValue]: 'value'
-//             }))
-//             // There appear some 'undefined' iso fields, currently exluded as they break the coode
-//             .filter(d => d.iso_1 != undefined  && d.iso_2 != undefined)
-//             .orderby('source_region','target')
-
-        
-//         // group by regions and sum values
-//         let grouped = merged
-//             .select('value','year','source_region','target_region')
-//             .groupby('source_region','target_region','year')
-//             .rollup( {value: d => op.sum(d.value)})
-//             .objects()
-        
-
-//         let country_data = merged.objects().map(d=> {return{
-//             source: d.source,
-//             target: d.target,
-//             value: +d.value,
-//             year: d.year,
-
-//         }})
-//         parsedData = {
-//             country: country_data, 
-//             region: grouped, 
-//             raw: raw_data, 
-//             merged: merged.objects()
-//         }
-//         return parsedData
-//     })
-    
-//     return result
-// })
-// //--------------------------------//
-        
-
-// //----------------------------------//
-// //         Start diagram flow       //
-// //----------------------------------//
-// finalData.then(src => {
-//     // prepare input data matix
-   
-//     // console.log(src)
-    
-//     // Selector for years
-//     const allYears = [...new Set(src.raw.map((d) => d.year))];
-//     const allValues = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
-//     var selectedYear = allYears.reverse()[0]
-//     var selectedRegion = []
-//     var selectedValues = 'mig_rate' */
-
+    // SELECTORS
     d3.select("#selectYear")
         .selectAll('myOptions')
         .data(allYears)
@@ -282,60 +154,43 @@ getData().then((data)=>{
         .attr("value",d=> { return d; }) 
    
     
-    ////// Draw diagram
+    // CHART
+    draw(selectedYear,selectedRegion,selectedValues)    
+    
+    //// CHART RENDERING
     function draw(year,region,values){
+        /* year = selectedYear
+        region = selectedRegion
+        values = selectedValues */
 
-        const selectedData = raw_data.map(d=> {
-            // returns all values, but with region name as source and target for regions selected
-           // d.source[0] isocodes // [1] countrylabels // [2] region 
+        // raw_data = raw_data
+        const selectedData = raw_data
+            .filter(d=> d.year === year&& d.target !== 'none' && d.value !==0)
+            .map(d=> { 
+            // d.source ---> [0] isocodes // [1] countrylabels // [2] region 
             return{
-                source: d.source[2] === selectedRegion ? d.source[1] : d.source[2],
-                target: d.target === selectedRegion ? d.target[1] : d.target[2],
-                value: +d.values[selectedValues],
+                // (if) d.source = selected region (then) d.source = country (else)  d.source = region
+                source: d.source[2] === region ? d.source[1] : d.source[2],
+                // same as before
+                target: d.target[2] === region ? d.target[1] : d.target[2],
+                value: +d.values[values],
                 year: d.year,
         }})
 
-        region = selectedRegion
-        values = selectedValues
         const groupedValues = aq.from(selectedData)
             .select('value','year','source','target')
             .groupby('source','target','year')
             .rollup( {value: d => op.sum(d.value)})       
             .objects()
-    
-        console.log("GROUPED",groupedValues)
-        // Prepare data matrix    
-        /* const merged = src.merged
-        region = selectedRegion             // will be [] unless a region is clicked
-        values = selectedValues 
-        const dataSelection = merged.map(d=> {
-            // returns all values, but with region name as source and target for regions selected
-            return{
-                source: d.source_region === region ? d.source : d.source_region,
-                target: d.target_region === region ? d.target : d.target_region,
-                value: +d.value[values],
-                year: d.year,
-        }})
-            
-        const groupedValues = aq.from(dataSelection)
-            .select('value','year','source','target')
-            .groupby('source','target','year')
-            .rollup( {value: d => op.sum(d.value)})       
-            
-            .objects()
-            
-        console.log("grouped",groupedValues) */
-        // input_data = groupedValues
-
-        
-        // aq.from(input_data).print()
+        // aq.from(groupedValues).print()
+       
         let columns =  {0: "source",1:"target",2:"value"}
         groupedValues['columns'] = columns
         names = Array.from(new Set(groupedValues.flatMap(d => [d.source, d.target])));
-        console.log("NAMES!",names)
+        // console.log("NAMES!",names)
         const data = getMatrix(names,groupedValues.filter(d=> d.year === year))    
         // console.log(data)
-
+        let table = aq.from(groupedValues).toHTML()
 
         // Visualization settings
         var color = d3.scaleOrdinal(
@@ -386,36 +241,40 @@ getData().then((data)=>{
             .text(d => {
                 return `${names[d.index]} outflow ${formatValue(d3.sum(data[d.index]))} people and inflow ${formatValue(d3.sum(data, row => row[d.index]))} people`
             }))
+
+        d3.select("body").append("table").html(table)
+
+    
+        svg.selectAll(".path-item")
+        .on("mouseover", function (evt, d) {
+            svg.selectAll(".path-item")
+                .transition()
+                .style("opacity", 0.2);
+
+            d3.select(this)
+                .transition()
+                .style("opacity", 1)
+            })
+            
+            
+        .on("mouseout", function (evt, d) {
+            svg.selectAll(".path-item")
+                .transition()
+                .style("opacity", 1);
+            })
+        
         /* d3.select('body')
             .selectAll('#activeData')
             .text("no region selected"); */
         // Interaction
-        svg.selectAll(".path-item")
-            .on("mouseover", function (evt, d) {
-                svg.selectAll(".path-item")
-                    .transition()
-                    .style("opacity", 0.2);
-
-                d3.select(this)
-                    .transition()
-                    .style("opacity", 1)
-                })
-                
-                
-            .on("mouseout", function (evt, d) {
-                svg.selectAll(".path-item")
-                    .transition()
-                    .style("opacity", 1);
-                })
-            
         
 
         svg.selectAll(".chord")            
             .on("click", function (evt, d) {
-                selectedRegion = names[d.index]
+                region = names[d.index]
                 
                 // print selected criteria on console
-                console.log(selectedRegion,selectedYear,selectedValues)
+                console.log(region,year,values)
                 
                 // remove current graphics
                 d3.selectAll("g")
@@ -425,16 +284,17 @@ getData().then((data)=>{
                     .remove()
                 
                 // print selected region on screen
-                d3.selectAll("#activeData")
-                    .text("region: "+selectedRegion+ " | year: "+selectedYear +"| value: "+selectedValues)
+                
+                
+                d3.selectAll("table").remove()
                 
                 // draw new chart 
-                draw(selectedYear,selectedRegion,selectedValues)
+                draw(year,region,values)
             });   
         d3.selectAll("#selectYear")
             .on("change", function(d) {
                 // Get selected value
-                selectedYear = d3.select(this).property("value")
+                year = d3.select(this).property("value")
 
 
                 // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
@@ -445,14 +305,15 @@ getData().then((data)=>{
                     .duration(1500)
                     .style('opacity', 0)
                     .remove();
-
-                draw(selectedYear,selectedRegion,selectedValues)
                 
+                d3.selectAll("table").remove()
+
+                draw(year,region,values)
             })        
         d3.selectAll("#selectValues")
             .on("change", function(d) {
                 // Get selected value
-                selectedValues = d3.select(this).property("value")
+                values = d3.select(this).property("value")
 
 
                 // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
@@ -463,15 +324,15 @@ getData().then((data)=>{
                     .duration(1500)
                     .style('opacity', 0)
                     .remove();
+                
+                d3.selectAll("table").remove()
 
-                draw(selectedYear,selectedRegion,selectedValues)    
+                draw(year,region,values)
             })
-        let table = aq.from(groupedValues).toHTML()
-        d3.selectAll("#table")
+        d3.selectAll("#activeData")
+        .text("region: "+region+ " | year: "+year +"| value: "+values)
         
-        // console.log(aq.from(groupedValues).print())
-        
-        }   
+    }
 
         
         
@@ -480,7 +341,7 @@ getData().then((data)=>{
         
         
         // Run initial chart
-        draw(allYears[0])
+        
         
     });
     // })
