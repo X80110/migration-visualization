@@ -259,11 +259,7 @@ getData().then((data)=>{
                 .style("opacity", 1);
             })
         
-        /* d3.select('body')
-            .selectAll('#activeData')
-            .text("no region selected"); */
-        // Interaction
-        
+  
 
         svg.selectAll(".chord")            
             .on("click", function (evt, d) {
@@ -325,8 +321,12 @@ getData().then((data)=>{
 
                 draw(year,region,values)
             })
+        console.log(region)
+        let activeRegion = selectedRegion === region ? 'No region selected' : region
         d3.selectAll("#activeData")
-        .text("region: "+region+ " | year: "+year +"| value: "+values)
+            .html("<br><strong>Region:</strong>  "+activeRegion+"<br>"+
+                   "<strong>Year:</strong> "+year+"<br>"+
+                   "<strong>Value:</strong> "+values)
         
     }
 
