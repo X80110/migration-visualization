@@ -20,22 +20,22 @@ var height = width;
 const textId = "O-text-1"; 
 
 // Define
-var innerRadius = Math.min(width, height) *0.5-30;
-var outerRadius = innerRadius + 13;
+var innerRadius = Math.min(width, height) *0.5-25;
+var outerRadius = innerRadius + 10;
 const svg = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
 // Standard chord settings    
 var chord = d3.chordDirected()
-    // .padAngle(0 / innerRadius)
+    .padAngle(1 / innerRadius)
     .sortSubgroups(d3.descending)
     .sortChords(d3.descending);
 var arc = d3.arc() 
     .innerRadius(innerRadius)
     .outerRadius(outerRadius);
 var ribbon = d3.ribbonArrow()
-    .radius(innerRadius - 7)
+    .radius(innerRadius - 6)
     .padAngle(1 / innerRadius);
 var formatValue = x => `${x.toFixed(0)}`;
 
@@ -212,7 +212,7 @@ getData().then((data)=>{
         
         // Add outter arcs for each region and its titles
         arcs = svg.append("g")
-            .attr("font-family", "sans-serif")
+            .attr("font-family", "Proxima+Nova")
             .attr("font-size", 10)
             .selectAll("g")
             .data(chord(data).groups)
@@ -227,10 +227,10 @@ getData().then((data)=>{
             // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
             .call(g => g.append("text")
             .attr("dy", -3)
-            .attr("dx", 17)
+            // .attr("dx", 17)
             .append("textPath")
             // .attr("startOffset", d => d.startAngle/2 * outerRadius 
-            .attr("startOffset", d=> d.startAngle*outerRadius)
+            .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
             .style("text-anchor","middle")
             .attr("xlink:href", "#"+textId) 
             .text(d => names[d.index]))
@@ -250,7 +250,7 @@ getData().then((data)=>{
                     .style("opacity", 0.2);
 
                 d3.select(this)
-                    .call(d=> d3.select(d))
+
                     .transition()
                     .style("opacity", 1)
                 })
