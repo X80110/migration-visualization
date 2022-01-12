@@ -11,6 +11,7 @@
 		font-family: 'Proxima Nova', 'Open Sans', sans-serif;
 		font-size: 62.5%;
 		font-weight: 400;
+		background-color: #daf1f8;
 	}
 	/*
 	a {
@@ -131,16 +132,17 @@
 		fill: #000 !important;
 	}
 
-    .chart-title {
+    /* .chart-title {
             width: 98%;
             line-height: 100px;
             margin: 0 auto;
-            /* color: #ccc; */
-    }		
+            color: #ccc;
+    }		 */
 	.grid-container {
 		width: 100%;
+		height: 100%;
 		display: grid;
-		grid-template-columns: minmax(100px, 1fr) 150px 250px;
+		grid-template-columns: minmax(100px, 1fr) 5fr 3fr;
 		grid-template-rows: [row1] 47% [row2] 47%;
 		grid-gap: 5px;
 		
@@ -158,11 +160,14 @@
 	.main {
 		grid-column-start: 1;
 		grid-column-end: 3;
+
+		border-radius: 6px;
 		}
 	.side {
+
 		grid-column: 3 ;
 		grid-row: 1 / 3;
-		padding: 25px;
+		/* padding: 25px; */
 		border-radius: 6px;
 
 	}

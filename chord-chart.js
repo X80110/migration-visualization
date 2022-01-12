@@ -1,11 +1,12 @@
 // TODO JAN 12 2022
-    // - gender data
-    // - label orientation
-        // - country
-        // - south pole
-    // - unify interaction
-    // -
-    // - 
+// !!  - gender data
+//      - label orientation
+//           - country
+//           - south pole
+//      - unify filtering
+//      - flow map
+//       - tweens and transitions
+
 
 // MAIN SETTINGS AND HELPERS
 // Canvas
@@ -401,7 +402,7 @@ getData().then((data)=>{
         
         const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
               .mode('hsl').colors(10)
-              .map(color => chroma(color).saturate(0.1));
+              .map(color => chroma(color).saturate(0.01));
   
         const color = d3.scaleOrdinal(names, colorScale)
         // let color = d3.scaleOrdinal(
@@ -443,6 +444,7 @@ getData().then((data)=>{
             .attr("d", d3.sankeyLinkHorizontal())
             .attr("stroke", d => color(d.names[0]))
             .attr("stroke-width", d => d.width)
+            .attr("stroke-opacity", 0.7)
             .style("mix-blend-mode", "multiply")
             .append("title")
             .text(d => `${d.names.join(" → ")}\n${d.value.toLocaleString()}`);
