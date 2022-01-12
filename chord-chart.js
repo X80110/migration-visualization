@@ -1,4 +1,11 @@
-
+// TODO JAN 12 2022
+    // - gender data
+    // - label orientation
+        // - country
+        // - south pole
+    // - unify interaction
+    // -
+    // - 
 
 // MAIN SETTINGS AND HELPERS
 // Canvas
