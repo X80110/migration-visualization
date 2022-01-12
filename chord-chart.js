@@ -4,8 +4,9 @@
 //           - country
 //           - south pole
 //      - unify filtering
+//      - tooltips
 //      - flow map
-//       - tweens and transitions
+//      - tweens and transitions
 
 
 // MAIN SETTINGS AND HELPERS
@@ -389,9 +390,9 @@ getData().then((data)=>{
                 draw(year,region,values)
             })
         // print last active filters
-        let activeRegion = selectedRegion === region ? '<span style="color: grey">No region selected</span>' : region
+        let activeRegion = selectedRegion === region ? '<span style="color: grey">Non selected</span>' : region
         d3.selectAll("#activeData")
-            .html("<br><strong>Region:</strong>  "+activeRegion+"<br>"+
+            .html("<br><strong>Last region selected:</strong>  "+activeRegion+"<br>"+
                    "<strong>Year:</strong> "+year+"<br>"+
                    "<strong>Value:</strong> "+values)
     }
@@ -437,10 +438,10 @@ getData().then((data)=>{
 
         svg.append("g")
             .attr("fill", "none")
-
             .selectAll("g")
             .data(links)
             .join("path")
+            .attr("class","chord")
             .attr("d", d3.sankeyLinkHorizontal())
             .attr("stroke", d => color(d.names[0]))
             .attr("stroke-width", d => d.width)
@@ -463,7 +464,24 @@ getData().then((data)=>{
             .attr("fill-opacity", 0.7)
             .text(d => ` ${d.value.toLocaleString()}`);
 
+        svg.selectAll(".path-item, .chord")
+            .on("mouseover", function (evt, d) {
+                svg.selectAll(".path-item, .chord")
+                    .transition()
+                    .style("opacity", 0.2);
+
+                d3.select(this)
+                    .transition()
+                    .style("opacity", 1)
+                })       
+
+            .on("mouseout", function (evt, d) {
+                svg.selectAll(".path-item, .chord")
+                    .transition()
+                    .style("opacity", 1);
+                })  
         return svg.node();
+        
             
     }
     drawSankey(selectedYear,selectedRegion,selectedValues)
