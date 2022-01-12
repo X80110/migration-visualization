@@ -170,19 +170,14 @@ getData().then((data)=>{
                 year: d.year,
         }})
         selectedData = selectedData.filter(d=> d.target !=='none' && d.source !== 'none' && d.value > 100)
+        
         let groupedValues = aq.from(selectedData)
             .select('value','year','source','target')
             .groupby('source','target','year')
             .rollup( {value: d => op.sum(d.value)})       
             .objects()
-        // aq.from(groupedValues).print()
-        
-        // get labels
-        let names = Array.from(new Set(groupedValues.flatMap(d => [d.source, d.target])))
-        
-        // create object {name: value} for each label
-        // let nodes = names.map(d=>{return{name: d}})
 
+        // create graph structure for sankey
         let graph = () => {
             let keys = ["source", "target"]
             let index = -1;
@@ -226,9 +221,6 @@ getData().then((data)=>{
           
             return {nodes, links};
           }
-        
-        // create sankey data structure 
-        // let sankeyData = { nodes: nodes, links: groupedValues }
 
         let sankeyData = graph(groupedValues)
         
