@@ -1,16 +1,3 @@
-// TODO
-    // - Care for labels alignment (countries radial, regions arc)
-    // - 
-
-// IMOPORTED FROM APP.JS
-    // // arc path generator
-    // var textPathArc = d3.svg.arc()
-    //     .innerRadius(config.outerRadius + 10)
-    //     .outerRadius(config.outerRadius + 10);
-    // var textPathArc2 = d3.svg.arc()
-    //     .innerRadius(config.outerRadius + 18)
-    //     .outerRadius(config.outerRadius + 18);
-
 
 
 // MAIN SETTINGS AND HELPERS
@@ -22,9 +9,11 @@ const textId = "O-text-1";
 // Define
 var innerRadius = Math.min(width, height) *0.5-25;
 var outerRadius = innerRadius + 10;
-const svg = d3.select("#chart")
+const chordDiagram = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
+
+
 
 // Standard chord settings    
 var chord = d3.chordDirected()
@@ -69,10 +58,9 @@ function getMatrix(names,data) {
 
 const getData = async () => {
     try {
-        // this parse may fail
         const raw_data = await d3.csv("gf_od.csv");
         const metadata = await d3.csv("data/country-metadata-flags.csv");
-        // example json data structure
+        // output example json data structure in console
         //   const ref = await d3.json("json/migrations.json");
         //   console.log("JSON",ref)
         
@@ -115,7 +103,6 @@ const getData = async () => {
                     })
             }
         }) 
-
         data = {raw_data:result/* ,labels */}
         return  data
     }
@@ -135,13 +122,13 @@ getData().then((data)=>{
     let selectedValues = 'mig_rate'
     var raw_data = data.raw_data.flat()
     
-    // RUN SELECTORS
+    // CREATE SELECTORS
     d3.select("#selectYear")
         .selectAll('myOptions')
         .data(allYears)
         .enter()
         .append('option')
-        .text(d=>{ return d; })    // text showed in the menu
+        .text(d=>{ return d; })    // text showed in the menu dropdown
         .attr("value",d=> { return d; }) 
     
     d3.select("#selectValues")
@@ -149,17 +136,18 @@ getData().then((data)=>{
         .data(allVars)
         .enter()
         .append('option')
-        .text(d=>{ return d; })    // text showed in the menu
+        .text(d=>{ return d; })    // text showed in the menu dropdown
         .attr("value",d=> { return d; }) 
    
     
-    // CHART
+    // DRAW CHART
     draw(selectedYear,selectedRegion,selectedValues)    
     
-    //// CHART RENDERING
-    function draw(year,region,values){
+    // PREPARE DATA GIVEN SELECTED VALUES
+    function prepareData(year,region,values) {
+        // filter selected yeaar and values by regions (or country if a region is clicked)
         let selectedData = aq.from(raw_data)
-            .orderby(d=>d.source[2])
+            .orderby(d=>d.source[2] )
             .objects()
             .filter(d=> d.year === year)
             .map(d=> { 
@@ -173,19 +161,89 @@ getData().then((data)=>{
                 year: d.year,
         }})
         selectedData = selectedData.filter(d=> d.target !=='none' && d.source !== 'none' && d.value > 100)
-        const groupedValues = aq.from(selectedData)
+        let groupedValues = aq.from(selectedData)
             .select('value','year','source','target')
             .groupby('source','target','year')
             .rollup( {value: d => op.sum(d.value)})       
             .objects()
-        aq.from(groupedValues).print()
-       
+        // aq.from(groupedValues).print()
+        
+        // get labels
+        let names = Array.from(new Set(groupedValues.flatMap(d => [d.source, d.target])))
+        
+        // create object {name: value} for each label
+        let nodes = names.map(d=>{return{name: d}})
+
+        let graph = () => {
+            let keys = ["source", "target"]
+            let index = -1;
+            const nodes = [];
+            const nodeByKey = new Map;
+            const indexByKey = new Map;
+            const links = [];
+          
+            for (const k of keys) {
+              for (const d of groupedValues) {
+                const key = JSON.stringify([k, d[k]]);
+                if (nodeByKey.has(key)) continue;
+                const node = {name: d[k]};
+                nodes.push(node);
+                nodeByKey.set(key, node);
+                indexByKey.set(key, ++index);
+              }
+            }
+          
+            for (let i = 1; i < keys.length; ++i) {
+              const a = keys[i - 1];
+              const b = keys[i];
+              const prefix = keys.slice(0, i + 1);
+              const linkByKey = new Map;
+              for (const d of groupedValues) {
+                const names = prefix.map(k => d[k]);
+                const key = JSON.stringify(names);
+                const value = d.value || 1;
+                let link = linkByKey.get(key);
+                if (link) { link.value += value; continue; }
+                link = {
+                  source: indexByKey.get(JSON.stringify([a, d[a]])),
+                  target: indexByKey.get(JSON.stringify([b, d[b]])),
+                  names,
+                  value
+                };
+                links.push(link);
+                linkByKey.set(key, link);
+              }
+            }
+          
+            return {nodes, links};
+          }
+        
+        // create sankey data structure 
+        // let sankeyData = { nodes: nodes, links: groupedValues }
+
+        let sankeyData = graph(groupedValues)
+        
+        return {chord: groupedValues, sankey: sankeyData}
+    }
+
+    
+    
+
+    //// CHART RENDERING
+    function draw(year,region,values){
+        
+        let groupedValues = prepareData(year,region,values).chord
+        // console.log(groupedValues)
+        // console.log(prepareData(year,region,values).sankey)
+        // prepare data for matrix
         let columns =  {0: "source",1:"target",2:"value"}
         groupedValues['columns'] = columns
         names = Array.from(new Set(groupedValues.flatMap(d => [d.source, d.target])));
         // console.log("NAMES!",names)
         const data = getMatrix(names,groupedValues.filter(d=> d.year === year))    
         // console.log(data)
+
+        // output final data to html table so we can debug values easily 
         let table = aq.from(groupedValues).toHTML()
 
         // Visualization settings
@@ -193,13 +251,13 @@ getData().then((data)=>{
             names,
             ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
 
-        svg.append("path")
+            chordDiagram.append("path")
             .attr("id", textId)
             .attr("fill", "none")
             .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle:   2 * Math.PI  }));
 
         // Add ribbons for each chord and its tooltip content <g> <path> <title>
-        chords = svg.append("g")
+        chords = chordDiagram.append("g")
             .attr("fill-opacity", 0.75)
             .selectAll("g")
             .data(chord(data))
@@ -212,7 +270,7 @@ getData().then((data)=>{
             .text(d => `${names[d.source.index]} inflow ${names[d.target.index]} ${formatValue(d.source.value)}`);
         
         // Add outter arcs for each region and its titles
-        arcs = svg.append("g")
+        arcs = chordDiagram.append("g")
             .attr("font-family", "Proxima+Nova")
             .attr("font-size", 10)
             .selectAll("g")
@@ -227,74 +285,66 @@ getData().then((data)=>{
             .attr("stroke-width", 3))
             // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
             .call(g => g.append("text")
-            .attr("dy", -3)
-            // .attr("dx", 17)
-            .append("textPath")
-            // .attr("startOffset", d => d.startAngle/2 * outerRadius 
-            .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
-            .style("text-anchor","middle")
-            .attr("xlink:href", "#"+textId) 
-            .text(d => names[d.index]))
+                .attr("dy", -3)
+                // .attr("dx", 17)
+                .append("textPath")
+                // .attr("startOffset", d => d.startAngle/2 * outerRadius 
+                .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
+                .style("text-anchor","middle")
+                .attr("xlink:href", "#"+textId) 
+                .text(d => names[d.index]))
             // On each <g> we set a <title> for the region outflow
             .call(g => g.append("title")
-            .text(d => {
-                return `${names[d.index]} outflow ${formatValue(d3.sum(data[d.index]))} people and inflow ${formatValue(d3.sum(data, row => row[d.index]))} people`
+                .text(d => {
+                    return `${names[d.index]} outflow ${formatValue(d3.sum(data[d.index]))} people and inflow ${formatValue(d3.sum(data, row => row[d.index]))} people`
             }))
 
         d3.select("#table").append("table").html(table)
-
-    
-        svg.selectAll(".path-item, .chord")
+        
+        // INTERACTIONS
+        chordDiagram.selectAll(".path-item, .chord")
             .on("mouseover", function (evt, d) {
-                svg.selectAll(".path-item, .chord")
+                chordDiagram.selectAll(".path-item, .chord")
                     .transition()
                     .style("opacity", 0.2);
 
                 d3.select(this)
-
                     .transition()
                     .style("opacity", 1)
-                })
-                
-                         
+                })       
 
             .on("mouseout", function (evt, d) {
-                svg.selectAll(".path-item, .chord")
+                chordDiagram.selectAll(".path-item, .chord")
                     .transition()
                     .style("opacity", 1);
-                })
-            
-  
+                })  
 
-        svg.selectAll(".chord")            
+        chordDiagram.selectAll(".chord")            
             .on("click", function (evt, d) {
                 region = names[d.index]
                 
                 // print selected criteria on console
                 console.log(region,year,values)
                 
-                // remove current graphics
+                // remove current content
                 d3.selectAll("g")
                     .transition()
                     .duration(1500)
                     .style('opacity',0)
                     .remove()
                 
-                // print selected region on screen
-                
-                
                 d3.selectAll("table").remove()
+                // d3.selectAll("#sankey").remove()
                 
                 // draw new chart 
                 draw(year,region,values)
+                // drawSankey(year,region,values)
             });   
 
         d3.selectAll("#selectYear")
             .on("change", function(d) {
-                // Get selected value
+                // Get selected year
                 year = d3.select(this).property("value")
-
-
                 // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                 // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                 // Remove previous
@@ -312,8 +362,6 @@ getData().then((data)=>{
             .on("change", function(d) {
                 // Get selected value
                 values = d3.select(this).property("value")
-
-
                 // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                 // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                 // Remove previous
@@ -327,27 +375,78 @@ getData().then((data)=>{
 
                 draw(year,region,values)
             })
-        console.log(region)
-    
+        // print last active filters
         let activeRegion = selectedRegion === region ? '<span style="color: grey">No region selected</span>' : region
         d3.selectAll("#activeData")
             .html("<br><strong>Region:</strong>  "+activeRegion+"<br>"+
                    "<strong>Year:</strong> "+year+"<br>"+
                    "<strong>Value:</strong> "+values)
-
-        
     }
+    //// SANKEY CHART 
+    function drawSankey(year,region,values){
+        let graph = prepareData(year,region,values).sankey
+        let names = Array.from(new Set(prepareData(year,region,values).chord.flatMap(d => [d.source, d.target])));
+        let color = d3.scaleOrdinal(
+            names,
+            ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
+        let sankey = d3.sankey()
+            .nodeSort(null)
+            .linkSort(null)
+            .nodeWidth(4)
+            .nodePadding(20)
+            .extent([[0, 5], [width, height - 5]])
+        const svg = d3.select("#sankey")
+            .append("svg")
+            .attr("viewBox", [0, 0, width, height]);
 
-        
-        
-        // Filter input chart data
-        
-        
-        
-        // Run initial chart
-        
-        
-    });
+        const {nodes, links} = sankey({
+            nodes: graph.nodes.map(d => Object.assign({}, d)),
+            links: graph.links.map(d => Object.assign({}, d))
+        });
+
+        svg.append("g")
+            .selectAll("rect")
+            .data(nodes)
+            .join("rect")
+            .attr("x", d => d.x0)
+            .attr("y", d => d.y0)
+            .attr("height", d => d.y1 - d.y0)
+            .attr("width", d => d.x1 - d.x0)
+            .attr("fill", d => color(d.name))
+            .append("title")
+            .text(d => `${d.name}\n${d.value.toLocaleString()}`);
+
+        svg.append("g")
+            .attr("fill", "none")
+            .selectAll("g")
+            .data(links)
+            .join("path")
+            .attr("d", d3.sankeyLinkHorizontal())
+            .attr("stroke", d => color(d.names[0]))
+            .attr("stroke-width", d => d.width)
+            .style("mix-blend-mode", "multiply")
+            .append("title")
+            .text(d => `${d.names.join(" → ")}\n${d.value.toLocaleString()}`);
+
+        svg.append("g")
+            .style("font", "10px sans-serif")
+            .selectAll("text")
+            .data(nodes)
+            .join("text")
+            .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+            .attr("y", d => (d.y1 + d.y0) / 2)
+            .attr("dy", "0.35em")
+            .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+            .text(d => d.name)
+            .append("tspan")
+            .attr("fill-opacity", 0.7)
+            .text(d => ` ${d.value.toLocaleString()}`);
+
+        return svg.node();
+            
+    }
+    drawSankey(selectedYear,selectedRegion,selectedValues)
+});
     // })
     
     /* .tween('circumference', function(d) {

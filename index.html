@@ -158,6 +158,25 @@
 		grid-column-start: 1;
 		grid-column-end: 3;
 		}
+	.node rect {
+		fill-opacity: .9;
+		shape-rendering: crispEdges;
+		}
+
+	.node text {
+		pointer-events: none;
+		text-shadow: 0 1px 0 #fff;
+		}
+
+	.link {
+		fill: none;
+		stroke: #000;
+		stroke-opacity: .2;
+		}
+
+	.link:hover {
+		stroke-opacity: .5;
+		}
   </style>
 
   <title>Global international migration</title>
@@ -182,12 +201,13 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 	<div id="hoverData"></div>
 	<div class="grid-container">
 		<div id="chart" class="main"></div>
+		<div id="sankey" class="main"></div>
 		<div id="table" ></div>
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script>
 
 	<script src="https://d3js.org/d3.v7.min.js"></script>
-
+	<script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 	<script src="chord-chart.js"></script>
 	<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script> -->
 	<!-- <script>window.jQuery || document.write('<script src="js/jquery2.0.3.min.js"><\/script>')</script> -->
