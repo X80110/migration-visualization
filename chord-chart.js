@@ -2,7 +2,7 @@
 
 // MAIN SETTINGS AND HELPERS
 // Canvas
-var width = 600;
+var width = 550;
 var height = width;
 const textId = "O-text-1"; 
 
@@ -172,7 +172,7 @@ getData().then((data)=>{
         let names = Array.from(new Set(groupedValues.flatMap(d => [d.source, d.target])))
         
         // create object {name: value} for each label
-        let nodes = names.map(d=>{return{name: d}})
+        // let nodes = names.map(d=>{return{name: d}})
 
         let graph = () => {
             let keys = ["source", "target"]
@@ -233,7 +233,7 @@ getData().then((data)=>{
     function draw(year,region,values){
         
         let groupedValues = prepareData(year,region,values).chord
-        // console.log(groupedValues)
+        // console.lo#00bcffg(groupedValues)
         // console.log(prepareData(year,region,values).sankey)
         // prepare data for matrix
         let columns =  {0: "source",1:"target",2:"value"}
@@ -247,11 +247,16 @@ getData().then((data)=>{
         let table = aq.from(groupedValues).toHTML()
 
         // Visualization settings
-        var color = d3.scaleOrdinal(
-            names,
-            ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
+        const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
+              .mode('hsl').colors(10)
+              .map(color => chroma(color).saturate(0.1));
+  
+        const color = d3.scaleOrdinal(names, colorScale)
+        // var color = d3.scaleOrdinal(
+        //     names,
+        //     ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
 
-            chordDiagram.append("path")
+        chordDiagram.append("path")
             .attr("id", textId)
             .attr("fill", "none")
             .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle:   2 * Math.PI  }));
@@ -386,9 +391,15 @@ getData().then((data)=>{
     function drawSankey(year,region,values){
         let graph = prepareData(year,region,values).sankey
         let names = Array.from(new Set(prepareData(year,region,values).chord.flatMap(d => [d.source, d.target])));
-        let color = d3.scaleOrdinal(
-            names,
-            ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
+        
+        const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
+              .mode('hsl').colors(10)
+              .map(color => chroma(color).saturate(0.1));
+  
+        const color = d3.scaleOrdinal(names, colorScale)
+        // let color = d3.scaleOrdinal(
+        //     names,
+        //     ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
         let sankey = d3.sankey()
             .nodeSort(null)
             .linkSort(null)
@@ -418,6 +429,7 @@ getData().then((data)=>{
 
         svg.append("g")
             .attr("fill", "none")
+
             .selectAll("g")
             .data(links)
             .join("path")
@@ -429,7 +441,7 @@ getData().then((data)=>{
             .text(d => `${d.names.join(" → ")}\n${d.value.toLocaleString()}`);
 
         svg.append("g")
-            .style("font", "10px sans-serif")
+            .style("font", "18px")
             .selectAll("text")
             .data(nodes)
             .join("text")
