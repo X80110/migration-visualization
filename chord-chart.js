@@ -35,7 +35,7 @@ var arc = d3.arc()
 var ribbon = d3.ribbonArrow()
     .radius(innerRadius - 6)
     .padAngle(1 / innerRadius);
-var formatValue = x => `${x.toFixed(0)}`;
+var formatValue = x => `${x.toFixed(0).toLocaleString()}`;
 
 // Set a matrix of the data data to pass to the chord() function
 function getMatrix(names,data) {
@@ -67,7 +67,7 @@ function getMatrix(names,data) {
 
 const getData = async () => {
     try {
-        const raw_data = await d3.csv("gf_od.csv");
+        const raw_data = await d3.csv("data/bilat_mig_sex.csv");
         const metadata = await d3.csv("data/country-metadata-flags.csv");
         // output example json data structure in console
         //   const ref = await d3.json("json/migrations.json");
@@ -80,6 +80,7 @@ const getData = async () => {
           return {
               [d.origin_iso]:  d.origin_iso,
               iso :  d.origin_iso,
+              sex :  d.sex,
               country: flag + " " + country ,
               region: region
           }
@@ -102,6 +103,7 @@ const getData = async () => {
                 source :[ origin.iso, origin.country , origin.region],
                 target : [ destination.iso, destination.country , destination.region],
                 year : d.year0,
+                sex : d.sex,
                 values : ({
                     mig_rate: +d.mig_rate,
                     da_min_closed: +d.da_min_closed,
@@ -125,12 +127,14 @@ const getData = async () => {
 getData().then((data)=>{ 
     const allYears = [...new Set(data.raw_data.map((d) => d.year))].reverse();
     const allVars = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
+    const allGenders = ['male', 'female'].reverse()
     
     let selectedYear = allYears[0] 
     let selectedRegion = []
     let selectedValues = 'mig_rate'
+    let selectedGender = 'female'
     var raw_data = data.raw_data.flat()
-    
+    // console.log("RAAWW!!",raw_data)
     // CREATE SELECTORS
     d3.select("#selectYear")
         .selectAll('myOptions')
@@ -147,18 +151,28 @@ getData().then((data)=>{
         .append('option')
         .text(d=>{ return d; })    // text showed in the menu dropdown
         .attr("value",d=> { return d; }) 
+
+    d3.select("#selectGender")
+        .selectAll('myOptions')
+        .data(allGenders)
+        .enter()
+        .append('option')
+        .text(d=>{ return d; })    // text showed in the menu dropdown
+        .attr("value",d=> { return d; }) 
    
     
     // DRAW CHART
-    draw(selectedYear,selectedRegion,selectedValues)    
+    draw(selectedYear,selectedRegion,selectedValues,selectedGender)    
     
     // PREPARE DATA GIVEN SELECTED VALUES
-    function prepareData(year,region,values) {
+    function prepareData(year,region,values,sex) {
         // filter selected yeaar and values by regions (or country if a region is clicked)
+
         let selectedData = aq.from(raw_data)
             .orderby(d=>d.source[2] )
             .objects()
-            .filter(d=> d.year === year)
+            .filter(d=> d.year === year && d.sex === sex)
+            
             .map(d=> { 
             // d.source ---> [0] isocodes // [1] countrylabels // [2] region 
             return{
@@ -168,14 +182,22 @@ getData().then((data)=>{
                 target: d.target[2] === region ? d.target[1] : d.target[2],
                 value: +d.values[values],
                 year: d.year,
+                sex: d.sex,
         }})
+
+        // slice low values
         selectedData = selectedData.filter(d=> d.target !=='none' && d.source !== 'none' && d.value > 100)
         
+        
+        // rollup by source <-> target
+        // aq.from(selectedData).print()
         let groupedValues = aq.from(selectedData)
-            .select('value','year','source','target')
-            .groupby('source','target','year')
-            .rollup( {value: d => op.sum(d.value)})       
+            .select('value','year','source','target','sex')
+            .groupby('source','target','year','sex')
+            .rollup( {value: d => op.sum(d.value)})
+            .derive( {value: d => op.round(d.value) })       
             .objects()
+        // console.log(groupedValues)
 
         // create graph structure for sankey
         let graph = () => {
@@ -220,7 +242,7 @@ getData().then((data)=>{
             }
           
             return {nodes, links};
-          }
+        }
 
         let sankeyData = graph(groupedValues)
         
@@ -231,9 +253,9 @@ getData().then((data)=>{
     
 
     //// CHART RENDERING
-    function draw(year,region,values){
-        
-        let groupedValues = prepareData(year,region,values).chord
+    function draw(year,region,values,sex){
+
+        let groupedValues = prepareData(year,region,values,sex).chord
         // console.lo#00bcffg(groupedValues)
         // console.log(prepareData(year,region,values).sankey)
         // prepare data for matrix
@@ -245,7 +267,9 @@ getData().then((data)=>{
         // console.log(data)
 
         // output final data to html table so we can debug values easily 
-        let table = aq.from(groupedValues).toHTML()
+        let table = aq.from(groupedValues)
+            .derive({value: aq.escape(d=> d.value.toLocaleString())})
+            .toHTML()
 
         // Visualization settings
         const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
@@ -284,7 +308,7 @@ getData().then((data)=>{
             .join("g")
             .attr("class","chord")
             .call(g => g.append("path")
-            .attr("d", arc)
+            .attr("d", arc) 
             .attr("fill", d => color(names[d.index]))
             // On each <g> we set a <path> for the arc
             .attr("stroke", "#fff")
@@ -310,17 +334,17 @@ getData().then((data)=>{
         // INTERACTIONS
         chordDiagram.selectAll(".path-item, .chord")
             .on("mouseover", function (evt, d) {
-                chordDiagram.selectAll(".path-item, .chord")
+                chordDiagram.selectAll(".path-item")
                     .transition()
                     .style("opacity", 0.2);
-
+                
                 d3.select(this)
                     .transition()
                     .style("opacity", 1)
                 })       
 
             .on("mouseout", function (evt, d) {
-                chordDiagram.selectAll(".path-item, .chord")
+                chordDiagram.selectAll(".path-item")
                     .transition()
                     .style("opacity", 1);
                 })  
@@ -338,13 +362,14 @@ getData().then((data)=>{
                     .duration(1500)
                     .style('opacity',0)
                     .remove()
-                
+
                 d3.selectAll("table").remove()
-                // d3.selectAll("#sankey").remove()
+                d3.selectAll("#sankey").remove()
+                
                 
                 // draw new chart 
-                draw(year,region,values)
-                // drawSankey(year,region,values)
+                draw(year,region,values,sex)
+                drawSankey(year,region,values,sex)
             });   
 
         d3.selectAll("#selectYear")
@@ -360,9 +385,11 @@ getData().then((data)=>{
                     .style('opacity', 0)
                     .remove();
                 
+                
                 d3.selectAll("table").remove()
 
-                draw(year,region,values)
+                draw(year,region,values,sex)
+                drawSankey(year,region,values,sex)
             })        
         d3.selectAll("#selectValues")
             .on("change", function(d) {
@@ -379,19 +406,43 @@ getData().then((data)=>{
                 
                 d3.selectAll("table").remove()
 
-                draw(year,region,values)
+                draw(year,region,values,sex)
+                drawSankey(year,region,values,sex)
+            })
+        d3.selectAll("#selectGender")
+            .on("change", function(d) {
+                // Get selected value
+                sex = d3.select(this).property("value")
+                // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
+                // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
+                // Remove previous
+                d3.selectAll("g")
+                    .transition()
+                    .duration(1500)
+                    .style('opacity', 0)
+                    .remove();
+                
+                d3.selectAll("table").remove()
+
+                draw(year,region,values,sex)
+                drawSankey(year,region,values,sex)
             })
         // print last active filters
         let activeRegion = selectedRegion === region ? '<span style="color: grey">Non selected</span>' : region
         d3.selectAll("#activeData")
             .html("<br><strong>Last region selected:</strong>  "+activeRegion+"<br>"+
                    "<strong>Year:</strong> "+year+"<br>"+
+                   "<strong>Gender:</strong> "+sex+"<br>"+
                    "<strong>Value:</strong> "+values)
     }
+
+
+
+    
     //// SANKEY CHART 
-    function drawSankey(year,region,values){
-        let graph = prepareData(year,region,values).sankey
-        let names = Array.from(new Set(prepareData(year,region,values).chord.flatMap(d => [d.source, d.target])));
+    function drawSankey(year,region,values,sex){
+        let graph = prepareData(year,region,values,sex).sankey
+        let names = Array.from(new Set(prepareData(year,region,values,sex).chord.flatMap(d => [d.source, d.target])));
         
         const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
               .mode('hsl').colors(10)
@@ -456,6 +507,8 @@ getData().then((data)=>{
             .attr("fill-opacity", 0.7)
             .text(d => ` ${d.value.toLocaleString()}`);
 
+        
+    
         svg.selectAll(".path-item, .chord")
             .on("mouseover", function (evt, d) {
                 svg.selectAll(".path-item, .chord")
@@ -476,7 +529,7 @@ getData().then((data)=>{
         
             
     }
-    drawSankey(selectedYear,selectedRegion,selectedValues)
+    drawSankey(selectedYear,selectedRegion,selectedValues,selectedGender)
 });
     // })
     

@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <style>
-	@import url(//fonts.googleapis.com/css?family=Open+Sans:400,600,700,300);
-	@import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300);
+	@import url(//fonts.googleapis.com/css?family=Roboto:400,600,700,300);
+	/* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
 	
 	
 	body {
-		font-family: 'Proxima Nova', 'Open Sans', sans-serif;
+		font-family:  'Roboto', sans-serif;
 		font-size: 62.5%;
 		font-weight: 400;
 		background-color: #daf1f8;
@@ -141,12 +141,9 @@
 	.grid-container {
 
 		display: grid;
-
 		gap: 10px;
-
 		/* grid-auto-columns: 300px 100px; */
-
-		grid-template-columns: [col1] 55% [col2] 20%;
+		grid-template-columns: [col1] 70% [col2] 29%;
 
 		/* display: grid;
 		grid-template-rows: [row1] 47% [row2] 47%;
@@ -168,14 +165,25 @@
 		border-radius: 6px;
 	}
 	
-	.main {
-		grid-column-start: 1;
-		grid-column-end: 3;
+	.chordGrid {
+		grid-column: 1;
+		grid-row: 1;
+		
+	}
+	.sankeyGrid {
+		grid-column: 1;
+		grid-row: 2;
+	}
+	.mapGrid {
+		grid-column: 1;
+		grid-row: 3;
+		
 	}
 	.side {
-		display:grid;
-		grid-column: 3 ;
-		grid-row: 1 / 3;
+		font-size: 75%;
+		width: fit-content;
+		grid-column: 2 ;
+		grid-row:    1 / span 3;
 		/* padding: 25px; */
 
 
@@ -203,14 +211,17 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 	<div id="activeData"></div>
 	<div id="hoverData"></div>
 	<div class="grid-container">
-		<div id="chart" class="main"></div>
-		<div id="sankey" class="main"></div>
+		<div id="chart" class="chordGrid"></div>
+		<div id="sankey" class="sankeyGrid"></div>
+		<!-- <div id="mapflows" class="mapGrid"></div> -->
 		<div id="table" class="side"></div>
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
 	<script src="https://d3js.org/d3.v7.min.js"></script>
 	<script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+	
 	<script src="chord-chart.js"></script>
 	<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script> -->
 	<!-- <script>window.jQuery || document.write('<script src="js/jquery2.0.3.min.js"><\/script>')</script> -->
