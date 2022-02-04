@@ -127,15 +127,16 @@
   } */
   	#chord-chart {
 		width: 600px;
-		height: 600px;
-		margin: 0 auto;
+		/* height: 600px; */
+		
+		
 
 	}
         
-	text {
-		/* fill: #000 !important; */
+	/* text {
+
 		transform: rotate(80)!important;
-	}
+	} */
 
     /* .chart-title {
             width: 98%;
@@ -144,9 +145,10 @@
             color: #ccc;
     }		 */
 	.grid-container {
-
+		
 		display: grid;
 		gap: 10px;
+
 		/* grid-auto-columns: 300px 100px; */
 		/* grid-template-columns: [col1] 70% [col2] 29%; */
 
@@ -160,20 +162,22 @@
 	
 	.grid-container > div {
 		justify-content: center;
+		
 		height:fit-content;
 		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.02), 0 6px 20px 0 rgba(0, 0, 0, 0.019);
 		background-color: rgba(255, 255, 255, 0.8);
-		text-align: center;
-		margin: 8px;
-		padding: 6px ;
+
+		margin: 50px;
+		
 		font-size: 12px;
 		border-radius: 6px;
+ 
 	}
 	
 	.chordGrid {
 		grid-column: 1;
 		grid-row: 1;
-		padding: 200 200 200 200
+		
 		
 	}
 	.sankeyGrid {
@@ -191,9 +195,110 @@
 		grid-column: 2 ;
 		grid-row:    1 / span 3;
 		/* padding: 25px; */
-
-
 	}
+	
+	/* .inputDiv {
+  width: 250px;
+  margin: 100px auto;
+  position: relative;
+}
+
+input[type='range'] {
+  display: block;
+  width: 250px;
+}
+
+input[type='range']:focus {
+  outline: none;
+}
+
+input[type='range'],
+input[type='range']::-webkit-slider-runnable-track,
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  background-color: #777;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #333;
+  border-radius: 50%;
+  margin-top: -9px;
+}
+
+input[type=range]::-moz-range-thumb {
+  background-color: #777;
+  width: 15px;
+  height: 15px;
+  border: 3px solid #333;
+  border-radius: 50%;
+}
+
+input[type=range]::-ms-thumb {
+  background-color: #777;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #333;
+  border-radius: 50%;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  background-color: #777;
+  height: 3px;
+}
+
+input[type=range]:focus::-webkit-slider-runnable-track {
+  outline: none;
+}
+
+input[type=range]::-moz-range-track {
+  background-color: #777;
+  height: 3px;
+}
+
+input[type=range]::-ms-track {
+  background-color: #777;
+  height: 3px;
+}
+
+input[type=range]::-ms-fill-lower {
+  background-color: HotPink
+}
+
+input[type=range]::-ms-fill-upper {
+  background-color: black;
+}  */
+input[type=radio] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+
+  border: 2px solid #999;
+  transition: 0.2s all linear;
+  margin-right: 2px;
+
+  position: relative;
+  top: 0.8em;
+}
+
+input:checked {
+  border: 6px solid black;
+}
+.subgroups label{
+	color: grey;
+	margin-right:5px;
+	
+}
+.subgroups input{
+	margin-left:20px;
+	
+}
+
   </style>
 
   <title>Global international migration</title>
@@ -212,15 +317,47 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
  	</aside> -->
  	<!-- <div id="donationInfo"></div> -->
 	 <div id="activeData"></div>
-	 <div id="hoverData"></div>
+	 
 	 <div style="text-align: center;">
-		<select id="selectYear"></select>
-		<select id="selectFlowStock"></select>
-		<select id="selectValues"></select>
-		<select id="selectGender"></select>
-	</div>
-	<div class="grid-container">
-		<div id="chart" class="chordGrid"></div>
+		
+		<div class="slider">
+			<div id="yearRange"></div>
+			<input type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+			<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
+		</div>
+		<!-- <select  id="selectYear"></select> -->
+
+		
+		<div class="radio">
+			<form>
+				  <input type="radio" id="stocks" name="stockflows" value="stocks" checked>
+				  <label for="stocks">Stocks</label>
+				  <input type="radio" id="flows" name="stockflows" value="flows">
+				  <label for="css">Flows</label><br>
+			</form><br>
+		</div>
+
+		<div class="method">
+			<label for="selectValues">Estimation method</label>
+			<select id="selectValues"></select>
+		</div><br>
+
+		<div class="subgroups">
+			<form>
+				<div class="radio">
+					<input type="radio" id="all" name="subselector" value="all" checked>
+					<label for="all">All</label>
+					<input type="radio" id="selectGender" name="subselector" value="female" >
+					<label for="selectGender">Gender</label>
+					<select id="gender"></select>
+					<input type="radio" id="selectType" name="subselector" value="onward">
+					<label for="selectType">Type</label>
+					<select id="type"></select>
+				</div>
+			</form>
+		</div>
+	<div  class="grid-container">
+		<div  id="chart" class="chordGrid"></div>
 		<!-- <div id="chart" class="chordGrid"></div> -->
 		<!-- <div id="sankey" class="sankeyGrid"></div> -->
 		<!-- <div id="mapflows" class="mapGrid"></div> -->

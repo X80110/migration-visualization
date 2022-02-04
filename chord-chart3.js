@@ -9,14 +9,26 @@
 //      - tweens and transitions
 
 
-// MAIN SETTINGS AND HELPERS
-// Canvas
+
+// YEAR SELECTOR  // -    -    -    -    -    -    -    -    -    -    -    -    - 
+let slider = document.getElementById("selectYear");
+let output = document.getElementById("yearRange");
+let sliderValue = parseInt(slider.value)+5
+output.innerHTML =slider.value+" · "+sliderValue; // Display the default slider value
+
+// Update the current slider value (each time you drag the slider handle)
+slider.oninput = function() {
+    let value = parseInt(this.value)+5
+    output.innerHTML = this.value+" · "+value;
+}
+// -    -    -    -    -    -    -    -    -    -    -    -    -    -    - 
+
 var width = 650;
 var height = width;
 const textId = "O-text-1"; 
 
 // Define
-var innerRadius = Math.min(width, height) *0.5-100;
+var innerRadius = Math.min(width, height) *0.5-70;
 var outerRadius = innerRadius + 10;
 
 const chordDiagram = d3.select("#chart")
@@ -99,67 +111,7 @@ async function getData(filename) {
     try {
         // const raw_data = await d3.json("json/mig_flows"+selectedValue+".json") 
         const raw_data = await d3.json(filename) 
-        // mtx.then( data =>{
-
-        //     matrix = data.matrix,
-        //     names = data.names,
-        //     data = data
-
-        //     semantic = matrixToTable(data)
-        //     // console.log('SEMANTIC!!',semantic)
-
         
-        // })
-        // const other = await d3.csv("data/bilat_mig_sex.csv");
-        // const raw_data = await d3.csv("data/bilat_mig_sex.csv");
-        // const metadata = await d3.csv("data/country-metadata-flags.csv");
-        // // output example json data structure in console
-        // //   const ref = await d3.json("json/migrations.json");
-        // //   console.log("JSON",ref)
-        
-        // let labels = metadata.map(d=>{ 
-        //   let flag = d.origin_flag
-        //   let country = d.origin_name
-        //   let region =  d.originregion_name
-        //   return {
-        //       [d.origin_iso]:  d.origin_iso,
-        //       iso :  d.origin_iso,
-        //       sex :  d.sex,
-        //       country: flag + " " + country ,
-        //       region: region
-        //   }
-        // })
-        // console.log(raw_data)    
-        // console.log(labels)    
-        // let result = raw_data.map(d=>{
-        //     //        Replace SUDAN ISO CODE "SUD" -> "SDN"
-        //     //                CHILE ISO CODE "CHI" -> "CHL"
-        //     //                SERBIA AND MONTENEGRO ISO CODE "" -> "SCG"
-        //     //                FINALLY SOLVED DIRECTLY IN CSV
-        //     //        
-        //     //        let origin = d.orig.replace("SUD","SDN")
-        //     //        let destination = d.dest.replace("SUD","SDN")
-        //     //
-        //     //        Equivalent Vlookup or leftjoin labels <-> iso
-        //     let origin = new Object(labels.filter(a=>a[d.orig])[0])
-        //     let destination = new Object(labels.filter(a=>a[d.dest])[0])
-        //     return{
-        //         source :[ origin.iso, origin.country , origin.region],
-        //         target : [ destination.iso, destination.country , destination.region],
-        //         year : d.year0,
-        //         sex : d.sex,
-        //         values : ({
-        //             mig_rate: +d.mig_rate,
-        //             da_min_closed: +d.da_min_closed,
-        //             da_min_open: +d.da_min_open,
-        //             da_pb_closed: +d.da_pb_closed,
-        //             sd_rev_neg: +d.sd_rev_neg,
-        //             sd_drop_neg: +d.sd_drop_neg
-        //             })
-        //     }
-        // }) 
-        // data = {raw_data:result/* ,labels */}
-        // return  data
         return  raw_data
     }
     catch (err) {
@@ -184,16 +136,33 @@ getMetaData().then((meta)=>{
         const allVars = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
         const allGenders = ['male', 'female'].reverse()
         
-
+        console.log(Math.max(parseInt(allYears)))
 
         // CREATE SELECTORS
-        d3.select("#selectYear")
-            .selectAll('myOptions')
-            .data(allYears)
-            .enter()
-            .append('option')
-            .text(d=>{ return d; })    // text showed in the menu dropdown
-            .attr("value",d=> { return d; }) 
+        // YEAR SELECTOR  // -    -    -    -    -    -    -    -    -    -    -    -    - 
+        let slider = document.getElementById("selectYear");
+        let output = document.getElementById("yearRange");
+        let sliderValue = parseInt(slider.value)+5
+        output.innerHTML =slider.value+"  –  "+sliderValue; // Display the default slider value
+
+        // Update the current slider value (each time you drag the slider handle)
+        slider.oninput = function() {
+            let value = parseInt(this.value)+5
+            output.innerHTML = this.value+"  –  "+value;
+        }
+        // output.setAttribute("min", Math.min(parseInt(allYears)));
+        // output.setAttribute("max", Math.max(parseInt(allYears)));
+            // d3.select("#selectYear")
+            //     .selectAll('myOptions')
+            //     .data(allYears)
+            //     .enter()
+            //     .append('option')
+            //     .attr("max",Math.max(parseInt(allYears))) 
+            //     .attr("min",Math.min(parseInt(allYears))) 
+                
+            //     .attr("value",d=> { return d; }) 
+            // -    -    -    -    -    -    -    -    -    -    -    -    -    -    - 
+            
         
         d3.select("#selectValues")
             .selectAll('myOptions')
@@ -211,96 +180,7 @@ getMetaData().then((meta)=>{
             .text(d=>{ return d; })    // text showed in the menu dropdown
             .attr("value",d=> { return d; }) 
        
-            // console.log("DATA!!",data)
-        // DRAW CHART
-        
-        
-        // PREPARE DATA GIVEN SELECTED VALUES
-        // function prepareData(year,region,values,sex) {
-        //     // filter selected yeaar and values by regions (or country if a region is clicked)
-    
-        //     let selectedData = aq.from(raw_data)
-        //         .orderby(d=>d.source[2] )
-        //         .objects()
-        //         .filter(d=> d.year === year && d.sex === sex)
-                
-        //         .map(d=> { 
-        //         // d.source ---> [0] isocodes // [1] countrylabels // [2] region 
-        //         return{
-        //             // (if) d.source = selected region (then) d.source = country (else)  d.source = region
-        //             source: d.source[2] === region ? d.source[1] : d.source[2],
-        //             // same as before
-        //             target: d.target[2] === region ? d.target[1] : d.target[2],
-        //             value: +d.values[values],
-        //             year: d.year,
-        //             sex: d.sex,
-        //             }
-        //         })
-                
-                
-        //         // rollup by source <-> target
-        //         // aq.from(selectedData).print()
-        //         let groupedValues = aq.from(selectedData)
-        //         .select('value','year','source','target','sex')
-        //         .groupby('source','target','year','sex')
-        //         .rollup( {value: d => op.sum(d.value)})
-        //         .derive( {value: d => op.round(d.value) })       
-        //         .objects()
-        //         .filter(d=> d.target !=='none' && d.source !== 'none' && d.value > 20000)
-        //     // console.log(groupedValues)
-    
-        //     // create graph structure for sankey
-        //     let graph = () => {
-        //         let keys = ["source", "target"]
-        //         let index = -1;
-        //         const nodes = [];
-        //         const nodeByKey = new Map;
-        //         const indexByKey = new Map;
-        //         const links = [];
-              
-        //         for (const k of keys) {
-        //           for (const d of groupedValues) {
-        //             const key = JSON.stringify([k, d[k]]);
-        //             if (nodeByKey.has(key)) continue;
-        //             const node = {name: d[k]};
-        //             nodes.push(node);
-        //             nodeByKey.set(key, node);
-        //             indexByKey.set(key, ++index);
-        //           }
-        //         }
-              
-        //         for (let i = 1; i < keys.length; ++i) {
-        //           const a = keys[i - 1];
-        //           const b = keys[i];
-        //           const prefix = keys.slice(0, i + 1);
-        //           const linkByKey = new Map;
-        //           for (const d of groupedValues) {
-        //             const names = prefix.map(k => d[k]);
-        //             const key = JSON.stringify(names);
-        //             const value = d.value || 1;
-        //             let link = linkByKey.get(key);
-        //             if (link) { link.value += value; continue; }
-        //             link = {
-        //               source: indexByKey.get(JSON.stringify([a, d[a]])),
-        //               target: indexByKey.get(JSON.stringify([b, d[b]])),
-        //               names,
-        //               value
-        //             };
-        //             links.push(link);
-        //             linkByKey.set(key, link);
-        //           }
-        //         }
-              
-        //         return {nodes, links};
-        //     }
-    
-        //     let sankeyData = graph(groupedValues)
-        //     // console.log(sankeyData)
-        //     return {chord: groupedValues, sankey: sankeyData}
-        // }
-    
-        
-        
+   
         
         //// CHART RENDERING
         function draw(year,region,values,sex,input){
@@ -460,9 +340,10 @@ getMetaData().then((meta)=>{
             d3.selectAll("#selectYear")
                 .on("change", function(d) {
                     // Get selected year
-                    // year = d3.select(this).property("value")
+                    year = d3.select(this).property("value")
+                    console.log(year)
                     // data = dataPrepare(raw,year)
-                    filename = "json/migrations.json"
+                    // filename = "json/migrations.json"
                     // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                     // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                     // Remove previous
