@@ -3,13 +3,16 @@
 <head>
 <meta charset="utf-8">
 <style>
-	@import url(//fonts.googleapis.com/css?family=Roboto:400,600,700,300);
+	
+</style>
+<style>
+	@import url(//fonts.googleapis.com/css?family=Poppins:400,600,700,300);
 	/* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
 	
 	
 	body {
-		font-family:  'Roboto', sans-serif;
-		font-size: 62.5%;
+		font-family:  'Poppins', sans-serif;
+		font-size: 52.5%;
 		font-weight: 400;
 		background-color: #daf1f8;
 	}
@@ -126,10 +129,12 @@
 		width: 600px;
 		height: 600px;
 		margin: 0 auto;
+
 	}
         
 	text {
-		fill: #000 !important;
+		/* fill: #000 !important; */
+		transform: rotate(80)!important;
 	}
 
     /* .chart-title {
@@ -143,7 +148,7 @@
 		display: grid;
 		gap: 10px;
 		/* grid-auto-columns: 300px 100px; */
-		grid-template-columns: [col1] 70% [col2] 29%;
+		/* grid-template-columns: [col1] 70% [col2] 29%; */
 
 		/* display: grid;
 		grid-template-rows: [row1] 47% [row2] 47%;
@@ -168,6 +173,7 @@
 	.chordGrid {
 		grid-column: 1;
 		grid-row: 1;
+		padding: 200 200 200 200
 		
 	}
 	.sankeyGrid {
@@ -205,24 +211,32 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
  		<p>Donations from members of the same family are grouped together as are donations from companies under the control of individual donors.</p>
  	</aside> -->
  	<!-- <div id="donationInfo"></div> -->
-	<select id="selectYear"></select>
-	<select id="selectValues"></select>
-	<select id="selectGender"></select>
-	<div id="activeData"></div>
-	<div id="hoverData"></div>
+	 <div id="activeData"></div>
+	 <div id="hoverData"></div>
+	 <div style="text-align: center;">
+		<select id="selectYear"></select>
+		<select id="selectFlowStock"></select>
+		<select id="selectValues"></select>
+		<select id="selectGender"></select>
+	</div>
 	<div class="grid-container">
 		<div id="chart" class="chordGrid"></div>
-		<div id="sankey" class="sankeyGrid"></div>
+		<!-- <div id="chart" class="chordGrid"></div> -->
+		<!-- <div id="sankey" class="sankeyGrid"></div> -->
 		<!-- <div id="mapflows" class="mapGrid"></div> -->
-		<div id="table" class="side"></div>
+		<!-- <div id="table" class="side"></div> -->
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
+	<!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
 	<script src="https://d3js.org/d3.v7.min.js"></script>
 	<script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 
 	
-	<script src="chord-chart.js"></script>
+	<script src="chord-chart3.js"></script>
+	<!-- <script src="chord-chart.js"></script> -->
+	<!-- <script src="chord-chart2.js"></script> -->
+	<!-- <script src="chord.js"></script> -->
 	<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script> -->
 	<!-- <script>window.jQuery || document.write('<script src="js/jquery2.0.3.min.js"><\/script>')</script> -->
 

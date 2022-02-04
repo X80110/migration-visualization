@@ -11,13 +11,14 @@
 
 // MAIN SETTINGS AND HELPERS
 // Canvas
-var width = 550;
+var width = 650;
 var height = width;
 const textId = "O-text-1"; 
 
 // Define
-var innerRadius = Math.min(width, height) *0.5-25;
+var innerRadius = Math.min(width, height) *0.5-100;
 var outerRadius = innerRadius + 10;
+
 const chordDiagram = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
@@ -33,7 +34,7 @@ var arc = d3.arc()
     .innerRadius(innerRadius)
     .outerRadius(outerRadius);
 var ribbon = d3.ribbonArrow()
-    .radius(innerRadius - 6)
+    .radius(innerRadius - 10)
     .padAngle(1 / innerRadius);
 var formatValue = x => `${x.toFixed(0).toLocaleString()}`;
 
@@ -64,9 +65,37 @@ function getMatrix(names,data) {
 //                            regions: [regions],                           --- regions index is positioned on head of their subcountries  
 //                            dimensions: [dimension1,dimension2...]
 //                            type: [dataset] }                             --- type are indexs in matix.value
+function matrixToCsv(data){
+    data = async () => { }
+    nodes = JSON.parse(JSON.stringify(dataMatrix));
+
+    // remove connections
+    for (let i in nodes) {
+        delete nodes[i].connections;
+    }
+    let links = [];
+
+    let l = 0;
+
+    for (let j in dataMatrix) {
+        let source = dataMatrix[j].id;
+        for (let k in dataMatrix[j].connections) {
+        let target = k;
+        let score = dataMatrix[j].connections[k];
+        //links.push({ source, target, score });
+        if (score > 0) {
+            links[l] = { score, target, source };
+            l = l + 1;
+        }
+        }
+    }
+    let nldata = { nodes: nodes, links: links };
+    return nldata;
+}
 
 const getData = async () => {
     try {
+        
         const raw_data = await d3.csv("data/bilat_mig_sex.csv");
         const metadata = await d3.csv("data/country-metadata-flags.csv");
         // output example json data structure in console
@@ -125,6 +154,7 @@ const getData = async () => {
   
 
 getData().then((data)=>{ 
+    // INITIAL DATA INPUTS
     const allYears = [...new Set(data.raw_data.map((d) => d.year))].reverse();
     const allVars = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
     const allGenders = ['male', 'female'].reverse()
@@ -135,6 +165,7 @@ getData().then((data)=>{
     let selectedGender = 'female'
     var raw_data = data.raw_data.flat()
     // console.log("RAAWW!!",raw_data)
+    
     // CREATE SELECTORS
     d3.select("#selectYear")
         .selectAll('myOptions')
@@ -183,20 +214,19 @@ getData().then((data)=>{
                 value: +d.values[values],
                 year: d.year,
                 sex: d.sex,
-        }})
-
-        // slice low values
-        selectedData = selectedData.filter(d=> d.target !=='none' && d.source !== 'none' && d.value > 100)
-        
-        
-        // rollup by source <-> target
-        // aq.from(selectedData).print()
-        let groupedValues = aq.from(selectedData)
+                }
+            })
+            
+            
+            // rollup by source <-> target
+            // aq.from(selectedData).print()
+            let groupedValues = aq.from(selectedData)
             .select('value','year','source','target','sex')
             .groupby('source','target','year','sex')
             .rollup( {value: d => op.sum(d.value)})
             .derive( {value: d => op.round(d.value) })       
             .objects()
+            .filter(d=> d.target !=='none' && d.source !== 'none' && d.value > 20000)
         // console.log(groupedValues)
 
         // create graph structure for sankey
@@ -245,7 +275,7 @@ getData().then((data)=>{
         }
 
         let sankeyData = graph(groupedValues)
-        
+        // console.log(sankeyData)
         return {chord: groupedValues, sankey: sankeyData}
     }
 
@@ -263,7 +293,7 @@ getData().then((data)=>{
         groupedValues['columns'] = columns
         names = Array.from(new Set(groupedValues.flatMap(d => [d.source, d.target])));
         // console.log("NAMES!",names)
-        const data = getMatrix(names,groupedValues.filter(d=> d.year === year))    
+        const data = getMatrix(names,groupedValues.filter(d=> d.year === year ))    
         // console.log(data)
 
         // output final data to html table so we can debug values easily 
@@ -272,7 +302,8 @@ getData().then((data)=>{
             .toHTML()
 
         // Visualization settings
-        const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
+        // const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
+        const colorScale = chroma.scale(["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00"])
               .mode('hsl').colors(10)
               .map(color => chroma(color).saturate(0.1));
   
@@ -296,33 +327,47 @@ getData().then((data)=>{
             .attr("d", ribbon)
             .attr("fill", d => color(names[d.source.index]))
             .style("mix-blend-mode", "multiply")
+            
             .append("title")
             .text(d => `${names[d.source.index]} inflow ${names[d.target.index]} ${formatValue(d.source.value)}`);
         
         // Add outter arcs for each region and its titles
         arcs = chordDiagram.append("g")
-            .attr("font-family", "Proxima+Nova")
-            .attr("font-size", 10)
+
+            
             .selectAll("g")
             .data(chord(data).groups)
             .join("g")
             .attr("class","chord")
             .call(g => g.append("path")
-            .attr("d", arc) 
-            .attr("fill", d => color(names[d.index]))
-            // On each <g> we set a <path> for the arc
-            .attr("stroke", "#fff")
-            .attr("stroke-width", 3))
+                .attr("d", arc) 
+                .attr("fill", d => color(names[d.index]))
+                // On each <g> we set a <path> for the arc
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2))
             // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
-            .call(g => g.append("text")
+         /*    .call(g => g.append("text")
+                .attr("font-size", 10)
+                .attr("fill", d => color(names[d.index]))
                 .attr("dy", -3)
-                // .attr("dx", 17)
                 .append("textPath")
-                // .attr("startOffset", d => d.startAngle/2 * outerRadius 
                 .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
                 .style("text-anchor","middle")
                 .attr("xlink:href", "#"+textId) 
-                .text(d => names[d.index]))
+                .text(d => names[d.index])
+                ) */
+            .call(g => g.append("text")
+                .each(d => (d.angle = (d.startAngle + d.endAngle) / 2))
+                .attr("dy", "0.35em")
+                .attr("transform", d => `
+                    rotate(${(d.angle * 180 / Math.PI - 90)})
+                    translate(${outerRadius + 5})
+                    ${d.angle > Math.PI ? "rotate(180)" : ""}
+                    `)
+                .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+                .text(d => names[d.index])
+                )
+                
             // On each <g> we set a <title> for the region outflow
             .call(g => g.append("title")
                 .text(d => {
@@ -354,7 +399,7 @@ getData().then((data)=>{
                 region = names[d.index]
                 
                 // print selected criteria on console
-                console.log(region,year,values)
+                console.log(names)
                 
                 // remove current content
                 d3.selectAll("g")
@@ -501,7 +546,13 @@ getData().then((data)=>{
             .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
             .attr("y", d => (d.y1 + d.y0) / 2)
             .attr("dy", "0.35em")
+            /* function(d) {
+                if (d.name !== d.region) {
+                    return d.angle > Math.PI ? 'translate(0, -4) rotate(180)' : 'translate(0, 4)';
+                }
+            }) */
             .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+            .attr('transform', 'translate(0, -4) rotate(180)' )
             .text(d => d.name)
             .append("tspan")
             .attr("fill-opacity", 0.7)
