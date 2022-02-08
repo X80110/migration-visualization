@@ -92,26 +92,24 @@ function dataPrepare(dataMatrix,year,sex,value){ // <-- 'values' & 'sex' should 
     nodes = dataMatrix//JSON.parse(JSON.stringify(dataMatrix));
 
     selectedMatrix  = nodes.matrix[year]
-    console.log("INput!!",dataMatrix)
+    // console.log("INput!!",dataMatrix)
     names = nodes.names
     regionNames = nodes.regions.map(d=> names[d])
     // console.log("NAAAMEEES!!",names,regionNames)
     // remove connections
     
     
-    let nldata = { matrix: selectedMatrix, names: names, regions: nodes.regions};
-    return nldata;
+    let result = { matrix: selectedMatrix, names: names, regions: nodes.regions};
+    return result;
 }
 
 let filename = "json/mig_stock.json"
 
 
 async function getData(filename) {
-    
     try {
         // const raw_data = await d3.json("json/mig_flows"+selectedValue+".json") 
         const raw_data = await d3.json(filename) 
-        
         return  raw_data
     }
     catch (err) {
@@ -130,13 +128,16 @@ getMetaData().then((meta)=>{
         let selectedRegion = []
         let selectedValues = 'mig_rate'
         let selectedGender = 'female'
+        let selectedType = 'outward'
+        let selectedStockFlows = 'stocks'
         // year = year || allYears[0]
         let data = dataPrepare(raw,selectedYear) 
         // console.log(data.matrix)
         const allVars = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
+        const allTypes = ['outward','transit','return']
         const allGenders = ['male', 'female'].reverse()
         
-        console.log(Math.max(parseInt(allYears)))
+        // console.log(Math.max(parseInt(allYears)))
 
         // CREATE SELECTORS
         // YEAR SELECTOR  // -    -    -    -    -    -    -    -    -    -    -    -    - 
@@ -179,20 +180,39 @@ getMetaData().then((meta)=>{
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu dropdown
             .attr("value",d=> { return d; }) 
+        
+        d3.select("#selectType")
+            .selectAll('myOptions')
+            .data(allTypes)
+            .enter()
+            .append('option')
+            .text(d=>{ return d; })    // text showed in the menu dropdown
+            .attr("value",d=> { return d; }) 
        
    
         
         //// CHART RENDERING
-        function draw(year,region,values,sex,input){
+        function draw(input,year,region,values,sex,type,stockflow){
 
             data = dataPrepare(input,year)
+            // console.log("DATA",data)
             year = year
+            stockflow = stockflow
             let names = []
             let unfilteredMatrix = []
             let matrix = []
+            
+            function isRegion(name){
+                return data.regions.includes(data.names.indexOf(name))
+            } 
+            console.log(isRegion('Oceania'))
+            // console.log(isRegion('Angola'))
+            // console.log(isRegion(names[0])) 
+            // console.log(isRegion(names[1])) 
 
             data.regions.map(d=> {
                 let name = data.names[d]
+
                 let subgroup = data.matrix[d]
                 names.push(name)
                 unfilteredMatrix.push(subgroup)
@@ -201,9 +221,8 @@ getMetaData().then((meta)=>{
                 let filtered = data.regions.map(a=> d[a])
                 matrix.push(filtered)    
             })
-            console.log("NAMES",matrix) 
 
-            // let groupedValues = prepareData(year,region,values,sex).chord
+            // let groupedValues = prepareData(year,region,values,sex,type,stockflow).chord
             
             // prepare data for matrix
             // let columns =  {0: "source",1:"target",2:"value"}
@@ -263,29 +282,62 @@ getMetaData().then((meta)=>{
                     .attr("stroke", "#fff")
                     .attr("stroke-width", 2))
                 // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
-                .call(g => g.append("text")
-                    .attr("font-size", 6)
-                    .attr("fill", d => color(names[d.index]))
-                    .attr("dy", -3)
-                    .append("textPath")
-                    .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
-                    .style("text-anchor","middle")
-                    .attr("xlink:href", "#"+textId) 
-                    .text(d => names[d.index])
-                    )
+                
+                // .call(g=>
+                .call(g=>{
+                    if (!isRegion(d=>names[d.index])) {
+                        g.append('text')
+                        .attr("font-size", 6)
+                        .attr("fill", d => color(names[d.index]))
+                        .attr("dy", -03)
+                        .append("textPath")
+                        .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
+                        .style("text-anchor","middle")
+                        .attr("xlink:href", "#"+textId) 
+                        .text(d => names[d.index])
+                    }
+                    else {
+                        g.append('text')
+                        .each(d => (d.angle = (d.startAngle + d.endAngle) / 2))
+                        .attr("font-size", 6)
+                        .attr("dy", "0.35em")
+                        .attr("transform", d => `
+                            rotate(${(d.angle * 180 / Math.PI - 90)})
+                            translate(${outerRadius + 5})
+                            ${d.angle > Math.PI ? "rotate(180)" : ""}
+                            `)
+                        .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+                        .text(d => names[d.index])
+                    }
+                })
+                
+                
+                
+                // .call(g => g.append("text")
+                //     .attr("font-size", 6)
+                //     .attr("fill", d => color(names[d.index]))
+                //     .attr("dy", -3)
+                //     .append("textPath")
+                //     .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
+                //     .style("text-anchor","middle")
+                //     .attr("xlink:href", "#"+textId) 
+                //     .text(d => names[d.index])
+                //     )
                     
-                .call(g => g.append("text")
-                    .each(d => (d.angle = (d.startAngle + d.endAngle) / 2))
-                    .attr("font-size", 6)
-                    .attr("dy", "0.35em")
-                    .attr("transform", d => `
-                        rotate(${(d.angle * 180 / Math.PI - 90)})
-                        translate(${outerRadius + 5})
-                        ${d.angle > Math.PI ? "rotate(180)" : ""}
-                        `)
-                    .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
-                    .text(d => names[d.index])
-                    )
+                // .call(g => 
+                //     {
+                //     g.append("text")
+                //     .each(d => (d.angle = (d.startAngle + d.endAngle) / 2))
+                //     .attr("font-size", 6)
+                //     .attr("dy", "0.35em")
+                //     .attr("transform", d => `
+                //         rotate(${(d.angle * 180 / Math.PI - 90)})
+                //         translate(${outerRadius + 5})
+                //         ${d.angle > Math.PI ? "rotate(180)" : ""}
+                //         `)
+                //     .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+                //     .text(d => names[d.index])
+                //     })
                     
                 // On each <g> we set a <title> for the region outflow
                 .call(g => g.append("title")
@@ -298,7 +350,7 @@ getMetaData().then((meta)=>{
             // INTERACTIONS
             chordDiagram.selectAll(".path-item, .chord")
                 .on("mouseover", function (evt, d) {
-                    console.log(evt)
+                    // console.log(evt)
                     chordDiagram.selectAll(".path-item")
                         .transition()
                         .style("opacity", 0.2);
@@ -333,8 +385,8 @@ getMetaData().then((meta)=>{
                     
                     
                     // draw new chart 
-                    draw(year,region,values,sex)
-                    // drawSankey(year,region,values,sex)
+                    draw(data,year,region,values,sex,type,stockflow)
+                    // drawSankey(year,region,values,sex,type,stockflow)
                 });   
     
             d3.selectAll("#selectYear")
@@ -343,7 +395,7 @@ getMetaData().then((meta)=>{
                     year = d3.select(this).property("value")
                     console.log(year)
                     // data = dataPrepare(raw,year)
-                    // filename = "json/migrations.json"
+                    
                     // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                     // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                     // Remove previous
@@ -360,12 +412,13 @@ getMetaData().then((meta)=>{
                         data = data
                         // console.log("fILE!",data)
 
-                        draw(year,region,values,sex,data)})
-                    // drawSankey(year,region,values,sex)
+                        draw(data,year,region,values,sex,type,stockflow)})
+                    // drawSankey(year,region,values,sex,type,stockflow)
                 })        
-            d3.selectAll("#selectValues")
+            d3.selectAll("#selectType")
                 .on("change", function(d) {
                     // Get selected value
+                    filename = "json/migrations.json"
                     values = d3.select(this).property("value")
                     // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                     // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
@@ -378,8 +431,12 @@ getMetaData().then((meta)=>{
                     
                     d3.selectAll("table").remove()
     
-                    draw(year,region,values,sex)
-                    // drawSankey(year,region,values,sex)
+                    getData(filename).then(data=> {
+                        data = data
+                        // console.log("fILE!",data)
+
+                        draw(data,year,region,values,sex,type,stockflow)})
+                    // drawSankey(year,region,values,sex,type,stockflow)
                 })
             d3.selectAll("#selectGender")
                 .on("change", function(d) {
@@ -396,25 +453,29 @@ getMetaData().then((meta)=>{
                     
                     d3.selectAll("table").remove()
     
-                    draw(year,region,values,sex)
-                    // drawSankey(year,region,values,sex)
+                    draw(data,year,region,values,sex,type,stockflow)
+                    // drawSankey(year,region,values,sex,type,stockflow)
                 })
+            
             // print last active filters
             let activeRegion = selectedRegion === region ? '<span style="color: grey">Non selected</span>' : region
             d3.selectAll("#activeData")
-                .html("<br><strong>Last region selected:</strong>  "+activeRegion+"<br>"+
-                       "<strong>Year:</strong> "+year+"<br>"+
-                       "<strong>Gender:</strong> "+sex+"<br>"+
-                       "<strong>Value:</strong> "+values)
+                .html("<br>"+
+                "<strong>Variable:</strong> "+stockflow+"<br>"+
+                "<strong>Method:</strong> "+values+"<br>"+
+                "<strong>Year:</strong> "+year+"<br>"+
+                "<strong>Gender:</strong> "+sex+"<br>"+
+                "<strong>Type:</strong> "+type+"<br>"+
+                "<strong>Last region selected:</strong>  "+activeRegion)
         }
-        draw(selectedYear,selectedRegion,selectedValues,selectedGender,raw)    
+        draw(raw,selectedYear,selectedRegion,selectedValues,selectedGender,selectedType,selectedStockFlows)    
     
     
         
         // //// SANKEY CHART 
-        // function drawSankey(year,region,values,sex){
-        //     let graph = prepareData(year,region,values,sex).sankey
-        //     let names = Array.from(new Set(prepareData(year,region,values,sex).chord.flatMap(d => [d.source, d.target])));
+        // function drawSankey(year,region,values,sex,type,stockflow){
+        //     let graph = prepareData(year,region,values,sex,type,stockflow).sankey
+        //     let names = Array.from(new Set(prepareData(year,region,values,sex,type,stockflow).chord.flatMap(d => [d.source, d.target])));
             
         //     const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
         //           .mode('hsl').colors(10)
