@@ -28,8 +28,8 @@ var height = width;
 const textId = "O-text-1"; 
 
 // Define
-var innerRadius = Math.min(width, height) *0.5-70;
-var outerRadius = innerRadius + 10;
+var innerRadius = Math.min(width, height) *0.5-60;
+var outerRadius = innerRadius + 16.5;
 
 const chordDiagram = d3.select("#chart")
     .append("svg")
@@ -83,10 +83,10 @@ const getMetaData = async () => {
     
     return  metadata
     }
-function dataPrepare(dataMatrix,year,sex,value){ // <-- 'values' & 'sex' should be filtered there . 
+function dataPrepare(dataMatrix,year,sex,method){ // <-- 'values' & 'sex' should be filtered there . 
     year = year || 1990
     sex = sex || 'Female' || {}
-    value = year || 1990
+    // method = year || 1990
     // let metadata = getMetaData().then(d=> {return d});
     // // console.log(metadata)
     nodes = dataMatrix//JSON.parse(JSON.stringify(dataMatrix));
@@ -103,8 +103,13 @@ function dataPrepare(dataMatrix,year,sex,value){ // <-- 'values' & 'sex' should 
     return result;
 }
 
-let filename = "json/mig_stock.json"
 
+let sex = "female"
+let type = "onward"
+let method = "da_pb_closed"
+let stockflow = "stock"
+let filename = 'json/'+stockflow+'_'+sex+/* '_'+type+'_'+method+ */'.json'
+// console.log(filename)
 
 async function getData(filename) {
     try {
@@ -125,7 +130,7 @@ getMetaData().then((meta)=>{
         // const allYears = [...new Set(data.map((d) => d.year))].reverse();
         const allYears = Object.keys(raw.matrix)
         let selectedYear = allYears[0] 
-        let selectedRegion = []
+        let selectedRegion = ''
         let selectedValues = 'mig_rate'
         let selectedGender = 'female'
         let selectedType = 'outward'
@@ -192,7 +197,7 @@ getMetaData().then((meta)=>{
    
         
         //// CHART RENDERING
-        function draw(input,year,region,values,sex,type,stockflow){
+        function draw(input,year,region,method,sex,type,stockflow){
 
             const data = dataPrepare(input,year)
             // console.log("DATA",data)
@@ -214,7 +219,7 @@ getMetaData().then((meta)=>{
             
             function filterByRegion(input, region) {
 
-                // here we'll find the region index and 
+                // here we'll find the region index -> we'll get next region -> finally we define a range between both index and replace the values in region in the selected region place 
                 const nameRegionIndex = input.names.indexOf(region) // index of selected region in names
                 const regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
                 const nextNameRegionIndex = input.regions[regionIndex +1] > input.names.length ? input.regions[regionIndex]: input.regions[regionIndex +1]// names index of the following region in regions
@@ -223,7 +228,7 @@ getMetaData().then((meta)=>{
                 // get range between two values
                 const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i);
                 
-                let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1/* -1 */)
+                let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-2/* -1 */)
                 // console.log(input.names.length)
                 var selectedRegions = input.regions.flat()
                 // output regions and selected countries
@@ -250,7 +255,7 @@ getMetaData().then((meta)=>{
             })
             // console.log(names.map(d=> isRegion(d)))
 
-            // let groupedValues = prepareData(year,region,values,sex,type,stockflow).chord
+            // let groupedValues = prepareData(year,region,method,sex,type,stockflow).chord
             
             // prepare data for matrix
             // let columns =  {0: "source",1:"target",2:"value"}
@@ -306,7 +311,7 @@ getMetaData().then((meta)=>{
                 .attr("class","chord")
                 .call(g => g.append("path")
                     .attr("d", arc) 
-                    .attr("fill", d=> isRegion(names[d.index]) ? color(names[d.index]) : color(names[d.index][d])+'90' )
+                    .attr("fill", d=> isRegion(names[d.index]) ? color(names[d.index]) : color(names[d.index])+'90')
                     // On each <g> we set a <path> for the arc
                     .attr("stroke", "#fff")
                     .attr("stroke-width", 2))
@@ -413,7 +418,7 @@ getMetaData().then((meta)=>{
                         data = data
                         // console.log("fILE!",data)
 
-                        draw(data,year,region,values,sex,type,stockflow)})
+                        draw(data,year,region,method,sex,type,stockflow)})
                 });   
     
             d3.selectAll("#selectYear")
@@ -439,8 +444,8 @@ getMetaData().then((meta)=>{
                         data = data
                         // console.log("fILE!",data)
 
-                        draw(data,year,region,values,sex,type,stockflow)})
-                    // drawSankey(year,region,values,sex,type,stockflow)
+                        draw(data,year,region,method,sex,type,stockflow)})
+                    // drawSankey(year,region,method,sex,type,stockflow)
                 })        
             d3.selectAll("#selectType")
                 .on("change", function(d) {
@@ -462,8 +467,8 @@ getMetaData().then((meta)=>{
                         data = data
                         // console.log("fILE!",data)
 
-                        draw(data,year,region,values,sex,type,stockflow)})
-                    // drawSankey(year,region,values,sex,type,stockflow)
+                        draw(data,year,region,method,sex,type,stockflow)})
+                    // drawSankey(year,region,method,sex,type,stockflow)
                 })
             d3.selectAll("#selectGender")
                 .on("change", function(d) {
@@ -480,8 +485,8 @@ getMetaData().then((meta)=>{
                     
                     d3.selectAll("table").remove()
     
-                    draw(data,year,region,values,sex,type,stockflow)
-                    // drawSankey(year,region,values,sex,type,stockflow)
+                    draw(data,year,region,method,sex,type,stockflow)
+                    // drawSankey(year,region,method,sex,type,stockflow)
                 })
             
             // print last active filters
@@ -500,9 +505,9 @@ getMetaData().then((meta)=>{
     
         
         // //// SANKEY CHART 
-        // function drawSankey(year,region,values,sex,type,stockflow){
-        //     let graph = prepareData(year,region,values,sex,type,stockflow).sankey
-        //     let names = Array.from(new Set(prepareData(year,region,values,sex,type,stockflow).chord.flatMap(d => [d.source, d.target])));
+        // function drawSankey(year,region,method,sex,type,stockflow){
+        //     let graph = prepareData(year,region,method,sex,type,stockflow).sankey
+        //     let names = Array.from(new Set(prepareData(year,region,method,sex,type,stockflow).chord.flatMap(d => [d.source, d.target])));
             
         //     const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
         //           .mode('hsl').colors(10)
