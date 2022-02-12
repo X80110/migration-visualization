@@ -197,6 +197,7 @@ getMetaData().then((meta)=>{
             const data = dataPrepare(input,year)
             // console.log("DATA",data)
             year = year
+
             stockflow = stockflow
             let names = []
             let unfilteredMatrix = []
@@ -212,41 +213,29 @@ getMetaData().then((meta)=>{
             // console.log(isRegion(names[1])) 
             
             function filterByRegion(input, region) {
-                /* if (region !undefined){
-                  region = region  
-                } */ 
-                // region = region // click event captures the name not the index
 
                 // here we'll find the region index and 
                 const nameRegionIndex = input.names.indexOf(region) // index of selected region in names
                 const regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
-                const nextNameRegionIndex = input.regions[regionIndex +1] // names index of the following region in regions
+                const nextNameRegionIndex = input.regions[regionIndex +1] > input.names.length ? input.regions[regionIndex]: input.regions[regionIndex +1]// names index of the following region in regions
                 // console.log(nameRegionIndex, nextNameRegionIndex)
                 
                 // get range between two values
                 const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i);
                 
-                let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1)
-
-                // let names = data.names.filter(d=>
-                //     data.names.indexOf(d) > nameRegionIndex 
-                //      && data.names.indexOf(d) < nextNameRegionIndex
-                // )
-                
-                // let matrix = data.matrix.filter(d=> 
-                //      data.matrix.indexOf(d) > nameRegionIndex 
-                //      && data.matrix.indexOf(d) < nextNameRegionIndex
-                // )
+                let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1/* -1 */)
+                // console.log(input.names.length)
                 var selectedRegions = input.regions.flat()
                 // output regions and selected countries
                 selectedRegions[regionIndex] = countryRange
 
                 return selectedRegions.flat()
             }
-            let filteredRegions = filterByRegion(dataPrepare(input,year),"South Asia")
+            let filteredRegions = filterByRegion(dataPrepare(input,year),region)
             console.log(filteredRegions)
             
             console.log(data.regions)
+
             // INITIAL MATRIX ONLY REGIONS
             filteredRegions.map(d=> {
                 let name = data.names[d]
@@ -297,10 +286,11 @@ getMetaData().then((meta)=>{
                 .attr("fill-opacity", 0.75)
                 .selectAll("g")
                 .data(chord(matrix))
+                // .filter(d=> console.lo)
                 .join("path")
                 .attr("class", "path-item")
                 .attr("d", ribbon)
-                .attr("fill", d => color(names[d.source.index]))
+                .attr("fill", d=> color(names[d.source.index]))
                 .style("mix-blend-mode", "multiply")
                 
                 .append("title")
@@ -316,28 +306,18 @@ getMetaData().then((meta)=>{
                 .attr("class","chord")
                 .call(g => g.append("path")
                     .attr("d", arc) 
-                    .attr("fill", d => color(names[d.index]))
+                    .attr("fill", d=> isRegion(names[d.index]) ? color(names[d.index]) : color(names[d.index][d])+'90' )
                     // On each <g> we set a <path> for the arc
                     .attr("stroke", "#fff")
                     .attr("stroke-width", 2))
-                // On each <g> we set a <text> for the titles around the previous arc <path> linking to it with id º
-                
-                // .call(g=>
-                .call(g=>{
-                        // g.append('text')
-                        // .attr("font-size", 6)
-                        // .attr("fill", d => color(names[d.index]))
-                        // .attr("dy", -03)
-                        // .append("textPath")
-                        // .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
-                        // .style("text-anchor","middle")
-                        // .attr("xlink:href", "#"+textId) 
-                        // .text(d => names[d.index])
-                    
-                    
+            
+                // LABELS 
+                // on specific attributes we use isRegion() to define country/region labels
+                .call(g=>{ // 
                         g.append('text')
-                        .attr("font-size", d=> isRegion(names[d.index]) ? 8:6 )
-                        .attr("dy", d=> isRegion(names[d.index]) ? -4:2 )
+                        .attr("font-size", d=> !isRegion(names[d.index]) ? 6.2 : 7.2 )
+                        // .attr("fill", d => color(names[d.index]))
+                        .attr("dy", d=> !isRegion(names[d.index]) ? 2 : -4 )
                         .each(d => !isRegion(names[d.index]) ? (d.angle = (d.startAngle + d.endAngle) / 2):"") // conditional style for countries
                         .attr("transform", d => `
                             rotate(${(d.angle * 180 / Math.PI - 90)})
@@ -351,7 +331,7 @@ getMetaData().then((meta)=>{
                         .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
                         .style("text-anchor","middle")
                         .attr("xlink:href", "#"+textId) 
-                        .text(d => names[d.index])
+                        .text(d => isRegion(names[d.index])?names[d.index]:"") // conditional style for regions
                     
                 })
                 
@@ -415,7 +395,7 @@ getMetaData().then((meta)=>{
                     region = names[d.index]
                     console.log(region)
                     // print selected criteria on console
-                    console.log(names)
+                    // console.log(names)
                     
                     // remove current content
                     d3.selectAll("g")
@@ -429,8 +409,11 @@ getMetaData().then((meta)=>{
                     
                     
                     // draw new chart 
-                    draw(data,year,region,values,sex,type,stockflow)
-                    // drawSankey(year,region,values,sex,type,stockflow)
+                    getData(filename).then(data=> {
+                        data = data
+                        // console.log("fILE!",data)
+
+                        draw(data,year,region,values,sex,type,stockflow)})
                 });   
     
             d3.selectAll("#selectYear")
