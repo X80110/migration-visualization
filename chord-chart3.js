@@ -51,13 +51,13 @@ var ribbon = d3.ribbonArrow()
 var formatValue = x => `${x.toFixed(0).toLocaleString()}`;
 
 // Set a matrix of the data data to pass to the chord() function
-function getMatrix(names,data) {
+/* function getMatrix(names,data) {
     const index = new Map(names.map((name, i) => [name, i]));
     const matrix = Array.from(index, () => new Array(names.length).fill(0));
 
     for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
         return matrix;
-}
+} */
 
 //--------------------------------//
 //       GET & PREPARE DATA       //
@@ -194,7 +194,7 @@ getMetaData().then((meta)=>{
         //// CHART RENDERING
         function draw(input,year,region,values,sex,type,stockflow){
 
-            data = dataPrepare(input,year)
+            const data = dataPrepare(input,year)
             // console.log("DATA",data)
             year = year
             stockflow = stockflow
@@ -202,25 +202,64 @@ getMetaData().then((meta)=>{
             let unfilteredMatrix = []
             let matrix = []
             
-            function isRegion(name){
+            function isRegion(name) {
                 return data.regions.includes(data.names.indexOf(name))
             } 
-            console.log(isRegion('Oceania'))
+
+            // console.log(isRegion('Oceania'))
             // console.log(isRegion('Angola'))
             // console.log(isRegion(names[0])) 
             // console.log(isRegion(names[1])) 
+            
+            function filterByRegion(input, region) {
+                /* if (region !undefined){
+                  region = region  
+                } */ 
+                // region = region // click event captures the name not the index
 
-            data.regions.map(d=> {
+                // here we'll find the region index and 
+                const nameRegionIndex = input.names.indexOf(region) // index of selected region in names
+                const regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
+                const nextNameRegionIndex = input.regions[regionIndex +1] // names index of the following region in regions
+                // console.log(nameRegionIndex, nextNameRegionIndex)
+                
+                // get range between two values
+                const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i);
+                
+                let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1)
+
+                // let names = data.names.filter(d=>
+                //     data.names.indexOf(d) > nameRegionIndex 
+                //      && data.names.indexOf(d) < nextNameRegionIndex
+                // )
+                
+                // let matrix = data.matrix.filter(d=> 
+                //      data.matrix.indexOf(d) > nameRegionIndex 
+                //      && data.matrix.indexOf(d) < nextNameRegionIndex
+                // )
+                var selectedRegions = input.regions.flat()
+                // output regions and selected countries
+                selectedRegions[regionIndex] = countryRange
+
+                return selectedRegions.flat()
+            }
+            let filteredRegions = filterByRegion(dataPrepare(input,year),"South Asia")
+            console.log(filteredRegions)
+            
+            console.log(data.regions)
+            // INITIAL MATRIX ONLY REGIONS
+            filteredRegions.map(d=> {
                 let name = data.names[d]
-
+                // console.log(name)
                 let subgroup = data.matrix[d]
                 names.push(name)
                 unfilteredMatrix.push(subgroup)
             })
             unfilteredMatrix.map(d=> {
-                let filtered = data.regions.map(a=> d[a])
+                let filtered = filteredRegions.map(a=> d[a])
                 matrix.push(filtered)    
             })
+            // console.log(names.map(d=> isRegion(d)))
 
             // let groupedValues = prepareData(year,region,values,sex,type,stockflow).chord
             
@@ -285,30 +324,35 @@ getMetaData().then((meta)=>{
                 
                 // .call(g=>
                 .call(g=>{
-                    if (!isRegion(d=>names[d.index])) {
+                        // g.append('text')
+                        // .attr("font-size", 6)
+                        // .attr("fill", d => color(names[d.index]))
+                        // .attr("dy", -03)
+                        // .append("textPath")
+                        // .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
+                        // .style("text-anchor","middle")
+                        // .attr("xlink:href", "#"+textId) 
+                        // .text(d => names[d.index])
+                    
+                    
                         g.append('text')
-                        .attr("font-size", 6)
-                        .attr("fill", d => color(names[d.index]))
-                        .attr("dy", -03)
-                        .append("textPath")
-                        .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
-                        .style("text-anchor","middle")
-                        .attr("xlink:href", "#"+textId) 
-                        .text(d => names[d.index])
-                    }
-                    else {
-                        g.append('text')
-                        .each(d => (d.angle = (d.startAngle + d.endAngle) / 2))
-                        .attr("font-size", 6)
-                        .attr("dy", "0.35em")
+                        .attr("font-size", d=> isRegion(names[d.index]) ? 8:6 )
+                        .attr("dy", d=> isRegion(names[d.index]) ? -4:2 )
+                        .each(d => !isRegion(names[d.index]) ? (d.angle = (d.startAngle + d.endAngle) / 2):"") // conditional style for countries
                         .attr("transform", d => `
                             rotate(${(d.angle * 180 / Math.PI - 90)})
                             translate(${outerRadius + 5})
                             ${d.angle > Math.PI ? "rotate(180)" : ""}
                             `)
                         .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
+                        .text(d => !isRegion(names[d.index])? names[d.index] : "") // conditional style for countries
+                        .append("textPath")
+                        .attr("fill", d => color(names[d.index]))
+                        .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
+                        .style("text-anchor","middle")
+                        .attr("xlink:href", "#"+textId) 
                         .text(d => names[d.index])
-                    }
+                    
                 })
                 
                 
@@ -369,7 +413,7 @@ getMetaData().then((meta)=>{
             chordDiagram.selectAll(".chord")            
                 .on("click", function (evt, d) {
                     region = names[d.index]
-                    
+                    console.log(region)
                     // print selected criteria on console
                     console.log(names)
                     
