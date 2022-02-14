@@ -289,10 +289,15 @@ input[type=radio] {
   top: 0.8em;
 }
 
-input:checked {
+input[type='radio']:checked {
   border: 6px solid black;
 }
+input[type='radio'] {
+	border: 2px solid lightgrey;
+	visibility:unset;
+}
 .subgroups label{
+
 	color: grey;
 	margin-right:5px;
 	
@@ -333,16 +338,16 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 		
 		<div class="radio">
 			<form>
-				  <input type="radio" id="stockflow" name="stockflows" value="stocks" checked>
+				  <input type="radio" id="stockFlow" name="stockflow" value="stock" checked>
 				  <label for="stocks">Stocks</label>
-				  <input type="radio" id="stockflow" name="stockflows" value="flows">
+				  <input type="radio" id="stockFlow" name="stockflow" value="flow">
 				  <label for="css">Flows</label><br>
 			</form><br>
 		</div>
 
 		<div class="method">
-			<label for="selectValues">Estimation method</label>
-			<select id="selectValues"></select>
+			<label for="selectMethod">Estimation method</label>
+			<select id="selectMethod"></select>
 		</div><br>
 
 		<div class="subgroups">
@@ -366,7 +371,7 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 		<!-- <div id="mapflows" class="mapGrid"></div> -->
 		<!-- <div id="table" class="side"></div> -->
 	</div>
-	<script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script>
+	<!-- <script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script> -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
 	<!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
 	<script src="https://d3js.org/d3.v7.min.js"></script>

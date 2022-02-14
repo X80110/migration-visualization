@@ -1,16 +1,17 @@
-// TODO JAN 12 2022
-// !!  - gender data
-//      - label orientation
-//           - country
-//           - south pole
-//      - unify filtering
-//      - tooltips
-//      - flow map
-//      - tweens and transitions
+// TODO FEB 12 2022
+    //  []  Conditional Filters 
+    //  []  Slice low values + Other category
+    //  []  Colors
+    //  []  Low half labels
+    //  []  Tooltip
+    //  []  Animtions
+    //  []  
+    //  []  
 
 
 
-// YEAR SELECTOR  // -    -    -    -    -    -    -    -    -    -    -    -    - 
+// YEAR SELECTOR  // ------------------------------------------------------------------------------------
+
 let slider = document.getElementById("selectYear");
 let output = document.getElementById("yearRange");
 let sliderValue = parseInt(slider.value)+5
@@ -21,7 +22,7 @@ slider.oninput = function() {
     let value = parseInt(this.value)+5
     output.innerHTML = this.value+" · "+value;
 }
-// -    -    -    -    -    -    -    -    -    -    -    -    -    -    - 
+// ------------------------------------------------------------------------------------
 
 var width = 650;
 var height = width;
@@ -48,7 +49,7 @@ var arc = d3.arc()
 var ribbon = d3.ribbonArrow()
     .radius(innerRadius - 10)
     .padAngle(1 / innerRadius);
-var formatValue = x => `${x.toFixed(0).toLocaleString()}`;
+var formatValue = (x) => `${x.toFixed(0).toLocaleString()}`;
 
 // Set a matrix of the data data to pass to the chord() function
 /* function getMatrix(names,data) {
@@ -83,9 +84,9 @@ const getMetaData = async () => {
     
     return  metadata
     }
-function dataPrepare(dataMatrix,year,sex,method){ // <-- 'values' & 'sex' should be filtered there . 
+function dataPrepare(dataMatrix,year){ // <-- 'values' & 'sex' should be filtered there . 
     year = year || 1990
-    sex = sex || 'Female' || {}
+    // sex = sex || 'Female' || {}
     // method = year || 1990
     // let metadata = getMetaData().then(d=> {return d});
     // // console.log(metadata)
@@ -104,16 +105,65 @@ function dataPrepare(dataMatrix,year,sex,method){ // <-- 'values' & 'sex' should
 }
 
 
-let sex = "female"
-let type = "onward"
-let method = "da_pb_closed"
-let stockflow = "stock"
-let filename = 'json/'+stockflow+'_'+sex+/* '_'+type+'_'+method+ */'.json'
+
+
+/* 
+    when *flow* is selected
+        sex  --> method
+        type   -->  method.subset
+        
+    when *stock* is selected
+        sex
+ */
+let config = {}
+config.year = 1990 || ""
+config.stockflow = "stock"
+config.sex = "all" || ""
+config.type = "" || "outward"
+config.method = "da_pb_closed" || ""
+
+
+// If filtered by type, there are less methods
+const allMethods = config.type != "" && config.stockflow != "stock"
+    ? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
+    : ['da_min_closed', 'da_min_open','da_pb_closed'] 
+const allTypes = ['outward','transit','return']
+const allGenders = ['all','male', 'female'].reverse()
+
+
+
+// let sex = type != "" ? "": "female"
+
+
+let fileName = (config) => {
+    stockflow = config.stockflow 
+    sex = config.sex === "all" || ""  
+        ? ""
+        : "_"+config.sex
+    type = stockflow === "stock" || config.sex != "all" 
+        ? "" 
+        : "_"+config.type || '_outward'
+    method = stockflow === "stock" 
+        ? ""
+        : "_"+config.method || "_da_pb_closed"
+    let json = 'json/'+stockflow+sex+type+method+'.json'
+    
+    
+    json = json.replace("__","_").replace("_.",".")
+    // console.log(json)
+     return {
+         json:json,
+         values: stockflow, sex, type, method
+        }
+    }
+     
+filename = fileName(config).json
 // console.log(filename)
 
 async function getData(filename) {
     try {
         // const raw_data = await d3.json("json/mig_flows"+selectedValue+".json") 
+        console.log(filename)
         const raw_data = await d3.json(filename) 
         return  raw_data
     }
@@ -131,16 +181,16 @@ getMetaData().then((meta)=>{
         const allYears = Object.keys(raw.matrix)
         let selectedYear = allYears[0] 
         let selectedRegion = ''
-        let selectedValues = 'mig_rate'
-        let selectedGender = 'female'
+        let selectedValues = 'da_min_closed'
+        let selectedGender = 'female' 
         let selectedType = 'outward'
-        let selectedStockFlows = 'stocks'
+        let selectedStockFlows = 'stock'
         // year = year || allYears[0]
         let data = dataPrepare(raw,selectedYear) 
         // console.log(data.matrix)
-        const allVars = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
-        const allTypes = ['outward','transit','return']
-        const allGenders = ['male', 'female'].reverse()
+        // // const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
+        // const allTypes = ['outward','transit','return']
+        // const allGenders = ['male', 'female'].reverse()
         
         // console.log(Math.max(parseInt(allYears)))
 
@@ -170,13 +220,13 @@ getMetaData().then((meta)=>{
             // -    -    -    -    -    -    -    -    -    -    -    -    -    -    - 
             
         
-        d3.select("#selectValues")
+        d3.select("selectMethod")
             .selectAll('myOptions')
-            .data(allVars)
+            .data(allMethods)
             .enter()
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu dropdown
-            .attr("value",d=> { return d; }) 
+            .attr("value",d=> {  return d; }) 
     
         d3.select("#selectGender")
             .selectAll('myOptions')
@@ -198,7 +248,9 @@ getMetaData().then((meta)=>{
         
         //// CHART RENDERING
         function draw(input,year,region,method,sex,type,stockflow){
-
+            year = config.year
+            region = config.region
+            sex = config.sex
             const data = dataPrepare(input,year)
             // console.log("DATA",data)
             year = year
@@ -228,7 +280,7 @@ getMetaData().then((meta)=>{
                 // get range between two values
                 const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i);
                 
-                let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-2/* -1 */)
+                let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1/* -1 */)
                 // console.log(input.names.length)
                 var selectedRegions = input.regions.flat()
                 // output regions and selected countries
@@ -237,14 +289,13 @@ getMetaData().then((meta)=>{
                 return selectedRegions.flat()
             }
             let filteredRegions = filterByRegion(dataPrepare(input,year),region)
-            console.log(filteredRegions)
+            // console.log(filteredRegions)
             
-            console.log(data.regions)
+            // console.log(data.regions)
 
             // INITIAL MATRIX ONLY REGIONS
             filteredRegions.map(d=> {
                 let name = data.names[d]
-                // console.log(name)
                 let subgroup = data.matrix[d]
                 names.push(name)
                 unfilteredMatrix.push(subgroup)
@@ -311,7 +362,7 @@ getMetaData().then((meta)=>{
                 .attr("class","chord")
                 .call(g => g.append("path")
                     .attr("d", arc) 
-                    .attr("fill", d=> isRegion(names[d.index]) ? color(names[d.index]) : color(names[d.index])+'90')
+                    .attr("fill", d=> isRegion(names[d.index]) ? color(names[d.index]) : "lightblue")
                     // On each <g> we set a <path> for the arc
                     .attr("stroke", "#fff")
                     .attr("stroke-width", 2))
@@ -397,7 +448,7 @@ getMetaData().then((meta)=>{
     
             chordDiagram.selectAll(".chord")            
                 .on("click", function (evt, d) {
-                    region = names[d.index]
+                    config.region = names[d.index]
                     console.log(region)
                     // print selected criteria on console
                     // console.log(names)
@@ -424,8 +475,8 @@ getMetaData().then((meta)=>{
             d3.selectAll("#selectYear")
                 .on("change", function(d) {
                     // Get selected year
-                    year = d3.select(this).property("value")
-                    console.log(year)
+                    config.year = d3.select(this).property("value")
+                    console.log(config.year)
                     // data = dataPrepare(raw,year)
                     
                     // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
@@ -437,8 +488,35 @@ getMetaData().then((meta)=>{
                         .style('opacity', 0)
                         .remove();
                     
+                
+    
+                    getData(filename).then(data=> {
+                        data = data
+                        // console.log("fILE!",data)
+
+                        draw(data,year,region,method,sex,type,stockflow)})
+                    // drawSankey(year,region,method,sex,type,stockflow)
+                })        
+            d3.selectAll("#stockFlow")
+                .on("change", function(d) {
+                    // Get selected year
+                    config.stockflow = d3.select(this).property("value")
+
+                    filename = fileName(config).json
+                    console.log(filename)
+
+                    // data = dataPrepare(raw,year)
                     
-                    d3.selectAll("table").remove()
+                    // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
+                    // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
+                    // Remove previous
+                    d3.selectAll("g")
+                        .transition()
+                        .duration(500)
+                        .style('opacity', 0)
+                        .remove();
+                    
+                
     
                     getData(filename).then(data=> {
                         data = data
@@ -450,8 +528,11 @@ getMetaData().then((meta)=>{
             d3.selectAll("#selectType")
                 .on("change", function(d) {
                     // Get selected value
-                    filename = "json/migrations.json"
-                    values = d3.select(this).property("value")
+                    config.type = d3.select(this).property("value")
+
+                    filename = fileName(config).json
+                    console.log(filename)
+                    
                     // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                     // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                     // Remove previous
@@ -473,7 +554,10 @@ getMetaData().then((meta)=>{
             d3.selectAll("#selectGender")
                 .on("change", function(d) {
                     // Get selected value
-                    sex = d3.select(this).property("value")
+                    config.sex = d3.select(this).property("value")
+
+                    filename = fileName(config).json
+                    console.log(filename)
                     // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
                     // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                     // Remove previous
@@ -485,7 +569,11 @@ getMetaData().then((meta)=>{
                     
                     d3.selectAll("table").remove()
     
-                    draw(data,year,region,method,sex,type,stockflow)
+                    getData(filename).then(data=> {
+                        data = data
+                        console.log("fILE!",filename)
+
+                        draw(data,year,region,method,sex,type,stockflow)})
                     // drawSankey(year,region,method,sex,type,stockflow)
                 })
             
@@ -494,7 +582,7 @@ getMetaData().then((meta)=>{
             d3.selectAll("#activeData")
                 .html("<br>"+
                 "<strong>Variable:</strong> "+stockflow+"<br>"+
-                "<strong>Method:</strong> "+values+"<br>"+
+                "<strong>Method:</strong> "+method+"<br>"+
                 "<strong>Year:</strong> "+year+"<br>"+
                 "<strong>Gender:</strong> "+sex+"<br>"+
                 "<strong>Type:</strong> "+type+"<br>"+
