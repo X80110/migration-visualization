@@ -29,8 +29,8 @@ var height = width;
 const textId = "O-text-1"; 
 
 // Define
-var innerRadius = Math.min(width, height) *0.5-60;
-var outerRadius = innerRadius + 16.5;
+var innerRadius = Math.min(width, height) *0.5-80;
+var outerRadius = innerRadius + 18.5;
 
 const chordDiagram = d3.select("#chart")
     .append("svg")
@@ -244,6 +244,7 @@ getMetaData().then((meta)=>{
         
         //// CHART RENDERING
         function draw(input,config){
+            console.log(input)
             year = config.year
             region = config.region
             sex = config.sex
@@ -270,14 +271,16 @@ getMetaData().then((meta)=>{
                 // here we'll find the region index -> we'll get next region -> finally we define a range between both index and replace the values in region in the selected region place 
                 const nameRegionIndex = input.names.indexOf(region) // index of selected region in names
                 const regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
-                const nextNameRegionIndex = input.regions[regionIndex +1] > input.names.length ? input.regions[regionIndex]: input.regions[regionIndex +1]// names index of the following region in regions
-                // console.log(nameRegionIndex, nextNameRegionIndex)
+                const nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop() // if equal or higher than last element in regions
+                                             ? input.names.length // return last index iin names
+                                             : input.regions[regionIndex+1] // return next element in regions        
+                console.log(nameRegionIndex,nextNameRegionIndex)
                 
                 // get range between two values
                 const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i);
                 
                 let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1/* -1 */)
-                // console.log(input.names.length)
+
                 var selectedRegions = input.regions.flat()
                 // output regions and selected countries
                 selectedRegions[regionIndex] = countryRange
