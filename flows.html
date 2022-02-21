@@ -9,7 +9,21 @@
 	@import url(//fonts.googleapis.com/css?family=Poppins:400,600,700,300);
 	/* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
 	
-	
+	.chords {
+    fill-opacity: 0.75;
+    mix-blend-mode: multiply;
+  }
+  .arc path {
+    /* stroke: #fff; */
+    transition: all 0.1s cubic-bezier(0.215, 0.61, 0.355, 1);
+    cursor: pointer;
+  }
+  .arc text {
+    cursor: pointer;
+  }
+  .chords path {
+    transition: all 0.1s cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
 	body {
 		font-family:  'Poppins', sans-serif;
 		font-size: 52.5%;
@@ -353,14 +367,14 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 	 <!-- <div id="activeData"></div> -->
 	 <div style="text-align: center;">
 		<div style="background-color: rgba(255, 255, 255, 0.8);">
-			<table  style="min-width:180px" class="center" >
+			<table class="center" >
 				<tr>
 					<th>STOCKS</th>
 					<th>FLOWS</th>
 				</tr>
 				<tr>
-					<td class="sub">→ <a href="index.html">all</a></td>
-					<td class="sub"><a href="flows.html">all</a></td>
+					<td class="sub"><a href="index.html">all</a></td>
+					<td class="sub">→ <a href="flows.html">all</a></td>
 				</tr>
 				<tr>
 					<td class="sub"><a href="stocks_by_gender.html">by gender</a></td>
@@ -391,26 +405,26 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 			</form><br>
 		</div> -->
 
-		<!-- <div class="method">
+		<div class="method">
 			
 			<label for="selectMethod">Estimation method</label>
 			<select value="da_pb_closed" id="selectMethod"></select>
-		</div><br> -->
+		</div><br>
 
-		<!-- <div class="subgroups">
+		<div class="subgroups">
 			<form>
 				<div class="radio">
-					<input type="radio" id="all" name="subselector" value="all" checked>
-					<label for="all">All</label>
-					<input type="radio" id="gender" name="subselector" >
-					<label for="selectGender">by gender:</label>
-					<select value= 'female' id="selectGender"></select>
-					<input type="radio" id="type" name="subselector" value="onward">
-					<label for="selectType">by type:</label>
-					<select id="selectType"></select>
+					<!-- <input type="radio" id="all" name="subselector" value="all" checked>
+					<label for="all">All</label> -->
+					<!-- <input type="radio" id="gender" name="subselector" > -->
+				<!-- 	<label for="selectGender">by gender:</label>
+					<select value= 'female' id="selectGender"></select> -->
+					<!-- <input type="radio" id="type" name="subselector" value="onward"> -->
+					<!-- <label for="selectType">by type:</label>
+					<select id="selectType"></select> -->
 				</div>
 			</form>
-		</div> -->
+		</div>
 		<div   class="grid-container">
 			<div  id="chart" class="chordGrid"></div>
 			<!-- <div id="chart" class="chordGrid"></div> -->
@@ -428,11 +442,10 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 	
 	<script src="chord-chart3.js"></script>
 	<script>
-		// filename = "stocks"
-		config.stockflow = "stock"
-		config.sex = "all"
+		config.stockflow = "flow"
+		config.sex = ""
 		config.type = ""
-		config.method = ""
+		config.method = "da_pb_closed"
 		filename = fileName(config).json
 		getData(filename).then(raw => {
 			draw(raw,config)

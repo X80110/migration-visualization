@@ -353,13 +353,13 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 	 <!-- <div id="activeData"></div> -->
 	 <div style="text-align: center;">
 		<div style="background-color: rgba(255, 255, 255, 0.8);">
-			<table  style="min-width:180px" class="center" >
+			<table class="center" >
 				<tr>
 					<th>STOCKS</th>
 					<th>FLOWS</th>
 				</tr>
 				<tr>
-					<td class="sub">→ <a href="index.html">all</a></td>
+					<td class="sub"><a href="index.html">all</a></td>
 					<td class="sub"><a href="flows.html">all</a></td>
 				</tr>
 				<tr>
@@ -368,7 +368,7 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 				</tr>
 				<tr>
 					<td></td>
-					<td class="sub"><a href="flows_by_type.html">by type</a></td>
+					<td class="sub">→ <a href="flows_by_type.html">by type</a></td>
 				</tr>
 				
 			</table>
@@ -391,26 +391,26 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 			</form><br>
 		</div> -->
 
-		<!-- <div class="method">
+		<div class="method">
 			
 			<label for="selectMethod">Estimation method</label>
 			<select value="da_pb_closed" id="selectMethod"></select>
-		</div><br> -->
+		</div><br>
 
-		<!-- <div class="subgroups">
+		<div class="subgroups">
 			<form>
 				<div class="radio">
-					<input type="radio" id="all" name="subselector" value="all" checked>
-					<label for="all">All</label>
-					<input type="radio" id="gender" name="subselector" >
-					<label for="selectGender">by gender:</label>
-					<select value= 'female' id="selectGender"></select>
-					<input type="radio" id="type" name="subselector" value="onward">
+					<!-- <input type="radio" id="all" name="subselector" value="all" checked>
+					<label for="all">All</label> -->
+					<!-- <input type="radio" id="gender" name="subselector" > -->
+					<!-- <label for="selectGender">by gender:</label>
+					<select value= 'female' id="selectGender"></select> -->
+					<!-- <input type="radio" id="type" name="subselector" value="onward"> -->
 					<label for="selectType">by type:</label>
 					<select id="selectType"></select>
 				</div>
 			</form>
-		</div> -->
+		</div>
 		<div   class="grid-container">
 			<div  id="chart" class="chordGrid"></div>
 			<!-- <div id="chart" class="chordGrid"></div> -->
@@ -428,11 +428,17 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 	
 	<script src="chord-chart3.js"></script>
 	<script>
-		// filename = "stocks"
-		config.stockflow = "stock"
-		config.sex = "all"
-		config.type = ""
-		config.method = ""
+		config.stockflow = "flow"
+		config.sex = ""
+		config.type = "outward"
+		config.method = "da_pb_closed"
+		
+		const allMethods = config.type === ""
+                ? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
+                : ['da_min_closed', 'da_min_open','da_pb_closed'] 
+		const allTypes = ['outward','transit','return']
+		const allGenders = ['male', 'female'].reverse()
+		
 		filename = fileName(config).json
 		getData(filename).then(raw => {
 			draw(raw,config)
