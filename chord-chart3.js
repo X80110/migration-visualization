@@ -259,17 +259,17 @@ function draw(input,config){
         console.log(nldata)
         // Filter data
         // Generate new names excluding non available values
-        let filteredData = nldata.links.filter(d=> d.value > 100000)
+        let filteredData = nldata.links.filter(d=> d.value > 150000)
         
 
-        filteredData.sort((a,b)=> (a.source_region.localeCompare(b.source_region)))// /* || a.value - b.value  */&& a.source - b.source));
+        // filteredData.sort((a,b)=> (a.source_region.localeCompare(b.source_region)))// /* || a.value - b.value  */&& a.source - b.source));
 
-        console.log(filteredData)
+        // console.log(filteredData)
         
 
-        let names = Array.from(new Set(filteredData.flatMap(d => [d.source, d.target])));
-        let regionNames = Array.from(new Set(filteredData.flatMap(d => [d.source_region, d.target_region])));
-        // console.log(getRegion.indexOf(names))
+        let names = Array.from(new Set(filteredData.flatMap(d => [d.source]))); // <- be careful, this broke the country sorting by regions if d.target specified
+        // let regionNames = Array.from(new Set(filteredData.flatMap(d => [d.source_region, d.target_region])));
+        // console.log(names)
         
         // AT THIS POINT WE REQUIRE TO RE BY REGIONS
         // let resort = filteredData.sortSORT((a, b) => a..localeCompare(b.city) || b.price - a.price);
@@ -320,7 +320,7 @@ function draw(input,config){
         return selectedRegions.flat()
     }
     let dataSliced = filteredMatrix(data,year)
-    // data = dataSliced
+    data = dataSliced
     let filteredRegions = filterByRegion(data,region)
 
     
