@@ -312,7 +312,7 @@ input[type='radio'] {
 }
 .subgroups label{
 
-	color: grey;
+	color: darkslategray;
 	margin-right:5px;
 	
 }
@@ -389,6 +389,7 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 			<hr>
 		</div>
 		<div class="slider">
+			<div class="subgroups"><label> Select period: </label></div>
 			<div id="yearRange"></div>
 			<input type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
 			<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
@@ -405,9 +406,9 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 			</form><br>
 		</div> -->
 
-		<div class="method">
+		<div class="subgroups">
 			
-			<label for="selectMethod">Estimation method</label>
+			<label for="selectMethod">Select stimation method: </label>
 			<select value="da_pb_closed" id="selectMethod"></select>
 		</div><br>
 
@@ -434,7 +435,7 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 		</div>
 	</div> 
 	<!-- <script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script> -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script>
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script> -->
 	<!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
 	<script src="https://d3js.org/d3.v7.min.js"></script>
 	<script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
@@ -446,6 +447,13 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 		config.sex = ""
 		config.type = ""
 		config.method = "da_pb_closed"
+
+		const allMethods = config.type === "" 
+                ? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
+                : ['da_min_closed', 'da_min_open','da_pb_closed'] 
+		const allTypes = ['outward','transit','return']
+		const allGenders = ['male', 'female'].reverse()
+		
 		filename = fileName(config).json
 		getData(filename).then(raw => {
 			draw(raw,config)

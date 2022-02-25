@@ -24,8 +24,6 @@ const chordDiagram = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
-
-
 // Standard chord settings    
 var chord = d3.chordDirected()
     .padAngle(1 / innerRadius)
@@ -39,51 +37,72 @@ var ribbon = d3.ribbonArrow()
     .padAngle(1 / innerRadius);
 var formatValue = (x) => `${x.toFixed(0).toLocaleString()}`;
 
-// Set a matrix of the data data to pass to the chord() function
-/* function getMatrix(names,data) {
-    const index = new Map(names.map((name, i) => [name, i]));
-    const matrix = Array.from(index, () => new Array(names.length).fill(0));
-
-    for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
-        return matrix;
-} */
 
 const getMetaData = async () => {
     const metadata = await d3.csv("data/country-metadata-flags.csv");
-    
+
     return  metadata
     }
-function dataPrepare(dataMatrix,year){ // <-- 'values' & 'sex' should be filtered there . 
+function dataPrepare(input,year){ // <-- 'values' & 'sex' should be filtered there . 
     year = year || 1990
+    
     // sex = sex || 'Female' || {}
     // method = year || 1990
     // let metadata = getMetaData().then(d=> {return d});
     // // console.log(metadata)
-    nodes = dataMatrix//JSON.parse(JSON.stringify(dataMatrix));
+    nodes = input//JSON.parse(JSON.stringify(dataMatrix));
 
     selectedMatrix  = nodes.matrix[year]
     // console.log("INput!!",dataMatrix)
     names = nodes.names
-    regionNames = nodes.regions.map(d=> names[d])
+    // dataMatrix.regions.map(d=>console.log(dataMatrix.names[d]))
+
+    // ASSIGN REGION TO EACH COUNTRY   ---   THIS WILL BE USED TO SORT EACH AFTER FILTERING OVER A THRESHOLD 
+    function getRegion(index) {
+        var r = 0;
+        for (var i = 0; i < input.regions.length; i++) {
+          if (input.regions[i] > index) {
+            break;
+          }
+          r = i;
+        }
+        return input.regions[r];
+    }
+    
+    function getRegionName(name){
+        let regionName = []
+        for (let i in input.names){
+            let region = getRegion(i)
+            regionName.push(input.names[region])
+        }
+        return regionName
+    }
+    // let region = getRegion()
+    // let regionName = dataMatrix.names[region]
+    // console.log(regionName)
+
+        // dataMatrix.regionNames[j] = 
+        
+    
+    /* for (let i in regions) {
+        return i
+
+        }
+     */
+     /*    let region 
+            dataMatrix.region = region = dataMatrix.regions[i]
+            console.log(region)
+        })}
+        ) */
     // console.log("NAAAMEEES!!",names,regionNames)
     // remove connections
     
     
-    let result = { matrix: selectedMatrix, names: names, regions: nodes.regions};
+    let result = { matrix: selectedMatrix, names: names,regionNames: getRegionName(names), regions: nodes.regions};
+    console.log(result)
     return result;
 }
 
-
-
-
-/* 
-    when *flow* is selected
-        sex  --> method
-        type   -->  method.subset
-        
-    when *stock* is selected
-        sex
- */
 let config = {}
 config.year = 1990 || ""
 config.stockflow = "stock"
@@ -92,42 +111,6 @@ config.type = "" || "outward"
 config.method = "da_pb_closed" || ""
 
 
-// If filtered by type, there are less methods
-// const allMethods = config.type != "" && config.stockflow != "stock"
-//     ? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
-//     : ['da_min_closed', 'da_min_open','da_pb_closed'] 
-/* const allMethods = config.type === "" 
-                ? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
-                : ['da_min_closed', 'da_min_open','da_pb_closed'] 
-const allTypes = ['outward','transit','return']
-const allGenders = ['male', 'female'].reverse() */
-
-
-
-// let sex = type != "" ? "": "female"
-
-
-// let fileName = (config) => {
-//     stockflow = config.stockflow 
-//     sex = config.sex === "all" || ""  
-//         ? ""
-//         : "_"+config.sex
-//     type = stockflow === "stock" || config.sex != "all" 
-//         ? "" 
-//         : "_"+config.type || '_outward'
-//     method = stockflow === "stock" 
-//         ? ""
-//         : "_"+config.method || "_da_pb_closed"
-//     let json = 'json/'+stockflow+sex+type+method+'.json'
-    
-    
-//     json = json.replace("__","_").replace("_.",".")
-//     // console.log(json)
-//      return {
-//          json:json,
-//          values: stockflow, sex, type, method
-//         }
-//     }
 let fileName = (config) => {
     stockflow = config.stockflow 
     sex = config.sex === "all" || ""  
@@ -155,7 +138,7 @@ filename = fileName(config).json
 async function getData(filename) {
     try {
         // const raw_data = await d3.json("json/mig_flows"+selectedValue+".json") 
-        console.log(filename)
+        // console.log(filename)
         const raw_data = await d3.json(filename) 
         return  raw_data
     }
@@ -165,22 +148,15 @@ async function getData(filename) {
     }
 }
 
+
+
+
+// RUN SELECTORS
 getMetaData().then((meta)=>{ 
     getData(filename).then((raw)=>{ 
-        // // INITIAL DATA INPUTS
-        // // console.log("OTHER!!",data)
-        // // const allYears = [...new Set(data.map((d) => d.year))].reverse();
-        // const allYears = Object.keys(raw.matrix)
-        // let selectedYear = allYears[0] 
-        // // year = year || allYears[0]
-        // // let data = dataPrepare(raw,selectedYear) 
-        // // console.log(data.matrix)
-        // // // const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
-        // // const allTypes = ['outward','transit','return']
-        // // const allGenders = ['male', 'female'].reverse()
         
-        // // console.log(Math.max(parseInt(allYears)))
-
+        
+        // console.log(raw.names[])
         // CREATE SELECTORS
         // YEAR SELECTOR  // -    -    -    -    -    -    -    -    -    -    -    -    - 
         let slider = document.getElementById("selectYear");
@@ -193,7 +169,6 @@ getMetaData().then((meta)=>{
             let value = parseInt(this.value)+5
             output.innerHTML = this.value+"  –  "+value;
         }
-            
 
         d3.select("#selectMethod")
             .selectAll('myOptions')
@@ -225,35 +200,113 @@ getMetaData().then((meta)=>{
 })
     
 function draw(input,config){
-    console.log(input)
+    // console.log(input)
     year = config.year
     region = config.region
     sex = config.sex
-    const data = dataPrepare(input,year)
-    // console.log("DATA",data)
-    // year = year
+    let data = dataPrepare(input,year)
+    
+    // Set a matrix of the data data to pass to the chord() function
+    function getMatrix(names,data) {
+        const index = new Map(names.map((name, i) => [name, i]));
+        // console.log(index)
+        const matrix = Array.from(index, () => new Array(names.length).fill(0));
+
+        for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
+            return matrix;
+    }
+
+    function filteredMatrix(input){
+        data = input
+
+        // GET SOURCE-TARGET STRUCTURE 
+        // Create array of name & connections objects
+        let matrix = data.names.map((d,i)=> {
+                let name = d
+                let regionName = data.regionNames[i]
+                let matrix = data.matrix.map(a=>a[i])
+
+                return{ name:name,
+                        region: regionName,
+                        connections:matrix }
+        })
+        // List nodes 
+        let nodes = matrix
+        // console.log(nodes)
+        
+        // Create object to push links during loop
+        let links = []
+        let l = 0 // <- iterator
+        
+        // Run 1st level loop  
+        for (let j in matrix){
+            let source_region = matrix[j].region    // <- include region why not
+            let source = matrix[j].name
+            // Run 2nd level loop (into each 1st level array)
+            for (let k in matrix[j].connections){
+                let target = matrix[k].name
+                let target_region = matrix[k].region    // <- include region why not
+                let value = matrix[j].connections[k]
+                if (value!== 0) {
+                    links[l] = {source_region,source,target_region,target,value}
+                    l = l+1 
+                }
+            }
+        }
+        
+        
+        let nldata = {nodes: nodes, links:links}
+        console.log(nldata)
+        // Filter data
+        // Generate new names excluding non available values
+        let filteredData = nldata.links.filter(d=> d.value > 100000)
+        
+
+        filteredData.sort((a,b)=> (a.source_region.localeCompare(b.source_region)))// /* || a.value - b.value  */&& a.source - b.source));
+
+        console.log(filteredData)
+        
+
+        let names = Array.from(new Set(filteredData.flatMap(d => [d.source, d.target])));
+        let regionNames = Array.from(new Set(filteredData.flatMap(d => [d.source_region, d.target_region])));
+        // console.log(getRegion.indexOf(names))
+        
+        // AT THIS POINT WE REQUIRE TO RE BY REGIONS
+        // let resort = filteredData.sortSORT((a, b) => a..localeCompare(b.city) || b.price - a.price);
+        // Generate back the matrix with filtered values
+        
+        let filteredMatrix = getMatrix(names,filteredData)
+        // Reindex regions
+        let regions = []
+        names.map((d,i)=> {
+            if (isRegion(d)){
+                regions.push(i)
+                 return d
+            }
+        })
+        // console.log(regions.map(d=>names[d]))
+        return{ names: names, matrix: filteredMatrix, regions: regions}
+    }
+    
+
+    
 
     stockflow = stockflow
     let names = []
     let unfilteredMatrix = []
     let matrix = []
-    
-    function isRegion(name) {
-        return data.regions.includes(data.names.indexOf(name))
-    } 
-    // console.log(isRegion('Oceania'))
-    // console.log(isRegion('Angola'))
-    // console.log(isRegion(names[0])) 
-    // console.log(isRegion(names[1])) 
-    
+
+    let nameRegionIndex
+    let regionIndex = 1
+    let nextNameRegionIndex
     function filterByRegion(input, region) {
         // here we'll find the region index -> we'll get next region -> finally we define a range between both index and replace the values in region in the selected region place 
-        const nameRegionIndex = input.names.indexOf(region) // index of selected region in names
-        const regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
-        const nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop() // if equal or higher than last element in regions
+        nameRegionIndex = input.names.indexOf(region) // index of selected region in names
+        regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
+        nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop() // if equal or higher than last element in regions
                                      ? input.names.length // return last index iin names
                                      : input.regions[regionIndex+1] // return next element in regions        
-        console.log(nameRegionIndex,nextNameRegionIndex)
+        // console.log(nameRegionIndex,nextNameRegionIndex)
         
         // get range between two values
         const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i);
@@ -266,9 +319,12 @@ function draw(input,config){
 
         return selectedRegions.flat()
     }
-    let filteredRegions = filterByRegion(dataPrepare(input,year),region)
-    // console.log(filteredRegions)
-    // console.log(data.regions)
+    let dataSliced = filteredMatrix(data,year)
+    // data = dataSliced
+    let filteredRegions = filterByRegion(data,region)
+
+    
+    console.log(dataSliced)
 
     // INITIAL MATRIX ONLY REGIONS
     filteredRegions.map(d=> {
@@ -281,18 +337,33 @@ function draw(input,config){
         let filtered = filteredRegions.map(a=> d[a])
         matrix.push(filtered)    
     })
+    // console.log(unfilteredMatrix)
     // console.log(names.map(d=> isRegion(d)))
+    
+    
+    function isRegion(name) {
+        return data.regions.includes(data.names.indexOf(name))
+    } 
+    // console.log(isRegion('Oceania'))
+    // console.log(isRegion('Angola'))
+    // console.log(isRegion(names[0])) 
+    // console.log(isRegion(names[1])) 
+
 
     // Visualization settings
     // const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
-    const colorScale = chroma.scale(["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00"])
-          .mode('hsl').colors(11)
-          .map(color => chroma(color).saturate(0.1));
+    // const colorScale = chroma.scale(["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00"])
+    //       .mode('hsl').colors(11)
+    //       .map(color => chroma(color).saturate(0.1));
 
-    const color = d3.scaleOrdinal(names, colorScale)
-    // var color = d3.scaleOrdinal(
-    //     names,
-    //     ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
+    // const color = d3.scaleOrdinal(names, colorScale)
+    const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
+    
+    const colorCountries = colorRegions[regionIndex]
+    var color = d3.scaleOrdinal(
+        names,
+        colorRegions);
+
 
     chordDiagram.append("path")
         .attr("id", textId)
@@ -322,7 +393,7 @@ function draw(input,config){
         .attr("class","chord")
         .call(g => g.append("path")
             .attr("d", arc) 
-            .attr("fill", d=> isRegion(names[d.index]) ? color(names[d.index]) : "lightblue")
+            .attr("fill", d=> isRegion(names[d.index]) ? /* console.log(names[d.index]) & */color(names[d.index]) :colorCountries)
             // On each <g> we set a <path> for the arc
             .attr("stroke", "#fff")
             .attr("stroke-width", 2))
@@ -380,7 +451,7 @@ function draw(input,config){
     chordDiagram.selectAll(".chord")            
         .on("click", function (evt, d) {
             config.region = names[d.index]
-            console.log(region)
+            // console.log(region)
             // print selected criteria on console
             // console.log(names)
             
