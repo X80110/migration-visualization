@@ -54,7 +54,7 @@ function dataPrepare(input,year){ // <-- 'values' & 'sex' should be filtered the
 
     selectedMatrix  = nodes.matrix[year]
     // console.log("INput!!",dataMatrix)
-    names = nodes.names
+    let names = nodes.names
     // dataMatrix.regions.map(d=>console.log(dataMatrix.names[d]))
 
     // ASSIGN REGION TO EACH COUNTRY   ---   THIS WILL BE USED TO SORT EACH AFTER FILTERING OVER A THRESHOLD 
@@ -75,6 +75,7 @@ function dataPrepare(input,year){ // <-- 'values' & 'sex' should be filtered the
             let region = getRegion(i)
             regionName.push(input.names[region])
         }
+
         return regionName
     }
     // let region = getRegion()
@@ -139,8 +140,9 @@ async function getData(filename) {
     try {
         // const raw_data = await d3.json("json/mig_flows"+selectedValue+".json") 
         // console.log(filename)
-        const raw_data = await d3.json(filename) 
-        return  raw_data
+        const raw_data = d3.json(filename) 
+        const metadata = d3.csv("data/country-metadata-flags.csv") 
+        return  {raw_data:await raw_data, metadata: await metadata}
     }
     catch (err) {
         console.log(err)
@@ -154,7 +156,23 @@ async function getData(filename) {
 // RUN SELECTORS
 getMetaData().then((meta)=>{ 
     getData(filename).then((raw)=>{ 
+        // console.log(meta)
         
+        
+
+
+        // function getFlag(name) {
+        //     let flag =flags.filter(d=>d[name]).flat().flat()[0]
+        //     raw.flags.push(flag)
+        //     return flag
+        // }
+        // console.log(raw)
+        
+        // console.log(raw.names.map(d=> getFlag(d)))
+        
+        //     raw.names[i] === 
+        // }
+
         
         // console.log(raw.names[])
         // CREATE SELECTORS
@@ -201,6 +219,16 @@ getMetaData().then((meta)=>{
     
 function draw(input,config){
     // console.log(input)
+    meta = input.metadata 
+    input = input.raw_data
+    
+
+    let flags = meta.map(d=>{return {[d.origin_name]:d.origin_flag }})
+    const flag = (name) =>{ 
+        let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
+        return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
+    }
+
     year = config.year
     region = config.region
     sex = config.sex
@@ -256,23 +284,38 @@ function draw(input,config){
         
         
         let nldata = {nodes: nodes, links:links}
-        console.log(nldata)
-        // Filter data
-        // Generate new names excluding non available values
-        let filteredData = nldata.links.filter(d=> d.value > 150000)
+        // console.log(nldata)
+        // Filter data by value
+        let filteredData = nldata.links.filter(d=> d.value > 100000 )
+        // console.log(filteredData)
+        // console.log(nldata.links)
+        
+        // Generate new names array to exclude non-reciprocal source target relationships 
+        let names_target = Array.from(new Set(filteredData.flatMap(d => d.target ))); 
+        let names_source = Array.from(new Set(filteredData.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified
+        
+        // 
+        let names = names_source > names_target ? names_source : names_target
+        
+        let single_names = names.filter(d=> names_source.includes(d) && names_target.includes(d))
+        names = single_names
+        // console.log(names_target,names_source,single_names)
         
 
-        // filteredData.sort((a,b)=> (a.source_region.localeCompare(b.source_region)))// /* || a.value - b.value  */&& a.source - b.source));
+        filteredData = filteredData.filter(d=>names.includes(d.source) && names.includes(d.target))
 
+        // filteredData.filter(d=>single_names.includes(d.source) && single_names.includes(d.target))
         // console.log(filteredData)
         
 
-        let names = Array.from(new Set(filteredData.flatMap(d => [d.source]))); // <- be careful, this broke the country sorting by regions if d.target specified
-        // let regionNames = Array.from(new Set(filteredData.flatMap(d => [d.source_region, d.target_region])));
-        // console.log(names)
         
-        // AT THIS POINT WE REQUIRE TO RE BY REGIONS
-        // let resort = filteredData.sortSORT((a, b) => a..localeCompare(b.city) || b.price - a.price);
+        // ---- > both target&source should be equal in length ---> console.log(Array.from(new Set(filteredData.flatMap(d=>d.source))))
+        // ---- > both target&source should be equal in length ---> console.log(Array.from(new Set(filteredData.flatMap(d=>d.target))))
+        // console.log(filteredData)
+        // console.log(testFilteredData);
+        // console.log(names_source,names_target,names)
+        
+      
         // Generate back the matrix with filtered values
         
         let filteredMatrix = getMatrix(names,filteredData)
@@ -321,6 +364,7 @@ function draw(input,config){
     }
     let dataSliced = filteredMatrix(data,year)
     data = dataSliced
+
     let filteredRegions = filterByRegion(data,region)
 
     
@@ -411,8 +455,16 @@ function draw(input,config){
                     translate(${outerRadius + 5})
                     ${d.angle > Math.PI ? "rotate(180)" : ""}
                     `)
-                .attr("text-anchor", d => d.angle > Math.PI ? "end" : null)
-                .text(d => !isRegion(names[d.index])? names[d.index] : "") // conditional style for countries
+                .text(d => !isRegion(names[d.index])  
+                    ?  (d.angle > Math.PI
+                        ? names[d.index]+ " "+ flag(names[d.index])
+                        :  flag(names[d.index])+ " "+  names[d.index]
+                    )
+                    :"")  // conditional style && flag disposition for countries
+                
+                // .text(d => !isRegion(names[d.index])?flag(names[d.index]) +" "+ names[d.index] : "") // conditional style for countries
+                // .append('text')
+                .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
                 .append("textPath")
                 .attr("fill", d => color(names[d.index]))
                 .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)

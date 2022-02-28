@@ -59,6 +59,7 @@ CUW,Curaçao,🇨🇼,none
 CYP,Cyprus,🇨🇾,West Asia
 CZE,Czechia,🇨🇿,Europe
 CIV,Côte d`Ivoire,🇨🇮,Africa
+CIV,Cote d'Ivoire,🇨🇮,Africa
 DNK,Denmark,🇩🇰,Europe
 DJI,Djibouti,🇩🇯,Africa
 DMA,Dominica,🇩🇲,none
@@ -100,11 +101,13 @@ HMD,Heard Island and McDonald Islands,🇭🇲,none
 VAT,Holy See,🇻🇦,none
 HND,Honduras,🇭🇳,Latin America
 HKG,Hong Kong,🇭🇰,East Asia
+HKG,"China, Hong Kong SAR",🇭🇰,East Asia
 HUN,Hungary,🇭🇺,Europe
 ISL,Iceland,🇮🇸,Europe
 IND,India,🇮🇳,South Asia
 IDN,Indonesia,🇮🇩,South-East Asia
 IRN,Iran,🇮🇷,South Asia
+IRN,Iran (Islamic Republic of),🇮🇷,South Asia
 IRQ,Iraq,🇮🇶,West Asia
 IRL,Ireland,🇮🇪,Europe
 IMN,Isle of Man,🇮🇲,none
@@ -145,6 +148,7 @@ MYT,Mayotte,🇾🇹,Africa
 MEX,Mexico,🇲🇽,Latin America
 FSM,Micronesia,🇫🇲,Oceania
 MDA,Moldova,🇲🇩,Fmr Soviet Union
+MDA,Republic of Moldova,🇲🇩,Fmr Soviet Union
 MCO,Monaco,🇲🇨,Europe
 MNG,Mongolia,🇲🇳,East Asia
 MNE,Montenegro,🇲🇪,Europe
@@ -236,6 +240,7 @@ UGA,Uganda,🇺🇬,Africa
 UKR,Ukraine,🇺🇦,Fmr Soviet Union
 ARE,United Arab Emirates,🇦🇪,West Asia
 GBR,United Kingdom of Great Britain and Northern Ireland,🇬🇧,Europe
+GBR,United Kingdom,🇬🇧,Europe
 UMI,United States Minor Outlying Islands,🇺🇲,none
 USA,United States of America,🇺🇸,North America
 URY,Uruguay,🇺🇾,Latin America
