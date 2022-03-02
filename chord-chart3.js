@@ -24,6 +24,10 @@ const chordDiagram = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
+var element = chordDiagram.append("g")
+    .attr("id", "circle")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
 // Standard chord settings    
 var chord = d3.chordDirected()
     .padAngle(1 / innerRadius)
@@ -383,6 +387,7 @@ function draw(input,config){
     })
     // console.log(unfilteredMatrix)
     // console.log(names.map(d=> isRegion(d)))
+    console.log(input.regions.map((d)=> {return input.names[d]}))
     
     
     function isRegion(name) {
@@ -402,18 +407,136 @@ function draw(input,config){
 
     // const color = d3.scaleOrdinal(names, colorScale)
     const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
+    console.log(colorRegions.length)
+
+    // used to get the color of each region
+    const getRegionColor = (d) => colorRegions[input.regions.map((d)=> {return input.names[d]}).indexOf(d)]
+    // console.log(getRegionColor("Oceania"))
+    // console.log(getRegionColor("Europe"))
+    // console.log(getRegionColor("Sub-Saharan Africa"))
+    // const color = d3.scaleOrdinal(names, colorScale)
+    // const colors =d3.scaleOrdinal(data.regions.length,d3.schemeCategory10);
     
     const colorCountries = colorRegions[regionIndex]
-    var color = d3.scaleOrdinal(
+    
+    
+    /* function arcColor(d) {
+  
+      function chordColor(d) {
+        return arcColor(d.source);
+      }
+      function groupInfo(d) {
+        var el = this;
+  
+        if (infoTimer) {
+          clearTimeout(infoTimer);
+        }
+  
+        var bbox = el.getBBox();
+        infoTimer = setTimeout(function() {
+          var color = d3.select(el).style('fill');
+  
+          info
+            .attr('transform', 'translate(' + (bbox.x + bbox.width / 2) + ',' + (bbox.y + bbox.height / 2) + ')');
+  
+          var text = info.select('.text').selectAll('text')
+            .data([
+              data.names[d.id],
+              'Total In: ' + formatNumber(d.inflow),
+              'Total Out: ' + formatNumber(d.outflow)
+            ]);
+          text.enter().append('text');
+          text
+            .text(function(t) { return t; })
+            .style({
+              fill: luminicity(color) > 160 ? 'black' : 'white'
+            })
+            .attr({
+              transform: function(t, i) {
+                return 'translate(6, ' + (i * 14 + 16) + ')';
+              }
+            });
+          text.exit().remove();
+  
+          var tbbox = info.select('.text').node().getBBox();
+          info.select('rect')
+            .style('fill', color)
+            .attr({
+              width: tbbox.width + 12,
+              height: tbbox.height + 10
+            });
+  
+          info
+            .transition()
+            .attr('opacity', 1);
+        }, config.infoPopupDelay);
+      } */
+  
+    var color  = d3.scaleOrdinal(
         names,
         colorRegions);
+    
+   /*  var group = element.selectAll(".group")
+        .data(input.regions, d=>d);
+    group.enter()
+        .append("g")
+        .attr("class", "group");
+    group
+        .on("mouseover", d=> {
+          chord.classed("fade",p=>{console.log(p)
+            return p.source.id !== d.id && p.target.id !== d.id;
+        });
+    });
+    group.exit().remove();
 
+    var groupPath = group.selectAll('.group-arc')
+        .data(d=> {return d} )
+    groupPath.enter()
+        .append('path')
+        .attr("class", "group-arc")
+        .attr("id", function(d, i, k) { return "group" + k; });
+    groupPath
+        .style("fill", arcColor)
+        .on("mousemove", groupInfo)
+        .transition()
+        .duration(1000)
+        .attrTween("d", d=> {
+          var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || config.initialAngle.arc, d);
+          return function (t) { return arc(i(t)); };
+        });
+    groupPath.exit().remove();
+
+      // open regions
+    groupPath
+        .filter(function(d) {
+          return d.id === d.region;
+        })
+        .on('click', function(d) {
+          if (countries.length + 1 > config.maxRegionsOpen) {
+            countries.shift();
+          }
+          draw(year, countries.concat(d.id));
+        });
+
+      // close regions
+    groupPath
+        .filter(function(d) {
+          return d.id !== d.region;
+        })
+        .on('click', function(d) {
+          countries.splice(countries.indexOf(d.region), 1);
+          draw(year, countries);
+        }); */
+
+        
+
+      
 
     chordDiagram.append("path")
         .attr("id", textId)
         .attr("fill", "none")
         .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle:   2 * Math.PI  }));
-
+    
     // Add ribbons for each chord and its tooltip content <g> <path> <title>
     chords = chordDiagram.append("g")
         .attr("fill-opacity", 0.75)
@@ -423,13 +546,13 @@ function draw(input,config){
         .join("path")
         .attr("class", "path-item")
         .attr("d", ribbon)
-        .attr("fill", d=> color(names[d.source.index]))
+        .attr("fill", (d)=>   color(names[d.source.index]))
         .style("mix-blend-mode", "multiply")
         
         .append("title")
         .text(d => `${names[d.source.index]} inflow ${names[d.target.index]} ${formatValue(d.source.value)}`);
-    
-    // Add outter arcs for each region and its titles
+        // Add outter arcs for each region and its titles
+        
     arcs = chordDiagram.append("g")        
         .selectAll("g")
         .data(chord(matrix).groups)
@@ -437,7 +560,9 @@ function draw(input,config){
         .attr("class","chord")
         .call(g => g.append("path")
             .attr("d", arc) 
-            .attr("fill", d=> isRegion(names[d.index]) ? /* console.log(names[d.index]) & */color(names[d.index]) :colorCountries)
+            // .attr("fill", d=> arcColor(names[d.index]))
+            // .attr("fill", d=> isRegion(names[d.index]) ? /* console.log(names[d.index]) & */ arcColor(names[d.index]) : colorCountries)
+            .attr("fill", d=> isRegion(names[d.index]) ? /* console.log(names[d.index]) & */getRegionColor(names[d.index]) :colorCountries)
             // On each <g> we set a <path> for the arc
             .attr("stroke", "#fff")
             .attr("stroke-width", 2))
@@ -478,7 +603,7 @@ function draw(input,config){
             .text(d => {
                 return `${names[d.index]} outflow ${formatValue(d3.sum(matrix[d.index]))} people and inflow ${formatValue(d3.sum(matrix, row => row[d.index]))} people`
         }))
-
+    
     // d3.select("#table").append("table").html(table)
     
     // INTERACTIONS
