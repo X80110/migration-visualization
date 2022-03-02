@@ -591,7 +591,7 @@ function draw(input,config){
                 // .append('text')
                 .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
                 .append("textPath")
-                .attr("fill", d => color(names[d.index]))
+                .attr("fill", d => getRegionColor(names[d.index]))
                 .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
                 .style("text-anchor","middle")
                 .attr("xlink:href", "#"+textId) 
