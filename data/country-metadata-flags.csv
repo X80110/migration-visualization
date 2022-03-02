@@ -2,7 +2,7 @@ origin_iso,origin_name,origin_flag,originregion_name
 AFG,Afghanistan,🇦🇫,South Asia
 ALB,Albania,🇦🇱,Europe
 DZA,Algeria,🇩🇿,Africa
-ASM,American Samoa,none,none
+ASM,American Samoa,,none
 AND,Andorra,🇦🇩,none
 AGO,Angola,🇦🇴,Africa
 AIA,Anguilla,🇦🇮,none
@@ -25,6 +25,7 @@ BEN,Benin,🇧🇯,Africa
 BMU,Bermuda,🇧🇲,none
 BTN,Bhutan,🇧🇹,South Asia
 BOL,Bolivia,🇧🇴,Latin America
+BOL,Bolivia (Plurinational State of),🇧🇴,Latin America
 BES,"Bonaire, Sint Eustatius and Saba",🇧🇶‍,none
 BIH,Bosnia and Herzegovina,🇧🇦,Europe
 BWA,Botswana,🇧🇼,Africa
@@ -73,6 +74,7 @@ EST,Estonia,🇪🇪,Fmr Soviet Union
 SWZ,Eswatini,🇸🇿,Africa
 ETH,Ethiopia,🇪🇹,Africa
 FLK,Falkland Islands,🇫🇰,none
+FLK,Falkland Islands (Malvinas),🇫🇰,none
 FRO,Faroe Islands,🇫🇴,none
 FJI,Fiji,🇫🇯,Oceania
 FIN,Finland,🇫🇮,Europe
@@ -121,10 +123,12 @@ KAZ,Kazakhstan,🇰🇿,Fmr Soviet Union
 KEN,Kenya,🇰🇪,Africa
 KIR,Kiribati,🇰🇮,none
 PRK,Democratic People`s Republic of Korea,🇰🇵,East Asia
+PRK,Dem. People's Republic of Korea,🇰🇵,East Asia
 KOR,Republic of Korea,🇰🇷,East Asia
 KWT,Kuwait,🇰🇼,West Asia
 KGZ,Kyrgyzstan,🇰🇬,Fmr Soviet Union
 LAO,People`s Democratic Republic of Lao,🇱🇦,South-East Asia
+LAO,Lao People's Democratic Republic,🇱🇦,South-East Asia
 LVA,Latvia,🇱🇻,Fmr Soviet Union
 LBN,Lebanon,🇱🇧,West Asia
 LSO,Lesotho,🇱🇸,Africa
@@ -134,6 +138,7 @@ LIE,Liechtenstein,🇱🇮,none
 LTU,Lithuania,🇱🇹,Fmr Soviet Union
 LUX,Luxembourg,🇱🇺,Europe
 MAC,Macao,🇲🇴,East Asia
+MAC,"China, Macao SAR",🇲🇴,East Asia
 MDG,Madagascar,🇲🇬,Africa
 MWI,Malawi,🇲🇼,Africa
 MYS,Malaysia,🇲🇾,South-East Asia
@@ -147,6 +152,7 @@ MUS,Mauritius,🇲🇺,Africa
 MYT,Mayotte,🇾🇹,Africa
 MEX,Mexico,🇲🇽,Latin America
 FSM,Micronesia,🇫🇲,Oceania
+FSM,Micronesia (Fed. States of),🇫🇲,Oceania
 MDA,Moldova,🇲🇩,Fmr Soviet Union
 MDA,Republic of Moldova,🇲🇩,Fmr Soviet Union
 MCO,Monaco,🇲🇨,Europe
@@ -184,10 +190,12 @@ PRT,Portugal,🇵🇹,Europe
 PRI,Puerto Rico,🇵🇷,Latin America
 QAT,Qatar,🇶🇦,West Asia
 MKD,Republic of North Macedonia,🇲🇰,Europe
+MKD,North Macedonia,🇲🇰,Europe
 ROU,Romania,🇷🇴,Europe
 RUS,Russian Federation,🇷🇺,Fmr Soviet Union
 RWA,Rwanda,🇷🇼,Africa
 REU,Réunion,🇷🇪,Africa
+REU,Reunion,🇷🇪,Africa
 BLM,Saint Barthélemy,🇧🇱,none
 SHN,"Saint Helena, Ascension and Tristan da Cunha",🇹🇦,none
 KNA,Saint Kitts and Nevis,🇰🇳,none
@@ -247,10 +255,13 @@ URY,Uruguay,🇺🇾,Latin America
 UZB,Uzbekistan,🇺🇿,Fmr Soviet Union
 VUT,Vanuatu,🇻🇺,Oceania
 VEN,Venezuela,🇻🇪,Latin America
+VEN,Venezuela (Bolivarian Republic of),🇻🇪,Latin America
 VNM,Viet Nam,🇻🇳,South-East Asia
 VGB,British Virgin Islands,🇻🇬,none
 VIR,US Virgin Islands,🇻🇮,Latin America
+VIR,United States Virgin Islands,🇻🇮,Latin America
 WLF,Wallis and Futuna,🇼🇫,none
+WLF,Wallis and Futuna Islands,🇼🇫,none
 ESH,Western Sahara,🇪🇭,Africa
 YEM,Yemen,🇾🇪,West Asia
 ZMB,Zambia,🇿🇲,Africa

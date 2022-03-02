@@ -290,7 +290,7 @@ function draw(input,config){
         let nldata = {nodes: nodes, links:links}
         // console.log(nldata)
         // Filter data by value
-        let filteredData = nldata.links.filter(d=> d.value > 100000 )
+        let filteredData = nldata.links//.filter(d=> d.value > 100000 )
         // console.log(filteredData)
         // console.log(nldata.links)
         
@@ -399,39 +399,27 @@ function draw(input,config){
     // console.log(isRegion(names[1])) 
 
 
-    // Visualization settings
-    // const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
-    // const colorScale = chroma.scale(["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00"])
-    //       .mode('hsl').colors(11)
-    //       .map(color => chroma(color).saturate(0.1));
-
-    // const color = d3.scaleOrdinal(names, colorScale)
+    // Color settings
     const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
-    console.log(colorRegions.length)
-
-    // used to get the color of each region
+    
+    // this gets the html color by the name of the regions (which is the var used creating the visuals)
     const getRegionColor = (d) => colorRegions[input.regions.map((d)=> {return input.names[d]}).indexOf(d)]
+    
+    // this gets the html color of the region selected by the user
+    const colorCountries = [colorRegions[regionIndex]+'65']
+    
+    console.log([colorCountries])
+    // const color = d3.scaleOrdinal(names, colorScale)
+    // used to get the color of each region
     // console.log(getRegionColor("Oceania"))
     // console.log(getRegionColor("Europe"))
     // console.log(getRegionColor("Sub-Saharan Africa"))
     // const color = d3.scaleOrdinal(names, colorScale)
     // const colors =d3.scaleOrdinal(data.regions.length,d3.schemeCategory10);
     
-    const colorCountries = colorRegions[regionIndex]
     
     
-    /* function arcColor(d) {
-  
-      function chordColor(d) {
-        return arcColor(d.source);
-      }
-      function groupInfo(d) {
-        var el = this;
-  
-        if (infoTimer) {
-          clearTimeout(infoTimer);
-        }
-  
+    /*  
         var bbox = el.getBBox();
         infoTimer = setTimeout(function() {
           var color = d3.select(el).style('fill');
@@ -546,7 +534,7 @@ function draw(input,config){
         .join("path")
         .attr("class", "path-item")
         .attr("d", ribbon)
-        .attr("fill", (d)=>   color(names[d.source.index]))
+        .attr("fill", d=> isRegion(names[d.source.index]) ? /* console.log(names[d.index]) & */getRegionColor(names[d.source.index]) :colorCountries)
         .style("mix-blend-mode", "multiply")
         
         .append("title")
@@ -564,14 +552,14 @@ function draw(input,config){
             // .attr("fill", d=> isRegion(names[d.index]) ? /* console.log(names[d.index]) & */ arcColor(names[d.index]) : colorCountries)
             .attr("fill", d=> isRegion(names[d.index]) ? /* console.log(names[d.index]) & */getRegionColor(names[d.index]) :colorCountries)
             // On each <g> we set a <path> for the arc
-            .attr("stroke", "#fff")
+            // .attr("stroke", "#fff")
             .attr("stroke-width", 2))
     
         // LABELS 
         // on specific attributes we use isRegion() to define country/region labels
         .call(g=>{ // 
                 g.append('text')
-                .attr("font-size", d=> !isRegion(names[d.index]) ? 5.2 : 7.2 )
+                .attr("font-size", d=> !isRegion(names[d.index]) ? 6 : 7.2 )
                 // .attr("fill", d => color(names[d.index]))
                 .attr("dy", d=> !isRegion(names[d.index]) ? 2 : -4 )
                 .each(d => !isRegion(names[d.index]) ? (d.angle = (d.startAngle + d.endAngle) / 2):"") // conditional style for countries
