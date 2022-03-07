@@ -118,6 +118,7 @@ ITA,Italy,🇮🇹,Europe
 JAM,Jamaica,🇯🇲,Latin America
 JPN,Japan,🇯🇵,East Asia
 JEY,Jersey,🇯🇪,none
+JEY,Channel Islands,🇯🇪,none
 JOR,Jordan,🇯🇴,West Asia
 KAZ,Kazakhstan,🇰🇿,Fmr Soviet Union
 KEN,Kenya,🇰🇪,Africa
@@ -179,6 +180,7 @@ OMN,Oman,🇴🇲,West Asia
 PAK,Pakistan,🇵🇰,South Asia
 PLW,Palau,🇵🇼,none
 PSE,"Palestine, State of",🇵🇸,West Asia
+PSE,"State of Palestine",🇵🇸,West Asia
 PAN,Panama,🇵🇦,Latin America
 PNG,Papua New Guinea,🇵🇬,Oceania
 PRY,Paraguay,🇵🇾,Latin America
@@ -198,6 +200,7 @@ REU,Réunion,🇷🇪,Africa
 REU,Reunion,🇷🇪,Africa
 BLM,Saint Barthélemy,🇧🇱,none
 SHN,"Saint Helena, Ascension and Tristan da Cunha",🇹🇦,none
+SHN,"Saint Helena",🇹🇦,none
 KNA,Saint Kitts and Nevis,🇰🇳,none
 LCA,Saint Lucia,🇱🇨,Latin America
 MAF,Saint Martin,🇲🇫,none
@@ -210,6 +213,7 @@ SAU,Saudi Arabia,🇸🇦,West Asia
 SEN,Senegal,🇸🇳,Africa
 SRB,Serbia,🇷🇸,Europe
 SCG,Serbia and Montenegro,🇷🇸,Europe
+SCG,Serbia and Montenegro (former),🇷🇸,Europe
 SYC,Seychelles,🇸🇨,none
 SLE,Sierra Leone,🇸🇱,Africa
 SGP,Singapore,🇸🇬,South-East Asia
@@ -225,6 +229,7 @@ ESP,Spain,🇪🇸,Europe
 LKA,Sri Lanka,🇱🇰,South Asia
 SDN,Sudan,🇸🇩,Africa
 SUD,Sudan,🇸🇩,Africa
+SUD,Sudan (former),🇸🇩,Africa
 SUR,Suriname,🇸🇷,Latin America
 SJM,Svalbard and Jan Mayen,🇸🇯,none
 SWE,Sweden,🇸🇪,Europe
