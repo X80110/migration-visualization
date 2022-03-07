@@ -197,7 +197,7 @@ function draw(input,config){
     }
     
     const countryNames = input.names
-    console.log(countryNames.map((d,i)=> {return countryNames[getRegion(i)]}))
+    // console.log(countryNames.map((d,i)=> {return countryNames[getRegion(i)]}))
     
     /* const Names =input.names.map((d,i)=> {return {[d]:input.names[getRegion(i)]}})
     console.log(countryNames[""]) */
@@ -251,40 +251,44 @@ function draw(input,config){
         // GATHER GRAPH DATA
         let nldata = {nodes: nodes, links:links}        // console.log(nldata)
 
-        // Filter data by value
-        let filteredData = nldata.links.filter(d=> d.value > 5000 )       // console.log(filteredData)
-        // console.log(ºfilteredData)
+        let names = nldata.nodes.map(d=> d.name)
+        // Filter data by minimum value
+        let filteredData = nldata.links.filter(d=> d.value > 10000 )
+        // console.log(filteredData)
         // console.log(nldata.links.filter(d=> d.value > 10000 ))
         
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
-        
         let names_source = Array.from(new Set(filteredData.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified
         let names_target = Array.from(new Set(filteredData.flatMap(d => d.target ))); 
-        // names_source.map(d=> {
-        //     // if  (names_source > names_target){
-        //         console.log(names_source.length,names_target.length)        
-            
-        //     // else console.log(names_target.length)
-            
-        // })
-        // Get the lowest length array 
-        let names = names_source // > names_target ? names_source : names_target
-
-        // console.log(names_source)
-        // console.log(names_target)
-        let bothWayNames = names_source.filter(d=> names_target.includes(d))
-        // console.log(names.length, names_source.length, names_target.length, bothWayNames.length)
+    
+        // let names = names_source // > names_target ? names_source : names_target
+        
         // Filter countries without values in both directions (target <-> source)
-        // let single_names = names.filter(d=> names_source.includes(d) && names_target.includes(d))
-        // names = single_names
-        // console.log(names_source.length,names_target.length,names.length)
-        // console.log(names_target,names_source,single_names)
-        // filter data for the filtered names
-        // console.log(single_names)
-        console.log(filteredData)
-        filteredData = filteredData.filter(d=>bothWayNames.includes(d.target) /* && bothWayNames.includes(d.target) && */ )
-        let a = filteredData.filter(d=> names_source.includes(d.source) && names_target.includes(d.source))
-        console.log(a)
+        let bothWayNames = names.filter(d=> names_source.includes(d) && names_target.includes(d))// && names_target.includes(d) ? d:"")//  && names_target.includes(d))
+        console.log(bothWayNames)
+        console.log(names.length, names_source.length, names_target.length, bothWayNames.length)
+        names = bothWayNames
+
+        //
+        // console.log(filteredData)
+        // filteredData = filteredData.filter(d=>bothWayNames.includes(d.source))
+        filteredData = filteredData.filter(d=> bothWayNames.includes(d.source) && bothWayNames.includes(d.target))
+        // console.log(filteredData)
+        // filteredData = filteredData.filter(d=> {
+        //     if (names_target.includes(d.source)){
+        //         return d
+        //     }})
+
+        // console.log(filteredData)
+        /* filteredData.filter((d,i)=> {
+            let source  = d.source
+            let target = d.target
+            console.log(d[target === "Gibraltar"])
+
+            // console.log(names_source.filter(d=>d.includes(source)))
+
+        })
+         */
         // let a = filteredData.filter(d=> d.target.includes(names_source  names_target))// ==="Spain").length)// || d.target ==="Gibraltar"))
         // console.log(filteredData.map(d=>  d["source"]))
       
