@@ -408,8 +408,8 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 
 		<div class="subgroups">
 			
-			<label for="selectMethod">Select stimation method: </label>
-			<select value="da_pb_closed" id="selectMethod"></select>
+			<label for="selectMethod">Select estimation method: </label>
+			<select  id="selectMethod"></select>
 		</div><br>
 
 		<div class="subgroups">
@@ -446,11 +446,11 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 		config.stockflow = "flow"
 		config.sex = ""
 		config.type = ""
-		config.method = "da_pb_closed"
+		// config.method = "" || "da_pb_closed"
 
-		const allMethods = config.type === "" 
+		const allMethods = config.method === "" 
                 ? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
-                : ['da_min_closed', 'da_min_open','da_pb_closed'] 
+                : ['da_min_closed', 'da_min_open','da_pb_closed'].reverse()
 		const allTypes = ['outward','transit','return']
 		const allGenders = ['male', 'female'].reverse()
 		

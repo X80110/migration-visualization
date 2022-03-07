@@ -432,11 +432,11 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 		config.stockflow = "flow"
 		config.sex = ""
 		config.type = "outward"
-		config.method = "da_pb_closed"
+		// config.method = ""
 		
-		const allMethods = config.type === ""
+		const allMethods = config.method === ""
                 ? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
-                : ['da_min_closed', 'da_min_open','da_pb_closed'] 
+                : ['da_min_closed', 'da_min_open','da_pb_closed'].reverse()
 		const allTypes = ['outward','transit','return']
 		const allGenders = ['male', 'female'].reverse()
 

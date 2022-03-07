@@ -1,5 +1,5 @@
+////////////////////
 // YEAR SELECTOR  // ------------------------------------------------------------------------------------
-
 let slider = document.getElementById("selectYear");
 let output = document.getElementById("yearRange");
 let sliderValue = parseInt(slider.value)+5
@@ -10,13 +10,13 @@ slider.oninput = function() {
     let value = parseInt(this.value)+5
     output.innerHTML = this.value+" · "+value;
 }
-// ------------------------------------------------------------------------------------
+///////////////////// ------------------------------------------------------------------------------------
 
+// Define
 var width = 650;
 var height = width;
 const textId = "O-text-1"; 
 
-// Define
 var innerRadius = Math.min(width, height) *0.5-95;
 var outerRadius = innerRadius + 17.5;
 
@@ -41,73 +41,7 @@ var ribbon = d3.ribbonArrow()
     .padAngle(1 / innerRadius);
 var formatValue = (x) => `${x.toFixed(0).toLocaleString()}`;
 
-
-const getMetaData = async () => {
-    const metadata = await d3.csv("data/country-metadata-flags.csv");
-
-    return  metadata
-    }
-function dataPrepare(input,year){ // <-- 'values' & 'sex' should be filtered there . 
-    year = year || 1990
-    
-    // sex = sex || 'Female' || {}
-    // method = year || 1990
-    // let metadata = getMetaData().then(d=> {return d});
-    // // console.log(metadata)
-    nodes = input//JSON.parse(JSON.stringify(dataMatrix));
-
-    selectedMatrix  = nodes.matrix[year]
-    // console.log("INput!!",dataMatrix)
-    let names = nodes.names
-    // dataMatrix.regions.map(d=>console.log(dataMatrix.names[d]))
-
-    // ASSIGN REGION TO EACH COUNTRY   ---   THIS WILL BE USED TO SORT EACH AFTER FILTERING OVER A THRESHOLD 
-    function getRegion(index) {
-        var r = 0;
-        for (var i = 0; i < input.regions.length; i++) {
-          if (input.regions[i] > index) {
-            break;
-          }
-          r = i;
-        }
-        return input.regions[r];
-    }
-    
-    function getRegionName(name){
-        let regionName = []
-        for (let i in input.names){
-            let region = getRegion(i)
-            regionName.push(input.names[region])
-        }
-
-        return regionName
-    }
-    // let region = getRegion()
-    // let regionName = dataMatrix.names[region]
-    // console.log(regionName)
-
-        // dataMatrix.regionNames[j] = 
-        
-    
-    /* for (let i in regions) {
-        return i
-
-        }
-     */
-     /*    let region 
-            dataMatrix.region = region = dataMatrix.regions[i]
-            console.log(region)
-        })}
-        ) */
-    // console.log("NAAAMEEES!!",names,regionNames)
-    // remove connections
-    
-    
-    let result = { matrix: selectedMatrix, names: names,regionNames: getRegionName(names), regions: nodes.regions};
-    console.log(result)
-    return result;
-}
-
+// Functions and initial config
 let config = {}
 config.year = 1990 || ""
 config.stockflow = "stock"
@@ -115,8 +49,26 @@ config.sex = "all" || ""
 config.type = "" || "outward"
 config.method = "da_pb_closed" || ""
 
+const getMetaData = async () => {
+    const metadata = await d3.csv("data/country-metadata-flags.csv");
 
+    return  metadata
+}
+
+function filterYear(input,year){ 
+    year = year || 1990
+    nodes = input
+    selectedMatrix  = nodes.matrix[year]
+    let names = nodes.names
+        
+    let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
+    // console.log(result)
+    return result;
+}
+
+// build the data filename (json) with config values
 let fileName = (config) => {
+    // build filename hierarchy
     stockflow = config.stockflow 
     sex = config.sex === "all" || ""  
         ? ""
@@ -127,10 +79,10 @@ let fileName = (config) => {
         : "_"+config.method || "_da_pb_closed"
     let json = 'json/'+stockflow+sex+type+method+'.json'
     
-    
+    // clean non-lineal irregularities
     json = json.replace("__","_").replace("_.",".")
-    // console.log(json)
-     return {
+    
+    return {
          json:json,
          values: stockflow, sex, type, method,
          type: config.type
@@ -140,9 +92,10 @@ let fileName = (config) => {
 filename = fileName(config).json
 // console.log(filename)
 
+
+// gets the data from files
 async function getData(filename) {
     try {
-        // const raw_data = await d3.json("json/mig_flows"+selectedValue+".json") 
         // console.log(filename)
         const raw_data = d3.json(filename) 
         const metadata = d3.csv("data/country-metadata-flags.csv") 
@@ -157,30 +110,11 @@ async function getData(filename) {
 
 
 
-// RUN SELECTORS
+// RUN SELECTORS (1st load the metadata into the environment)
 getMetaData().then((meta)=>{ 
     getData(filename).then((raw)=>{ 
-        // console.log(meta)
-        
-        
-
-
-        // function getFlag(name) {
-        //     let flag =flags.filter(d=>d[name]).flat().flat()[0]
-        //     raw.flags.push(flag)
-        //     return flag
-        // }
-        // console.log(raw)
-        
-        // console.log(raw.names.map(d=> getFlag(d)))
-        
-        //     raw.names[i] === 
-        // }
-
-        
-        // console.log(raw.names[])
-        // CREATE SELECTORS
-        // YEAR SELECTOR  // -    -    -    -    -    -    -    -    -    -    -    -    - 
+    // CREATE SELECTORS
+        // YEAR SELECTOR 
         let slider = document.getElementById("selectYear");
         let output = document.getElementById("yearRange");
         let sliderValue = parseInt(slider.value)+5
@@ -192,6 +126,7 @@ getMetaData().then((meta)=>{
             output.innerHTML = this.value+"  –  "+value;
         }
 
+        // METHOD SELECTOR 
         d3.select("#selectMethod")
             .selectAll('myOptions')
             .data(allMethods)
@@ -199,7 +134,8 @@ getMetaData().then((meta)=>{
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu dropdown
             .attr("value",d=> { return d; }) 
-    
+        
+        // GENDER SELECTOR 
         d3.select("#selectGender")
             .selectAll('myOptions')
             .data(allGenders)
@@ -208,6 +144,7 @@ getMetaData().then((meta)=>{
             .text(d=>{ return d; })    // text showed in the menu dropdown
             .attr("value",d=> { return d; }) 
         
+        // TYPE SELECTOR 
         d3.select("#selectType")
             .selectAll('myOptions')
             .data(allTypes)
@@ -215,29 +152,28 @@ getMetaData().then((meta)=>{
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu dropdown
             .attr("value",d=> { return d; }) 
-    
-        //// CHART RENDERING
-        // draw(raw,config)    
     });    
 })
     
 function draw(input,config){
     // console.log(input)
+    
     meta = input.metadata 
     input = input.raw_data
     
-
-    let flags = meta.map(d=>{return {[d.origin_name]:d.origin_flag }})
+    year = config.year
+    region = config.region
+    sex = config.sex
+    let data = filterYear(input,year)
+    
+    // GET FLAG FOR A GIVEN COUNTRY NAME
+    let flags = meta.map(d=>{return { [d.origin_name]:d.origin_flag }})
     const flag = (name) =>{ 
         let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
         return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
     }
-
-    year = config.year
-    region = config.region
-    sex = config.sex
-    let data = dataPrepare(input,year)
     
+
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
@@ -248,6 +184,33 @@ function draw(input,config){
             return matrix;
     }
 
+    // FUNCTION ASSIGN REGION TO EACH COUNTRY NAME   ---   THIS WILL BE USED TO SORT EACH AFTER FILTERING OVER A THRESHOLD 
+    function getRegion(index) {
+        var r = 0;
+        for (var i = 0; i < input.regions.length; i++) {
+            if (input.regions[i] > index) {
+            break;
+            }
+            r = i;
+        }
+        return input.regions[r];
+    }
+    
+    const countryNames = input.names
+    console.log(countryNames.map((d,i)=> {return countryNames[getRegion(i)]}))
+    
+    /* const Names =input.names.map((d,i)=> {return {[d]:input.names[getRegion(i)]}})
+    console.log(countryNames[""]) */
+    // function getRegionName(name){
+    //     let regionName = []
+    //     for (let i in input.names){
+    //         let region = getRegion(i)
+    //         regionName.push(input.names[region])
+    //     }
+
+    //     return regionName
+    // }
+
     function filteredMatrix(input){
         data = input
 
@@ -255,17 +218,16 @@ function draw(input,config){
         // Create array of name & connections objects
         let matrix = data.names.map((d,i)=> {
                 let name = d
-                let regionName = data.regionNames[i]
+                let regionName = countryNames[getRegion(i)]
                 let matrix = data.matrix.map(a=>a[i])
-
+                // console.log(regionName)
                 return{ name:name,
                         region: regionName,
                         connections:matrix }
         })
         // List nodes 
-        let nodes = matrix
+        let nodes = matrix // console.log(nodes)
         // console.log(nodes)
-        
         // Create object to push links during loop
         let links = []
         let l = 0 // <- iterator
@@ -286,67 +248,81 @@ function draw(input,config){
             }
         }
         
-        
-        let nldata = {nodes: nodes, links:links}
-        // console.log(nldata)
+        // GATHER GRAPH DATA
+        let nldata = {nodes: nodes, links:links}        // console.log(nldata)
+
         // Filter data by value
-        let filteredData = nldata.links//.filter(d=> d.value > 100000 )
-        // console.log(filteredData)
-        // console.log(nldata.links)
+        let filteredData = nldata.links.filter(d=> d.value > 5000 )       // console.log(filteredData)
+        // console.log(ºfilteredData)
+        // console.log(nldata.links.filter(d=> d.value > 10000 ))
         
-        // Generate new names array to exclude non-reciprocal source target relationships 
-        let names_target = Array.from(new Set(filteredData.flatMap(d => d.target ))); 
+        // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
+        
         let names_source = Array.from(new Set(filteredData.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified
-        
-        // 
-        let names = names_source > names_target ? names_source : names_target
-        
-        let single_names = names.filter(d=> names_source.includes(d) && names_target.includes(d))
-        names = single_names
+        let names_target = Array.from(new Set(filteredData.flatMap(d => d.target ))); 
+        // names_source.map(d=> {
+        //     // if  (names_source > names_target){
+        //         console.log(names_source.length,names_target.length)        
+            
+        //     // else console.log(names_target.length)
+            
+        // })
+        // Get the lowest length array 
+        let names = names_source // > names_target ? names_source : names_target
+
+        // console.log(names_source)
+        // console.log(names_target)
+        let bothWayNames = names_source.filter(d=> names_target.includes(d))
+        // console.log(names.length, names_source.length, names_target.length, bothWayNames.length)
+        // Filter countries without values in both directions (target <-> source)
+        // let single_names = names.filter(d=> names_source.includes(d) && names_target.includes(d))
+        // names = single_names
+        // console.log(names_source.length,names_target.length,names.length)
         // console.log(names_target,names_source,single_names)
-        
-
-        filteredData = filteredData.filter(d=>names.includes(d.source) && names.includes(d.target))
-
-        // filteredData.filter(d=>single_names.includes(d.source) && single_names.includes(d.target))
-        // console.log(filteredData)
-        
-
-        
-        // ---- > both target&source should be equal in length ---> console.log(Array.from(new Set(filteredData.flatMap(d=>d.source))))
-        // ---- > both target&source should be equal in length ---> console.log(Array.from(new Set(filteredData.flatMap(d=>d.target))))
-        // console.log(filteredData)
-        // console.log(testFilteredData);
-        // console.log(names_source,names_target,names)
-        
+        // filter data for the filtered names
+        // console.log(single_names)
+        console.log(filteredData)
+        filteredData = filteredData.filter(d=>bothWayNames.includes(d.target) /* && bothWayNames.includes(d.target) && */ )
+        let a = filteredData.filter(d=> names_source.includes(d.source) && names_target.includes(d.source))
+        console.log(a)
+        // let a = filteredData.filter(d=> d.target.includes(names_source  names_target))// ==="Spain").length)// || d.target ==="Gibraltar"))
+        // console.log(filteredData.map(d=>  d["source"]))
       
         // Generate back the matrix with filtered values
-        
         let filteredMatrix = getMatrix(names,filteredData)
+        // console.log(filteredMatrix)
+        
         // Reindex regions
         let regions = []
         names.map((d,i)=> {
+            // console.log(isRegion(d))
             if (isRegion(d)){
                 regions.push(i)
-                 return d
+            }
+            
+        })
+        // console.log(regions)
+        // console.log(regions.map(d=>names[d])
+        names.map((d,i)=>  {
+            if  (isRegion(d)){
+                    // console.log(names)
             }
         })
-        // console.log(regions.map(d=>names[d]))
+
         return{ names: names, matrix: filteredMatrix, regions: regions}
     }
     
-
-    
-
-    stockflow = stockflow
+    // EXPAND COUNTRIES IN SELECTED REGION
+    // Define vars to work with
+    // stockflow = stockflow
     let names = []
-    let unfilteredMatrix = []
-    let matrix = []
+    let unfilteredMatrix = []       // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
+    let matrix = []     // yeah, this is the final matrix 
 
-    let nameRegionIndex
+    let nameRegionIndex 
     let regionIndex = 1
     let nextNameRegionIndex
-    function filterByRegion(input, region) {
+    function expandRegion(input, region) {
         // here we'll find the region index -> we'll get next region -> finally we define a range between both index and replace the values in region in the selected region place 
         nameRegionIndex = input.names.indexOf(region) // index of selected region in names
         regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
@@ -356,48 +332,48 @@ function draw(input,config){
         // console.log(nameRegionIndex,nextNameRegionIndex)
         
         // get range between two values
-        const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i);
-        
-        let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1/* -1 */)
+        const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i); // computes
+        let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1) // applies
 
         var selectedRegions = input.regions.flat()
-        // output regions and selected countries
+        
+        // replace selected region on index and append its countries instead
         selectedRegions[regionIndex] = countryRange
 
         return selectedRegions.flat()
     }
+    // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)
     data = dataSliced
+    // console.log(data)
+    // generate data structure to expand countries of a selected region
+    let filteredRegions = expandRegion(data,region)
+    // console.log(dataSliced)
 
-    let filteredRegions = filterByRegion(data,region)
-
-    
-    console.log(dataSliced)
-
-    // INITIAL MATRIX ONLY REGIONS
+    // Populate the matrix and names objects for the filters and selections applied
     filteredRegions.map(d=> {
         let name = data.names[d]
         let subgroup = data.matrix[d]
         names.push(name)
         unfilteredMatrix.push(subgroup)
     })
+    // console.log(names)
     unfilteredMatrix.map(d=> {
         let filtered = filteredRegions.map(a=> d[a])
         matrix.push(filtered)    
     })
+    // console.log(matrix)
+    // names.map((d,i)=> console.log(names[i],getRegionName("Spain")))
     // console.log(unfilteredMatrix)
     // console.log(names.map(d=> isRegion(d)))
-    console.log(input.regions.map((d)=> {return input.names[d]}))
+    // console.log(input.regions.map((d)=> {return input.names[d]}))
     
-    
+    // Compute true if 'name' is identified as a region. Will be used to run conditional styles on each element. 
     function isRegion(name) {
         return data.regions.includes(data.names.indexOf(name))
     } 
     // console.log(isRegion('Oceania'))
     // console.log(isRegion('Angola'))
-    // console.log(isRegion(names[0])) 
-    // console.log(isRegion(names[1])) 
-
 
     // Color settings
     const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
@@ -405,120 +381,19 @@ function draw(input,config){
     // this gets the html color by the name of the regions (which is the var used creating the visuals)
     const getRegionColor = (d) => colorRegions[input.regions.map((d)=> {return input.names[d]}).indexOf(d)]
     
-    // this gets the html color of the region selected by the user
-    const colorCountries = [colorRegions[regionIndex]+'65']
+    // this gets the html color of the region selected by the user and decreases its opacity
+    const colorCountries = [colorRegions[regionIndex]+'60']
     
-    console.log([colorCountries])
+    // var color  = d3.scaleOrdinal(
+    //     names,
+    //     colorRegions);
+    
+    // console.log([colorCountries])
     // const color = d3.scaleOrdinal(names, colorScale)
     // used to get the color of each region
     // console.log(getRegionColor("Oceania"))
     // console.log(getRegionColor("Europe"))
     // console.log(getRegionColor("Sub-Saharan Africa"))
-    // const color = d3.scaleOrdinal(names, colorScale)
-    // const colors =d3.scaleOrdinal(data.regions.length,d3.schemeCategory10);
-    
-    
-    
-    /*  
-        var bbox = el.getBBox();
-        infoTimer = setTimeout(function() {
-          var color = d3.select(el).style('fill');
-  
-          info
-            .attr('transform', 'translate(' + (bbox.x + bbox.width / 2) + ',' + (bbox.y + bbox.height / 2) + ')');
-  
-          var text = info.select('.text').selectAll('text')
-            .data([
-              data.names[d.id],
-              'Total In: ' + formatNumber(d.inflow),
-              'Total Out: ' + formatNumber(d.outflow)
-            ]);
-          text.enter().append('text');
-          text
-            .text(function(t) { return t; })
-            .style({
-              fill: luminicity(color) > 160 ? 'black' : 'white'
-            })
-            .attr({
-              transform: function(t, i) {
-                return 'translate(6, ' + (i * 14 + 16) + ')';
-              }
-            });
-          text.exit().remove();
-  
-          var tbbox = info.select('.text').node().getBBox();
-          info.select('rect')
-            .style('fill', color)
-            .attr({
-              width: tbbox.width + 12,
-              height: tbbox.height + 10
-            });
-  
-          info
-            .transition()
-            .attr('opacity', 1);
-        }, config.infoPopupDelay);
-      } */
-  
-    var color  = d3.scaleOrdinal(
-        names,
-        colorRegions);
-    
-   /*  var group = element.selectAll(".group")
-        .data(input.regions, d=>d);
-    group.enter()
-        .append("g")
-        .attr("class", "group");
-    group
-        .on("mouseover", d=> {
-          chord.classed("fade",p=>{console.log(p)
-            return p.source.id !== d.id && p.target.id !== d.id;
-        });
-    });
-    group.exit().remove();
-
-    var groupPath = group.selectAll('.group-arc')
-        .data(d=> {return d} )
-    groupPath.enter()
-        .append('path')
-        .attr("class", "group-arc")
-        .attr("id", function(d, i, k) { return "group" + k; });
-    groupPath
-        .style("fill", arcColor)
-        .on("mousemove", groupInfo)
-        .transition()
-        .duration(1000)
-        .attrTween("d", d=> {
-          var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || config.initialAngle.arc, d);
-          return function (t) { return arc(i(t)); };
-        });
-    groupPath.exit().remove();
-
-      // open regions
-    groupPath
-        .filter(function(d) {
-          return d.id === d.region;
-        })
-        .on('click', function(d) {
-          if (countries.length + 1 > config.maxRegionsOpen) {
-            countries.shift();
-          }
-          draw(year, countries.concat(d.id));
-        });
-
-      // close regions
-    groupPath
-        .filter(function(d) {
-          return d.id !== d.region;
-        })
-        .on('click', function(d) {
-          countries.splice(countries.indexOf(d.region), 1);
-          draw(year, countries);
-        }); */
-
-        
-
-      
 
     chordDiagram.append("path")
         .attr("id", textId)
@@ -534,7 +409,7 @@ function draw(input,config){
         .join("path")
         .attr("class", "path-item")
         .attr("d", ribbon)
-        .attr("fill", d=> isRegion(names[d.source.index]) ? /* console.log(names[d.index]) & */getRegionColor(names[d.source.index]) :colorCountries)
+        .attr("fill", d=> isRegion(names[d.source.index]) ? getRegionColor(names[d.source.index]) :colorCountries)
         .style("mix-blend-mode", "multiply")
         
         .append("title")
@@ -548,12 +423,9 @@ function draw(input,config){
         .attr("class","chord")
         .call(g => g.append("path")
             .attr("d", arc) 
-            // .attr("fill", d=> arcColor(names[d.index]))
-            // .attr("fill", d=> isRegion(names[d.index]) ? /* console.log(names[d.index]) & */ arcColor(names[d.index]) : colorCountries)
-            .attr("fill", d=> isRegion(names[d.index]) ? /* console.log(names[d.index]) & */getRegionColor(names[d.index]) :colorCountries)
-            // On each <g> we set a <path> for the arc
-            // .attr("stroke", "#fff")
-            .attr("stroke-width", 2))
+            .attr("fill", d=> isRegion(names[d.index]) ? getRegionColor(names[d.index]) :colorCountries)
+            )
+            
     
         // LABELS 
         // on specific attributes we use isRegion() to define country/region labels
@@ -562,7 +434,10 @@ function draw(input,config){
                 .attr("font-size", d=> !isRegion(names[d.index]) ? 6 : 7.2 )
                 // .attr("fill", d => color(names[d.index]))
                 .attr("dy", d=> !isRegion(names[d.index]) ? 2 : -4 )
-                .each(d => !isRegion(names[d.index]) ? (d.angle = (d.startAngle + d.endAngle) / 2):"") // conditional style for countries
+                .each(d => !isRegion(names[d.index]) 
+                    ? (d.angle = (d.startAngle + d.endAngle) / 2)
+                    :""
+                    ) 
                 .attr("transform", d => `
                     rotate(${(d.angle * 180 / Math.PI - 90)})
                     translate(${outerRadius + 5})
@@ -643,7 +518,7 @@ function draw(input,config){
             // Get selected year
             config.year = d3.select(this).property("value")
             console.log(config.year)
-            // data = dataPrepare(raw,year)
+            // data = filterYear(raw,year)
             
             // Remove previous
             d3.selectAll("g")
@@ -679,38 +554,37 @@ function draw(input,config){
                 // console.log("fILE!",data)
 
                 draw(data,config)})
-            // drawSankey(config)
-        })    
+    })    
     d3.selectAll("#selectMethod")
         .on("change", function(d) {
             // Get selected year
-            config.method = d3.select(this).property("value")
+        config.method = d3.select(this).property("value")
 
-            filename = fileName(config).json
-            console.log(filename)
+        filename = fileName(config).json
+        console.log(filename)
 
-            // data = dataPrepare(raw,year)
-            
-            // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
-            // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
-            // Remove previous
-            d3.selectAll("g")
-                .transition()
-                .duration(500)
-                .style('opacity', 0)
-                .remove();
-            
+        // data = filterYear(raw,year)
         
-
-            getData(filename).then(data=> {
-                data = data
-                // console.log("fILE!",data)
-
-                draw(data,config)})
-            // drawSankey(config)
-        })    
+        // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
+        // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
+        // Remove previous
+        d3.selectAll("g")
+            .transition()
+            .duration(500)
+            .style('opacity', 0)
+            .remove();
         
-        d3.selectAll("#selectGender")
+    
+
+        getData(filename).then(data=> {
+            data = data
+            // console.log("fILE!",data)
+
+            draw(data,config)})
+        // drawSankey(config)
+    })    
+        
+    d3.selectAll("#selectGender")
         .on("change", function(d) {
             // Get selected value
             config.sex = d3.select(this).property("value")
@@ -733,8 +607,8 @@ function draw(input,config){
                 console.log("CONFIG!",config)
 
                 draw(data,config)})
-            // drawSankey(config)
-        })
+        // drawSankey(config)
+    })
     
     d3.selectAll("#selectType")
         .on("change", function(d) {
@@ -759,163 +633,7 @@ function draw(input,config){
                 data = data
                 // console.log("fILE!",data)
 
-                draw(data,config)})
-            // drawSankey(config)
+                draw(data,config)
         })
-    
-
-        
-        // //// SANKEY CHART 
-        // function drawSankey(config){
-        //     let graph = prepareData(config).sankey
-        //     let names = Array.from(new Set(prepareData(config).chord.flatMap(d => [d.source, d.target])));
-            
-        //     const colorScale = chroma.scale(['#e85151', '#51aae8', '#F0E754', '#55e851'])
-        //           .mode('hsl').colors(10)
-        //           .map(color => chroma(color).saturate(0.01));
-      
-        //     const color = d3.scaleOrdinal(names, colorScale)
-        //     // let color = d3.scaleOrdinal(
-        //     //     names,
-        //     //     ["#1f77b4", "#d62728", "#ff7f0e", "#2ca02c",  "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]);
-        //     let sankey = d3.sankey()
-        //         .nodeSort(null)
-        //         .linkSort(null)
-        //         .nodeWidth(4)
-        //         .nodePadding(20)
-        //         .extent([[0, 5], [width, height - 5]])
-        //     const svg = d3.select("#sankey")
-        //         .append("svg")
-        //         .attr("viewBox", [0, 0, width, height]);
-    
-        //     const {nodes, links} = sankey({
-        //         nodes: graph.nodes.map(d => Object.assign({}, d)),
-        //         links: graph.links.map(d => Object.assign({}, d))
-        //     });
-    
-        //     svg.append("g")
-        //         .selectAll("rect")
-        //         .data(nodes)
-        //         .join("rect")
-        //         .attr("x", d => d.x0)
-        //         .attr("y", d => d.y0)
-        //         .attr("height", d => d.y1 - d.y0)
-        //         .attr("width", d => d.x1 - d.x0)
-        //         .attr("fill", d => color(d.name))
-        //         .append("title")
-        //         .text(d => `${d.name}\n${d.value.toLocaleString()}`);
-    
-        //     svg.append("g")
-        //         .attr("fill", "none")
-        //         .selectAll("g")
-        //         .data(links)
-        //         .join("path")
-        //         .attr("class","chord")
-        //         .attr("d", d3.sankeyLinkHorizontal())
-        //         .attr("stroke", d => color(d.names[0]))
-        //         .attr("stroke-width", d => d.width)
-        //         .attr("stroke-opacity", 0.7)
-        //         .style("mix-blend-mode", "multiply")
-        //         .append("title")
-        //         .text(d => `${d.names.join(" → ")}\n${d.value.toLocaleString()}`);
-    
-        //     svg.append("g")
-        //         .style("font", "18px")
-        //         .selectAll("text")
-        //         .data(nodes)
-        //         .join("text")
-        //         .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
-        //         .attr("y", d => (d.y1 + d.y0) / 2)
-        //         .attr("dy", "0.35em")
-        //         /* function(d) {
-        //             if (d.name !== d.region) {
-        //                 return d.angle > Math.PI ? 'translate(0, -4) rotate(180)' : 'translate(0, 4)';
-        //             }
-        //         }) */
-        //         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
-        //         .attr('transform', 'translate(0, -4) rotate(180)' )
-        //         .text(d => d.name)
-        //         .append("tspan")
-        //         .attr("fill-opacity", 0.7)
-        //         .text(d => ` ${d.value.toLocaleString()}`);
-    
-            
-        
-        //     svg.selectAll(".path-item, .chord")
-        //         .on("mouseover", function (evt, d) {
-        //             svg.selectAll(".path-item, .chord")
-        //                 .transition()
-        //                 .style("opacity", 0.2);
-    
-        //             d3.select(this)
-        //                 .transition()
-        //                 .style("opacity", 1)
-        //             })       
-    
-        //         .on("mouseout", function (evt, d) {
-        //             svg.selectAll(".path-item, .chord")
-        //                 .transition()
-        //                 .style("opacity", 1);
-        //             })  
-        //     return svg.node();
-            
-                
-        // }
-        // // drawSankey(selectedYear,selectedRegion,selectedValues,selectedGender)
-    // print last active filters
-    /* let activeRegion = selectedRegion === region ? '<span style="color: grey">Non selected</span>' : region
-    d3.selectAll("#activeData")
-        .html("<br>"+
-        "<strong>Variable:</strong> "+stockflow+"<br>"+
-        "<strong>Method:</strong> "+method+"<br>"+
-        "<strong>Year:</strong> "+year+"<br>"+
-        "<strong>Gender:</strong> "+sex+"<br>"+
-        "<strong>Type:</strong> "+type+"<br>"+
-        "<strong>Last region selected:</strong>  "+activeRegion) */
+    })
 }
-
-    // })
-    
-    /* .tween('circumference', function(d) {
-        let currentAngle = getCurrentAngle(this);
-        let targetAngle = d;
-
-        // Ensure shortest path is taken
-        if (targetAngle - currentAngle > Math.PI) {
-            targetAngle -= 2 * Math.PI;
-        }
-        else if (targetAngle - currentAngle < -Math.PI) {
-            targetAngle += 2 * Math.PI;
-        }
-
-        let i = d3.interpolate(currentAngle, targetAngle);
-
-        return function(t) {
-            let angle = i(t);
-
-            d3.select(this)
-                .attr('cx', majorRadius * Math.cos(angle))
-                .attr('cy', majorRadius * Math.sin(angle));
-        }
-    }); */
-// function getCurrentAngle(el) {
-// 	let x = d3.select(el).attr('cx');
-// 	let y = d3.select(el).attr('cy');
-// 	return Math.atan2(y, x);
-// }
-
-// UX & animation
-// - Tween arcs && ribbons
-// - Click -> Countries + regions matrix
-// - Arc (text names) -> from 0.5 to 1.5 rads text for names: reverse vertically
-// - Global styles and selectors
-
-// Data 
-// - Data_input -> json structure (ask Guy)
-// - Filters: 
-//      (X) Year
-//      Type
-//      Gender
-
-
-
