@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<link rel="icon" type="image/x-icon" href="http://127.0.0.1:5501/favicon.ico">
 <style>
 	
 </style>
@@ -14,6 +15,8 @@
 		font-family:  'Poppins', sans-serif;
 		font-size: 52.5%;
 		font-weight: 400;
+
+		max-width: 800px;
 		/* background-color: #daf1f8; */
 	}
 	/*
@@ -126,7 +129,7 @@
   	}
   } */
   	#chord-chart {
-		width: 600px;
+		width: 650px;
 		/* height: 600px; */
 		
 		
@@ -165,7 +168,7 @@
 		
 		height:fit-content;
 		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.02), 0 6px 20px 0 rgba(0, 0, 0, 0.019);
-		background-color: rgba(255, 255, 255, 0.8);
+		background-color: rgba(255, 255, 255, 0);
 
 		margin: 20px;
 		
@@ -490,7 +493,7 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 	<!-- <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script> -->
 
 	
-	<script src="chord-chart4.js"></script>
+	<script src="chord-chart.js"></script>
 	<script>
 		// filename = "stocks"
 		
@@ -505,7 +508,6 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 		filename = fileName(config).json
 		// chart(filename).draw(raw,config)
 		getData(filename).then(raw => {
-			console.log(d3.chordDirected())
 			draw(raw,config)
 		})
 	</script>

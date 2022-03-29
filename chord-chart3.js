@@ -88,7 +88,7 @@ const chordDiagram = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
-var chord = d3.chordDirected()
+var chord = d3.chord()
     .padAngle(1 / config.innerRadius)
     .sortSubgroups(d3.descending)
     .sortChords(d3.descending);
@@ -456,7 +456,7 @@ function draw(input,config){
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)
     data = dataSliced
-    
+
     // generate data structure to expand countries of a selected region
     let filteredRegions = expandRegion(data,region)
     // console.log(dataSliced)
@@ -529,64 +529,7 @@ function draw(input,config){
         .attr("fill", "none")
         .attr("d", d3.arc()({ outerRadius:config.outerRadius, startAngle: 0, endAngle:   2 * Math.PI  }));
 
-        
-           // Add ribbons for each chord and its tooltip content <g> <path> <title>
-    let computedChords = (i) => chord(matrix).map(d=> {
-        d.source.region = getRegion(d.source.index)
-        d.source.id = names.indexOf(names[d.source.index])
-        d.source.name = names[d.source.index]
-        
-        d.target.region = getRegion(d.target.index)
-        d.target.id = names.indexOf(names[d.target.index])
-        d.target.name = names[d.target.index]
-        
-        d.target.region
-        // for (let i in d){
-            //     console.log(names[d[i].index])
-            // }
-            direction = d.source.id > d.target.id ? 'source' :'target'
-            d.id = direction+`-`+d.source.id+`-`+d.target.id
-        let result = {id:d.id, source: d.source, target:d.target}
-        
-        // console.log(getRegion(d.source.index))
-        return result
-        
-    })
-
-    let computedGroups = (i)=>  {
-        let groups = chord(data.matrix).groups
-        groups.map(d=>{
-            d.region = getRegion(d.index)
-            d.id = names.indexOf(names[d.index])
-            d.name = names[d.index]
-            d.outflow = d3.sum(matrix[d.index])
-            d.inflow = d3.sum(matrix, row => row[d.index])
-            })
-        {
-            return groups
-        }
-    } 
-    rememberTheChords()
-    function rememberTheChords() {
-        previous.chords = computedChords().reduce(function(sum, d) {
-          sum[d.source.id] = sum[d.source.id] || {};
-          sum[d.source.id][d.target.id] = d
-          return sum;
-        }, {});
-      }
-
-    rememberTheGroups() 
-    console.log(previous.groups)
-    function rememberTheGroups() {
-        previous.groups = computedGroups().reduce(function(sum, d) {
-            sum[d.id] = d;
-            return sum;
-        }, {});
-    }
-      
-    console.log(previous.chords)
-    
-    var aLittleBit = Math.PI / 100000;
+   
     function getCountryRange(id) {
         var end = data.regions[data.regions.indexOf(id) + 1];
   
