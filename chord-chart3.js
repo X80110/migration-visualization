@@ -620,7 +620,7 @@ function draw(input,config){
     }
 
     var group = chordDiagram.selectAll(".group")
-        .data(computedGroups(), function(d) { return d.id; });
+        .data(getNatrix(data), function(d) { return d.id; });
     group.enter()
         .append("g")
         .attr("class", "group");
