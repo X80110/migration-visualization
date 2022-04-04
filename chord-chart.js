@@ -49,7 +49,20 @@ var ribbon = d3.ribbonArrow()
     // .padAngle(1 / innerRadius);
 
 
-var formatValue = (x) => `${x.toFixed(0).toLocaleString()}`;
+// var formatValue = (x) => `${x.toFixed(0).toLocaleString()}`;
+function formatValue(nStr, seperator) {
+    seperator = seperator || ','
+    nStr += ''
+    x = nStr.split('.')
+    x1 = x[0]
+    x2 = x.length > 1 ? '.' + x[1] : ''
+    var rgx = /(\d+)(\d{3})/
+
+    while (rgx.test(x1)) {
+      x1 = x1.replace(rgx, '$1' + seperator + '$2');
+    }
+    return x1 + x2;
+  }
 Number.prototype.mod = function (n) {
     return ((this % n) + n) % n
   };
@@ -394,7 +407,7 @@ function dataPrepare(input, config){
 
 function draw(input,config){
     // filteredMatrix    
-    data = dataPrepare(input,config).result
+    let data = dataPrepare(input,config).result
     
     // input layout to retrieve metadata (country <-index-> regions)
     input = input.raw_data
@@ -402,6 +415,7 @@ function draw(input,config){
     selectedMatrix = data.matrix
     selectedNames = data.names
     let previous = config.previous || data
+    console.log(previous)
     rememberTheChords()
     rememberTheGroups() 
 
@@ -596,18 +610,21 @@ function draw(input,config){
     // this gets the html color of the region selected by the user and decreases its opacity
     const colorCountries = [colors[regionIndex]]
 
-    const textPath = chordDiagram.append("path")
+    const container = chordDiagram.append("g")
+        .attr("class","container")
+        .attr("id","container")
+    const textPath = container.append("path")
         .attr("id", textId)
         .attr("class", "text-path")
         .attr("fill", "none")
         .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle:   2 * Math.PI  }));
         
-
-    const arcs = chordDiagram.append("g")        
-        .selectAll("g")
-        .data(computedGroups(data))
-        .join("g")
+    const arcs = container.append("g")        
         .attr("class","group")
+        .selectAll("g")
+        .data(computedGroups(data),d=>d.id)
+        .join("g")
+        .attr("class",d=>"group-"+d.id)
         
     
     arcs.append("path")
@@ -677,17 +694,10 @@ function draw(input,config){
         .style("text-anchor","middle")
         .attr("xlink:href",d=>"#"+textId)
         .text(d =>d.name) 
+        .transition()
+        .duration(500)
 
-    countryLabels
-        .merge(countryLabels)
-        .filter(function(d, i) {
-            // console.log(this.getComputedTextLength())
-            // console.log(d.endAngle - d.startAngle) * (config.outerRadius )
-            let test =this.getComputedTextLength() < (d.endAngle - d.startAngle) * (config.outerRadius )
-            // console.log(test)
-            return test
-        })
-        .remove();
+   
 
     /* countryLabels.exit()
         .transition()
@@ -716,17 +726,18 @@ function draw(input,config){
        
 
 
-    const chords = chordDiagram.append("g")
+    const chords = container.append("g")
+        .attr("class", "ribbon")
         .selectAll("g")
         .data(computedChords(data),d=> d.id)    
-        .attr("class", "ribbon")
+        .join("g")
+        .attr("class", d=>"ribbon-"+d.id)
         
 
     chords
         // .enter()
-        // .append("path")
-        .join("path")
-        .attr("fill-opacity", 0.75)
+        .append("path")
+        .style("opacity", 0.75)
         .attr("class", "path-item")
         // .merge(chords)
         .attr("d", ribbon)
@@ -737,8 +748,8 @@ function draw(input,config){
         .transition()
         .duration(500)
         .attrTween("d", function (d) {
-            var p = previous.chords[d.source.id] && previous.chords[d.source.id][d.target.id]
-            p = p || (previous.chords[d.source.region] && previous.chords[d.source.region][d.target.region])
+            var p  = previous.chords[d.source.id] && previous.chords[d.source.id][d.target.id]
+            p = p || previous.chords[d.source.region] && previous.chords[d.source.region][d.target.region]
             p = p || meltPreviousChord(d)
             p = p || config.initialAngle.chord
             var i = d3.interpolate(p, d)
@@ -747,6 +758,10 @@ function draw(input,config){
                 return ribbon(i(t));
           }
         })
+    
+    chords.selectAll(".path-item")
+        .append("title")
+        .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
     /* chords.exit()
         .transition()
         .duration(500)
@@ -826,48 +841,129 @@ function draw(input,config){
 //         });
 //         } */
 //     // d3.select("#table").append("table").html(table)
+const tooltip = d3.select('body').append('div')
+    .style('class', 'tooltip')
+    .style('background-color','#ffffff')
+    // .style('filter', 'blur(10px)') 
+    // .style('-webkit-filter', 'blur(10px)') /* Safari 6.0 - 9.0 */    
+    .style('padding','10px')
+    .style('border-radius','8px')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden').text('ege')
+    // .style('box-shadow',' rgba(100, 100, 111, 0.2) 0px 7px 29px 0px')
+    .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')
+    
+    
 
-    // INTERACTIONS
-    chordDiagram.selectAll(".path-item, .labels")
+chordDiagram.selectAll(".path-item")
+    .on("mousemove", (evt,d) =>{
+        let source = isRegion(data.names[d.source.index])
+            ? `<span style="color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
+            : `<span style="color:${ colorCountries}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
+        
+        let target = isRegion(data.names[d.target.index] )
+            ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
+            : `<span style="color:${ colorCountries}"> ${getMeta(d.target.name).flag+ " "+  d.target.name}</span>`
+        
+
+        let value = `
+            <div> 
+            ${formatValue(d.source.value)}
+            →
+            `
+        return tooltip
+            .html(`\
+            <b>${source} </b>
+            ${value} 
+            ${target}
+            
+            `)
+            .style('background-color','#ffffff')
+            .style("top", (evt.pageY-10)+"px")
+            .style("left", (evt.pageX+10)+"px")
+            .style("visibility", "visible")
+            .transition()
+            
+    })
+    .on("mouseout", function(){
+        return tooltip.html(``).style("visibility", "hidden");
+    })
+chordDiagram.selectAll(".group-arc")
+    .on("mousemove", (evt,d) =>{
+
+        let source = isRegion(d.name)
+            ? `<span style="color:white"> ${d.name}</span>`
+            : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
+                <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
+        
+        let outflow = formatValue(d3.sum(data.matrix[d.index]))
+        let inflow = formatValue(d3.sum(data.matrix, row => row[d.index]))
+    
+        return tooltip
+            .html(`\
+            <p>${source} </p>
+            <p><b>Total outflow → </b> ${outflow} </p>
+            <p><b>Total inflow ←</b> ${inflow} </p>
+            
+            
+            `)
+            .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries)
+            .style("top", (evt.pageY-10)+"px")
+            .style("left", (evt.pageX+10)+"px")
+            .style("visibility", "visible")
+            .transition()
+            
+    })
+    .on("mouseout", function(){
+        return tooltip.html(``).style("visibility", "hidden");
+    })
+        // INTERACTIONS
+  /*   chordDiagram.selectAll(".group-arc, .path-item")
         .on("mouseover", function (evt, d) {
-            // console.log(evt)
-            chordDiagram.selectAll(".path-item")
+            console.log(d.id)
+            chordDiagram
+                .selectAll(".path-item")
                 .transition()
-                .style("opacity", 0.2)
+                .duration(200)
+                .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.2:1)
 
             d3.select(this)
                 .transition()
+                .duration(200)
                 .style("opacity", 1)
             })       
         
         .on("mouseout", function (evt, d) {
-            chordDiagram.selectAll(".path-item, .group")
-                
+            chordDiagram.selectAll(".path-item")
                 .transition()
-                .style("opacity", 1);
-            })  
+                .duration(200)
+                .style("opacity", 0.75);
+            })  */ 
             
-    chordDiagram.selectAll(".group-arc")            
+    chordDiagram.selectAll(".group-arc")
         .on("click", function (evt, d) {
+            console.log(d)
             config.previous = data 
             config.region = isRegion(data.names[d.index]) ? data.names[d.index] : undefined
             // print selected criteria on console
             // console.log(names)
             
             // remove current content
-            d3.selectAll("g")
+            d3.selectAll(".container")
                 .transition()
                 .duration(200)
                 .remove()
              
-
+            tooltip.html(``).style('background-color','#ffffff').style("visibility", "hidden");
+            
             // d3.selectAll("table").remove()
             // d3.selectAll("#sankey").remove()
              
             // draw new chart 
             getData(filename).then(data=> {
                 data = data
-                // console.log("fILE!",data)
+                console.log("fILE!",data)
+                console.log("previous",data)
 
                 draw(data,config)})
         });   
