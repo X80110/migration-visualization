@@ -642,10 +642,10 @@ function draw(input,config){
                 return arc(i(t))
             }
         })
-    arcs.append("title")
-        .text(d => {
-        return `${d.name} outflow ${formatValue(d3.sum(data.matrix[d.index]))} people and inflow ${formatValue(d3.sum(data.matrix, row => row[d.index]))} people`
-    })
+    // arcs.append("title")
+    //     .text(d => {
+    //     return `${d.name} outflow ${formatValue(d3.sum(data.matrix[d.index]))} people and inflow ${formatValue(d3.sum(data.matrix, row => row[d.index]))} people`
+    // })
 
     const countryLabels = arcs
         .filter(d=>!isRegion(d.name))
@@ -746,7 +746,7 @@ function draw(input,config){
         // .append("title")
         // .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
         .transition()
-        .duration(500)
+        .duration(200)
         .attrTween("d", function (d) {
             var p  = previous.chords[d.source.id] && previous.chords[d.source.id][d.target.id]
             p = p || previous.chords[d.source.region] && previous.chords[d.source.region][d.target.region]
@@ -759,10 +759,10 @@ function draw(input,config){
           }
         })
     
-    chords.selectAll(".path-item")
-        .append("title")
-        .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
-    /* chords.exit()
+    // chords.selectAll(".path-item")
+    //     .append("title")
+    //     .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
+    chords.exit()
         .transition()
         .duration(500)
         .attrTween("d", function (d) {
@@ -780,14 +780,14 @@ function draw(input,config){
             return function (t) {
                 return ribbon(i(t))
             };
-        }) */
-       /*  .each('end', function () {
+        })
+        .each('end', function () {
             d3.selectAll(".ribbon").remove()
-        }); */
+        });
         
         
 
-    /* function wrapText(text, width) {
+    function wrapText(text, width) {
         text.each(function () {
             var textEl = d3.select(this),
                 words = textEl.text().split(/\s+/).reverse(),
@@ -812,7 +812,7 @@ function draw(input,config){
             }
         });
     }
- */
+
 //     labels.call(g => g.append("title")
 //         .text(d => {
 //             return `${names[d.index]} outflow ${formatValue(d3.sum(matrix[d.index]))} people and inflow ${formatValue(d3.sum(matrix, row => row[d.index]))} people`
@@ -841,6 +841,31 @@ function draw(input,config){
 //         });
 //         } */
 //     // d3.select("#table").append("table").html(table)
+// open regions
+
+config.maxRegionsOpen = 2
+config.regions = region || config.regions
+console.log(config.regions)
+arcs.on('click', function(evt, d) {
+        if (config.regions.length + 1 > config.maxRegionsOpen) {
+            config.regions.shift();
+            
+        }
+        config.regions.push(d.id)
+    })
+
+// close regions
+arcs
+    .filter(function(d) {
+        return d.id !== d.region;
+    })
+    .on('click', function(evt, d) {
+        config.regions.splice(config.regions.indexOf(input.names[d.region]), 1);
+
+});
+
+
+
 const tooltip = d3.select('body').append('div')
     .style('class', 'tooltip')
     .style('background-color','#ffffff')
@@ -954,7 +979,7 @@ chordDiagram.selectAll(".group-arc")
                 .duration(200)
                 .remove()
              
-            tooltip.html(``).style('background-color','#ffffff').style("visibility", "hidden");
+            chordDiagram.on("mouseout", d=> {tooltip.html(``).style('background-color','#ffffff').style("visibility", "hidden")})
             
             // d3.selectAll("table").remove()
             // d3.selectAll("#sankey").remove()
@@ -966,7 +991,8 @@ chordDiagram.selectAll(".group-arc")
                 console.log("previous",data)
 
                 draw(data,config)})
-        });   
+        })
+        
 
     d3.selectAll("#selectYear")
         .on("change", function(d) {
