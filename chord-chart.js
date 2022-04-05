@@ -746,7 +746,7 @@ function draw(input,config){
         // .append("title")
         // .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
         .transition()
-        .duration(200)
+        .duration(500)
         .attrTween("d", function (d) {
             var p  = previous.chords[d.source.id] && previous.chords[d.source.id][d.target.id]
             p = p || previous.chords[d.source.region] && previous.chords[d.source.region][d.target.region]
@@ -893,7 +893,7 @@ chordDiagram.selectAll(".path-item")
 
         let value = `
             <div> 
-            ${formatValue(d.source.value)}
+            <b>${formatValue(d.source.value)}</b> people to
             →
             `
         return tooltip
@@ -917,8 +917,8 @@ chordDiagram.selectAll(".group-arc")
     .on("mousemove", (evt,d) =>{
 
         let source = isRegion(d.name)
-            ? `<span style="color:white"> ${d.name}</span>`
-            : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
+            ? `<span style="color:white; font-size:12px"> ${d.name}</span>`
+            : `<span style="color:white; font-size:12px"> ${getMeta(d.name).region_name}</span></br>
                 <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
         
         let outflow = formatValue(d3.sum(data.matrix[d.index]))
