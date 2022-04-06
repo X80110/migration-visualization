@@ -96,7 +96,7 @@ const getMetaData = async () => {
 function filterYear(input,year){ 
     year = year || 1990
     nodes = input
-    selectedMatrix  = nodes.matrix[year]
+    const selectedMatrix  = nodes.matrix[year]
     let names = nodes.names
         
     let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
@@ -419,7 +419,7 @@ function dataPrepare(input, config){
     let names = []
     let unfilteredMatrix = []       // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
     let matrix = []     // yeah, this is the final matrix 
-    // Populate the matrix and names objects for the filters and selections applied
+    // Populate the filtered matrix and names in to the object  
     function finalNamesMatrix(){
         filteredLayout.map(d=> {
             let name = data.names[d]
@@ -433,16 +433,10 @@ function dataPrepare(input, config){
             let filtered = filteredLayout.map(a=> d[a])
             matrix.push(filtered)    
         })
-        // console.log(matrix)
 
-        // here we save last selected data
-        
         let regions =filteredLayout.map(d=> data.names[d])
-        // console.log(regions)
-        // here we update final data 
         data = {names,matrix,regions:regions}
-      /*   previous.chords = []
-        previous = data */
+      
         return data
     }
     let result = finalNamesMatrix()
@@ -463,7 +457,7 @@ function draw(input,config){
     // input layout to retrieve metadata (country <-index-> regions)
     input = input.raw_data
     
-    selectedMatrix = data.matrix
+    // selectedMatrix = data.matrix
     selectedNames = data.names
     let previous = config.previous || data
 
@@ -488,7 +482,8 @@ function draw(input,config){
         const id = input.names.indexOf(name)
         return {flag: flag(name), region,region_name,id}
     }
-    
+    let a = getMeta("France")
+    console.log(a, input.names)
 
  
     // GET REGION INDEX FOR A GIVEN COUNTRY NAME
@@ -531,6 +526,7 @@ function draw(input,config){
 
 
     function computedGroups(data)  {
+        
         let groups = chord(data.matrix).groups
         groups.map(d=>{
             d.name = data.names[d.index]
@@ -655,11 +651,25 @@ function draw(input,config){
     const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
 
     // this gets the html color by the name of the regions (which is the var used creating the visuals)
-    const getRegionColor = (d) => colors[input.regions.map((d)=> {return input.names[d]}).indexOf(d)]
+    
+    const getRegionColor = (name) => {
+        a = input.regions.map((d)=> {
+            return input.names[d]
+        })
+        b = a.indexOf(name)
+        // console.log("COLORS!"/* ,colors[a] */,b)
+        return colors[b]
+    }
 
     
+    // console.log(colors[0])
     // this gets the html color of the region selected by the user and decreases its opacity
-    const colorCountries = [colors[regionIndex]]
+    // const colorCountries = [colors[regionIndex]]
+    const colorCountries = (name) => {
+        console.log(getRegionColor("Europe"))
+        return getRegionColor(getMeta(name).region_name)
+    }
+    
 
     const container = chordDiagram.append("g")
         .attr("class","container")
@@ -683,7 +693,7 @@ function draw(input,config){
         .merge(arcs)
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
-        .style("fill",d=> isRegion(selectedNames[d.index]) ? getRegionColor(selectedNames[d.index]) :colorCountries)
+        .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         
         .transition()
         .duration(500)
@@ -697,7 +707,7 @@ function draw(input,config){
     //     .text(d => {
     //     return `${d.name} outflow ${formatValue(d3.sum(data.matrix[d.index]))} people and inflow ${formatValue(d3.sum(data.matrix, row => row[d.index]))} people`
     // })
-
+    
     const countryLabels = arcs
         .filter(d=>!isRegion(d.name))
         .append("text")
@@ -805,7 +815,7 @@ function draw(input,config){
         .attr("class", "path-item")
         // .merge(chords)
         .attr("d", ribbon)
-        .attr("fill", d=> isRegion(data.names[d.source.index]) ? getRegionColor(data.names[d.source.index]) :colorCountries)
+        .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
         // .style("mix-blend-mode", "multiply")
         // .append("title")
         // .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
@@ -840,7 +850,7 @@ function draw(input,config){
                     endAngle: d.target.endAngle
                 }
             })
-            console.log(i)
+            // console.log(i)
             return function (t) {
                 return ribbon(i(t))
             };
@@ -921,7 +931,7 @@ arcs.on('click', function(evt, d) {
             
         }
         config.regions.push(d.name)
-        console.log(d.name)
+        // console.log(d.name)
     })
 
 // close regions
@@ -1039,6 +1049,7 @@ chordDiagram.selectAll(".group-arc")
 
     chordDiagram.selectAll(".group-arc")
         .on("click", function (evt, d) {
+            
             config.previous = data 
             config.region = isRegion(data.names[d.index]) ? data.names[d.index] : undefined
             // print selected criteria on console
