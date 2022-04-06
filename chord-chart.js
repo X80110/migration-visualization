@@ -684,16 +684,18 @@ function draw(input,config){
         .merge(arcs)
         .append("text")
         .attr("class","region-label")
-        .attr("font-size",8)
-        .attr("dy",-6)
+        .attr("font-size",9.5)
+        // .attr("dy",-6)
+        
         .append("textPath")
-        .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
+        
         .attr("fill", d => getRegionColor(d.name))
         .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
         
         .style("text-anchor","middle")
         .attr("xlink:href",d=>"#"+textId)
-        .text(d =>d.name) 
+        .text(d =>d.name)
+        .call(d=> wrapText(d,70) )
         .transition()
         .duration(500)
 
@@ -785,7 +787,7 @@ function draw(input,config){
             d3.selectAll(".ribbon").remove()
         });
         
-        
+    
 
     function wrapText(text, width) {
         text.each(function () {
@@ -793,23 +795,28 @@ function draw(input,config){
                 words = textEl.text().split(/\s+/).reverse(),
                 word,
                 line = [],
-                linenumber = 0.1,
-                lineHeight = 2.5, // ems
+                linenumber = -2,
+                lineHeight =-1.2, // ems
                 y = textEl.attr('y'),
-                dx = parseFloat(textEl.attr('dx') || 0), 
-                dy = parseFloat(textEl.attr('dy') || -1.5),
-                tspan = textEl.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy + 'em');
-
-            while (word = words.pop()) {
+                dx = parseFloat(textEl.attr('dx') || 1), 
+                dy = parseFloat(textEl.attr('dy') || -2.4),
+                tspan = textEl.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy +'em').attr("class",'yay');
+            console.log(tspan.nodes())
+            while (word = words/* .reverse() */.pop()) {
                 line.push(word);
                 tspan.text(line.join(' '));
+
+                
+                
                 if (tspan.node().getComputedTextLength() > width) {
+                    console.log
                     line.pop();
-                    tspan.text(line.join(' '));
+                    tspan.text(line./* reverse(). */join(' '));
                     line = [word];
-                    tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', ++linenumber * lineHeight + dy + 'em').text(word);
+                    tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', linenumber * lineHeight + dy +1+ 'em').text(word);
                 }
             }
+            
         });
     }
 
