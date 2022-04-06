@@ -1,6 +1,5 @@
-// ##########################################################
-//  YEAR SELECTOR
-// ##########################################################
+////////////////////
+// YEAR SELECTOR  // ------------------------------------------------------------------------------------
 let slider = document.getElementById("selectYear");
 let output = document.getElementById("yearRange");
 let sliderValue = parseInt(slider.value)+5
@@ -11,11 +10,9 @@ slider.oninput = function() {
     let value = parseInt(this.value)+5
     output.innerHTML = this.value+" · "+value;
 }
+///////////////////// ------------------------------------------------------------------------------------
 
-
-// ##########################################################
-//  INITIAL PARAMETERS
-// ##########################################################
+// Define
 var width = 750;
 var height = width;
 const textId = "O-text-1"; 
@@ -33,6 +30,8 @@ const chordDiagram = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
+
+
 // Standard chord settings    
 var chord = d3.chordDirected()
     .padAngle(0.04)
@@ -48,6 +47,7 @@ var ribbon = d3.ribbonArrow()
     .headRadius(11)
     .padAngle(0);
     // .padAngle(1 / innerRadius);
+
 
 // var formatValue = (x) => `${x.toFixed(0).toLocaleString()}`;
 function formatValue(nStr, seperator) {
@@ -84,7 +84,7 @@ config.stockflow = "stock"
 config.sex = "all" || ""
 config.type = "" || "outward"
 config.method = "da_pb_closed" || ""
-config.regions = []
+config.regions = [undefined]
 
 
 const getMetaData = async () => {
@@ -188,10 +188,6 @@ getMetaData().then((meta)=>{
     });    
 })
 
-
-// ##########################################################
-//  DATA PREPARE
-// ##########################################################
 function dataPrepare(input, config){
     meta = input.metadata 
     threshold = input.raw_data.threshold
@@ -339,13 +335,14 @@ function dataPrepare(input, config){
 
     // EXPAND COUNTRIES IN SELECTED REGION AND OUTPUT NEW MATRIX
     let nameRegionIndex 
-    
+    let selectedRegions = ''
     let nextNameRegionIndex
-    
     function expandRegion(input, region) {
         // here we'll find the region index -> we'll get next region -> finally we define a range between both index and replace the values in region in the selected region place 
+        const allRegions = input.regions.flat()
         nameRegionIndex = input.names.indexOf(region) // index of selected region in names
         regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
+        
         nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop() // if equal or higher than last element in regions
                                      ? input.names.length // return last index iin names
                                      : input.regions[regionIndex+1] // return next element in regions        
@@ -354,66 +351,57 @@ function dataPrepare(input, config){
         // get range between two values
         const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i); // computes
         let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1) // applies
-        
-        let indexList = new Array(input.regions).flat()
-        
-        
+        selectedRegions = selectedRegions || allRegions
         // replace selected region on index and append its countries instead
-        indexList[regionIndex] = countryRange
+        selectedRegions[regionIndex] = countryRange
+        
 
-        return {indexList:indexList.flat(),countryRange}
+        return selectedRegions.flat()
     }
-    console.log()
+    
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)
     data = dataSliced
-    let allRegions = new Array(data.regions).flat()
-        
+    
+    function countrymerge(data, countries) {
+        return data.regions.reduce(function(memo, region, i) {
+          if (countries.indexOf(region) === -1) {
+            memo.push(region);
+          } else {
+            for (var idx = region + 1; idx < (data.regions[i + 1] || data.names.length); idx++) {
+              memo.push(idx);
+            }
+          }
+    
+          return memo;
+    })}
 /*     let metadata = {
         names: dataSliced.names,
         regions: dataSliced.regions,
         id: dataSliced.names.map((d,i)=>i)
     } */
 
-    function getMeta(name) {
-        // GET FLAG FOR A GIVEN COUNTRY NAME
-        let data = dataSliced
-        const flag = (name) =>{ 
-            let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
-            return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
-        }
-        const region = getRegion(data.names.indexOf(name))
-        
-        const region_name = data.names[region]
-        const id = data.names.indexOf(name)
-        return {flag: flag(name), region,region_name,id}
-    }
-
     // generate data structure to expand countries of a selected region
-    console.log(config.regions)
-    let testFilter = expandRegion(data,config.regions[1]).indexList
-    let filteredLayout = expandRegion(data,config.regions[0]).indexList
-    console.log("ALL!",allRegions)
-    let mergeFilter = () =>  {
-        let together = testFilter.concat(filteredLayout)
-        let unique = [...new Set(together)]
-        let ids = config.regions.map(d=>{return getMeta(d).id})
-        let w_id = unique.filter(d=> !ids.includes(d))
-        let sort = w_id.sort(function(a, b){return a-b})
-        // let id1 = getMeta(config.regions[0]).id
-        // let id2 = getMeta(config.regions[1]).id
-        
-        return sort
     
-    } 
-    // console.log(mergeFilter())
+    // console.log(config.regions)
+    let filteredLayout  
+    config.regions.map(d=> {
+        filteredLayout = expandRegion(data,d)
+        return filteredLayout.flat()
+    })
+    console.log(selectedRegions)
 
-    filteredLayout = mergeFilter()
-    // filteredLayout = mergeFilter()
-    
+    // var region1 = expandRegion(data,config.regions[1])
+    // var region2 = expandRegion(data,config.regions[0])
+    // console.log("1",region1)
+    // console.log("2",region2)
+    // var output = region1.concat(region2)
+    // var unique = output.filter((item, pos) => output.indexOf(item) === pos)
+    // var excludeRegions = unique.filter( d=> !config.regions.includes(data.names[d]))
 
-    console.log("AAAL",allRegions)
-    console.log(filteredLayout)
+    // let filteredLayout = excludeRegions.sort(function(a, b){return a-b})
+    // console.log(expandRegion(data,config.regions[0]))
+    // console.log(expandRegion(filteredLayout,config.regions[1]))
 
 
     let names = []
@@ -449,13 +437,7 @@ function dataPrepare(input, config){
     return {result/* ,metadata */}
 }
 
-// ##########################################################
-// ##########################################################
 
-//  DRAW
-
-// ##########################################################
-// ##########################################################
 function draw(input,config){
     // filteredMatrix    
     let data = dataPrepare(input,config).result
@@ -921,7 +903,7 @@ arcs.on('click', function(evt, d) {
             
         }
         config.regions.push(d.name)
-        console.log(d.name)
+        console.log(config.regions)
     })
 
 // close regions
@@ -930,10 +912,8 @@ arcs
         return d.id !== d.region;
     })
     .on('click', function(evt, d) {
-        /* console.log(d.name)
-        console.log("META",config.regions.indexOf(getMeta(d.name).region_name)) */
-        config.regions.splice(config.regions.indexOf(getMeta(d.name).region_name), 1);
-    console.log(config.regions)
+        config.regions.splice(config.regions.indexOf(d.region), 1);
+   
 });
 
 
@@ -976,8 +956,8 @@ chordDiagram.selectAll(".path-item")
             
             `)
             .style('background-color','#ffffff')
-            .style("top", (evt.pageY-10)+"px")
-            .style("left", (evt.pageX+10)+"px")
+            .style("top", (evt.pageY-50)+"px")
+            .style("left", (evt.pageX-70)+"px")
             .style("visibility", "visible")
             .transition()
             
@@ -1005,8 +985,8 @@ chordDiagram.selectAll(".group-arc")
             
             `)
             .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries)
-            .style("top", (evt.pageY-10)+"px")
-            .style("left", (evt.pageX+10)+"px")
+            .style("top", (evt.pageY+15)+"px")
+            .style("left", (evt.pageX-70)+"px")
             .style("visibility", "visible")
             .transition()
             
