@@ -23,7 +23,7 @@ const textId = "O-text-1";
 let regionIndex = 1
 var innerRadius = Math.min(width, height) *0.49-90;
 // console.log(innerRadius)
-var outerRadius = innerRadius + 15;
+var outerRadius = innerRadius + 10;
 
 let threshold = []
 let regionColors = []
@@ -44,8 +44,9 @@ var arc = d3.arc()
     .outerRadius(outerRadius);
 
 var ribbon = d3.ribbonArrow()
-    .radius(innerRadius -5)
-    .headRadius(11)
+    .radius(innerRadius)
+    // .radius(innerRadius - 5)
+    .headRadius(15)
     .padAngle(0);
     // .padAngle(1 / innerRadius);
 
@@ -693,7 +694,7 @@ function draw(input,config){
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        
+        .style("opacity", 0.75)
         .transition()
         .duration(500)
         .attrTween("d", function(d,j) {
