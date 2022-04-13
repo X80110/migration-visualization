@@ -35,7 +35,7 @@ const chordDiagram = d3.select("#chart")
 
 // Standard chord settings    
 var chord = d3.chordDirected()
-    .padAngle(0.04)
+    .padAngle(0.02)
     .sortSubgroups(d3.descending)
     .sortChords(d3.descending);
 
@@ -188,11 +188,13 @@ getMetaData().then((meta)=>{
     });    
 })
 
-
+// ##########################################################
 // ##########################################################
 //  DATA PREPARE
 // ##########################################################
+// ##########################################################
 function dataPrepare(input, config){
+
     meta = input.metadata 
     threshold = input.raw_data.threshold
     // console.log(threshold)
@@ -207,7 +209,7 @@ function dataPrepare(input, config){
     // console.log(region)
     sex = config.sex
     let data = filterYear(input,year)   
-    
+    console.log(data)
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
@@ -261,12 +263,12 @@ function dataPrepare(input, config){
         
         // Run 1st level loop  
         for (let j in matrix){
-            let source_region = matrix[j].region    // <- include region why not
-            let source = matrix[j].name
+            let target_region = matrix[j].region    // <- include region why not
+            let target = matrix[j].name
             // Run 2nd level loop (into each 1st level array)
             for (let k in matrix[j].connections){
-                let target = matrix[k].name
-                let target_region = matrix[k].region    // <- include region why not
+                let source = matrix[k].name
+                let source_region = matrix[k].region    // <- include region why not
                 let value = matrix[j].connections[k]
                 // if (value!== 0) {
                     links[l] = {source_region,source,target_region,target,value}
@@ -278,7 +280,7 @@ function dataPrepare(input, config){
         
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links}       
-            //  console.log(nldata.links.length)
+             console.log(nldata.links.filter(d=>d.source === "North America" && d.target === "Latin America and the Caribbean"))
 
         let names = nldata.nodes.map(d=> d.name)
 
@@ -337,8 +339,7 @@ function dataPrepare(input, config){
         return{ names: names, matrix: filteredMatrix, regions: regions}
     }
 
-    // EXPAND COUNTRIES IN SELECTED REGION AND OUTPUT NEW MATRIX
-    let nameRegionIndex 
+    // EXPAND COUNTRIES IN SELECTED REGION AND OUTPUT NEW MATRIX// ##########################################################
     
     let nextNameRegionIndex
     
@@ -376,7 +377,7 @@ function dataPrepare(input, config){
     } */
 
     function getMeta(name) {
-        // GET FLAG FOR A GIVEN COUNTRY NAME
+        // GET FLAG FOR A GIVEN COUNTRY NAME    // ##########################################################v
         let data = dataSliced
         const flag = (name) =>{ 
             let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
@@ -445,9 +446,7 @@ function dataPrepare(input, config){
 
 // ##########################################################
 // ##########################################################
-
 //  DRAW
-
 // ##########################################################
 // ##########################################################
 function draw(input,config){
@@ -836,7 +835,7 @@ function draw(input,config){
     // chords.selectAll(".path-item")
     //     .append("title")
     //     .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
-    chords.exit()
+   /*  chords.exit()
         .transition()
         .duration(500)
         .attrTween("d", function (d) {
@@ -859,10 +858,11 @@ function draw(input,config){
             d3.selectAll(".ribbon").remove()
         });
         
-    
+     */
 
     function wrapText(text, width) {
-        text.each(function () {
+        text.each(function (d) {
+            console.log(d.name)
             var textEl = d3.select(this),
                 words = textEl.text().split(/\s+/).reverse(),
                 word,
@@ -870,13 +870,14 @@ function draw(input,config){
                 linenumber = -2,
                 lineHeight =-1.2, // ems
                 y = textEl.attr('y'),
-                dx = parseFloat(textEl.attr('dx') || 1), 
+                dx = parseFloat(textEl.attr('dx') || 0), 
                 dy = parseFloat(textEl.attr('dy') || -2.4),
                 tspan = textEl.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy +'em')//.attr("class",'yay');
 
             while (word = words/* .reverse() */.pop()) {
                 line.push(word);
                 tspan.text(line.join(' '));
+                
 
                 
                 
@@ -886,6 +887,7 @@ function draw(input,config){
                     tspan.text(line./* reverse(). */join(' '));
                     line = [word];
                     tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', linenumber * lineHeight + dy +1+ 'em').text(word);
+                    console.log(/* line,"$$", */words)
                 }
             }
             
@@ -896,7 +898,7 @@ function draw(input,config){
 //         .text(d => {
 //             return `${names[d.index]} outflow ${formatValue(d3.sum(matrix[d.index]))} people and inflow ${formatValue(d3.sum(matrix, row => row[d.index]))} people`
 //         }))
-//   /*   function wrap(text, width) {
+//     function wrap(text, width) {
 //         text.each(function() {
 //             var text = d3.select(this),
 //                 words = text.text().split(/\s+/).reverse(),
@@ -918,20 +920,74 @@ function draw(input,config){
 //             }
 //             }
 //         });
-//         } */
+//         }
 //     // d3.select("#table").append("table").html(table)
-// open regions
 
-config.maxRegionsOpen = 2
-// config.regions = region || config.regions
+function tooltipCountry(evt,d)  {
+    var source = isRegion(data.names[d.source.index])
+        ? `<span style="font-size:9.5px;color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
+        : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
+    
+    var target = isRegion(data.names[d.target.index] )
+        ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
+        : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.target.name).flag+ " "+  d.target.name}</span>`
+    
+
+    var value = `
+        <div> 
+        <b>${formatValue(d.source.value)}</b> people to
+        →
+        `
+    return tooltip
+        .html(`\
+        <b>${source} </b>
+        ${value} 
+        ${target}
+        
+        `)
+        .style('background-color','#ffffff')
+        .style("top", (evt.pageY-10)+"px")
+        .style("left", (evt.pageX+10)+"px")
+        .style("visibility", "visible")
+        .transition()
+        
+}
+
+function tooltipRegion(evt,d) {
+
+    let source = isRegion(d.name)
+        ? `<span style="color:white; font-size:11px"> ${d.name}</span>`
+        : `<span style="color:white; font-size:11px"> ${getMeta(d.name).region_name}</span></br>
+            <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
+    
+    let outflow = formatValue(d3.sum(data.matrix[d.index]))
+    let inflow = formatValue(d3.sum(data.matrix, row => row[d.index]))
+
+    return tooltip
+        .html(`\
+        ${source} </br>
+        <b>Total outflow → </b> ${outflow} </br>
+        <b>Total inflow ←</b> ${inflow} 
+        
+        
+        `)
+        .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+        .style("top", (evt.pageY-10)+"px")
+        .style("left", (evt.pageX+10)+"px")
+        .style("visibility", "visible")
+        .transition()       
+}
+
+// open regions
+config.maxRegionsOpen = 2 // config.regions = region || config.regions
 
 arcs.on('click', function(evt, d) {
+        
         if (config.regions.length + 1 > config.maxRegionsOpen) {
             config.regions.shift();
             
         }
-        config.regions.push(d.name)
-        // console.log(d.name)
+        config.regions.push(d.name) // console.log(d.name)
     })
 
 // close regions
@@ -940,90 +996,41 @@ arcs
         return d.id !== d.region;
     })
     .on('click', function(evt, d) {
-        /* console.log(d.name)
-        console.log("META",config.regions.indexOf(getMeta(d.name).region_name)) */
-        config.regions.splice(config.regions.indexOf(getMeta(d.name).region_name), 1);
+        config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
     console.log(config.regions)
 });
 
 
 
 const tooltip = d3.select('body').append('div')
-    .style('class', 'tooltip')
+    .attr('id', 'tooltip')
     .style('background-color','#ffffff')
     // .style('filter', 'blur(10px)') 
     // .style('-webkit-filter', 'blur(10px)') /* Safari 6.0 - 9.0 */    
-    .style('padding','5px')
-    .style('border-radius','5px')
+    .style('padding','6px')
+    .style('border-radius','4px')
     .style('position', 'absolute')
-    .style('visibility', 'hidden').text('ege')
+    .style('visibility', 'hidden')
+    // .text('ege')
     // .style('box-shadow',' rgba(100, 100, 111, 0.2) 0px 7px 29px 0px')
     .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')
     
     
 
 chordDiagram.selectAll(".path-item")
-    .on("mousemove", (evt,d) =>{
-        let source = isRegion(data.names[d.source.index])
-            ? `<span style="font-size:9.5px;color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
-            : `<span style="color:${ colorCountries}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
-        
-        let target = isRegion(data.names[d.target.index] )
-            ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
-            : `<span style="color:${ colorCountries}"> ${getMeta(d.target.name).flag+ " "+  d.target.name}</span>`
-        
-
-        let value = `
-            <div> 
-            <b>${formatValue(d.source.value)}</b> people to
-            →
-            `
-        return tooltip
-            .html(`\
-            <b>${source} </b>
-            ${value} 
-            ${target}
-            
-            `)
-            .style('background-color','#ffffff')
-            .style("top", (evt.pageY-10)+"px")
-            .style("left", (evt.pageX+10)+"px")
-            .style("visibility", "visible")
-            .transition()
-            
-    })
+    .on("mousemove", tooltipCountry)
     .on("mouseout", function(){
-        return tooltip.html(``).style("visibility", "hidden");
+        return tooltip.style("visibility", "hidden");
     })
-chordDiagram.selectAll(".group-arc")
-    .on("mousemove", (evt,d) =>{
-
-        let source = isRegion(d.name)
-            ? `<span style="color:white; font-size:11px"> ${d.name}</span>`
-            : `<span style="color:white; font-size:11px"> ${getMeta(d.name).region_name}</span></br>
-                <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
-        
-        let outflow = formatValue(d3.sum(data.matrix[d.index]))
-        let inflow = formatValue(d3.sum(data.matrix, row => row[d.index]))
     
-        return tooltip
-            .html(`\
-            ${source} </br>
-            <b>Total outflow → </b> ${outflow} </br>
-            <b>Total inflow ←</b> ${inflow} 
-            
-            
-            `)
-            .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries)
-            .style("top", (evt.pageY-10)+"px")
-            .style("left", (evt.pageX+10)+"px")
-            .style("visibility", "visible")
-            .transition()
-            
-    })
+chordDiagram.selectAll(".group-arc, #tooltip")
+    .on("mousemove", tooltipRegion)
     .on("mouseout", function(){
-        return tooltip.html(``).style("visibility", "hidden");
+        return tooltip.style("visibility", "hidden");
     })
+    
+
+
         // INTERACTIONS
   /*   chordDiagram.selectAll(".group-arc, .path-item")
         .on("mouseover", function (evt, d) {
@@ -1049,9 +1056,9 @@ chordDiagram.selectAll(".group-arc")
 
     chordDiagram.selectAll(".group-arc")
         .on("click", function (evt, d) {
-            
+                    
             config.previous = data 
-            config.region = isRegion(data.names[d.index]) ? data.names[d.index] : undefined
+            // config.region = isRegion(data.names[d.index]) ? data.names[d.index] : undefined
             // print selected criteria on console
             // console.log(names)
             
@@ -1073,6 +1080,7 @@ chordDiagram.selectAll(".group-arc")
                 /* console.log("previous",data) */
 
                 draw(data,config)})
+           
         })
         
 
