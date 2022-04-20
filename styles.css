@@ -1,0 +1,87 @@
+* {
+    box-sizing: border-box;
+
+}
+
+h1 {
+    font-weight: normal;
+    font-size: 1.5em;
+    text-align: center;
+}
+p {
+    margin: 0 0 1em 0;
+}
+
+#main {
+   margin: 0;
+   padding: 0;
+   display: -webkit-flex;
+   display: flex;
+   -webkit-flex-flow: row;
+   flex-flow: row;
+}
+
+header,
+footer,
+#main > article,
+#main > nav,
+#main > aside {
+   /* margin: 4px; */
+   /* padding: 10em; */
+}
+ 
+#main > article {
+   -webkit-flex: 8 1 0;
+           flex: 8 1 0;
+   -webkit-order: 2;
+           order: 2;
+}
+
+#main > nav,
+#main > aside {
+   background: hwb(188 81% 0%);
+   -webkit-flex: 1 8 0;
+           flex: 1 8 0;
+}
+#main > nav {
+   -webkit-order: 1;
+           order: 1;
+}
+  
+#main > aside {
+   -webkit-order: 3;
+           order: 3;
+}
+ 
+header, footer {
+   display: block;
+   /* min-height: 80px; */
+}
+
+
+
+footer {
+  background: #000000;
+  color:#fff;
+  padding: 1em;
+}
+ 
+/* Too narrow to support three columns */
+  @media all and (max-width: 640px) {
+  
+   #main, #page {
+    -webkit-flex-flow: column;
+            flex-flow: column;
+}
+
+   #main > article, #main > nav, #main > aside {
+    /* Return them to document order */
+    -webkit-order: 0;
+            order: 0;
+   }
+  
+   #main > nav, #main > aside, header, footer {
+    min-height: 30px;
+  
+   }
+}

@@ -3,523 +3,241 @@
 <head>
 <meta charset="utf-8">
 <link rel="icon" type="image/x-icon" href="http://127.0.0.1:5501/favicon.ico">
-<style>
+<link href="styles.css" rel="stylesheet" media="all">
+
 	
 </style>
 <style>
 	@import url(//fonts.googleapis.com/css?family=Poppins:400,600,700,300);
 	/* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
 	
-	
 	body {
-		font-family:  'Poppins', sans-serif;
-		font-size: 52.5%;
-		font-weight: 400;
-		max-width: 900px;
-		margin: auto;
-		max-width: 900px;
-		margin: auto;
-		/* background-color: #daf1f8; */
+		font-family:  'Jost', sans-serif !important;
+		/* font-size: 52.5%; */
+		/* font-weight: 400; */
+		margin: 0;
+		/* max-width: 1000px; */
 	}
-	/*
-	a {
-    text-decoration: none;
-    color: #0f394f;
-	}
-	a:hover,
-	a:focus {
-	    text-decoration: underline;
-	}
-	
-`
-	#circle circle {
-	  fill: none;
-	  pointer-events: all;
+	h1 {
+		font-size:1.8em;
+		font-weight:600;
+		/* color:white; */
+		margin: 0;
+		padding: 1em ;
+
 	}
 
-	.group:hover .donor {
-		font-size: 1.3em;
-		font-weight: 700;
-	}
-				
-	.label {
-		cursor: pointer;
-		padding: 15px;
-		color: rgba(0,0,0,.8);
-		font-weight: 700;
+
+	label {
+		color: grey;
+		font-weight: 200;
+		font-size: 80%;
 	}
 
-	.party {
-		font-size: 1.5em;
-		font-weight: 700;
+	#yearRange{
+		padding: 1em;
+		text-align:center;
+		line-height: 0.3em;
+		/* max-width:50%; */
+		font-weight: bold;
 	}
-
-	.donor {
-		font-size: 1.1em;
-	}		
-
-	.chord {
-		fill-opacity: .9;
-		stroke-opacity: .25;
-	}
-
-	.chord:hover {
-		stroke-width: 5;
-		stroke-opacity: 1;
-		stroke: black;
-	}
-
-	text.entity.party {
-		font-size: 3em;
-		fill: rgba(170,170,170,1);
-		font-weight: 700;						
-	}
-
-	text.entity.donor {
-		font-size: 3em;
-		fill: rgba(170,170,170,1);
-		font-weight: 700;
-	}
-
-	text.notes {
-		font-size: 1em;
-		fill: rgba(0,0,0,1);
-		opacity:- 1;
-	}
-
-	#chart {
-		margin: 0 50px;
-	}
-
-	.tooltip {
-	  background: rgba(0,0,0,.8);
-	  width: 250px;
-	  text-align: center;
-	  padding: 5px; 
-	  border-radius: 2px; 
-	  box-shadow: 0px 0px 2px 0px #aabbcc; 
-	  opacity: 1; 
-	  position: absolute;
-	  font-weight: 400;
-		max-width: 900px;
-		margin: auto;
-	  color: #fff;
-	  font-size: 1.4em
-	}
-
-	.hidden {
-		visibility: hidden;
-	}
-
-	.tooltip.group {
-		margin: 5px 0;
-		width: 150px;
-		color: #fff;
-	  font-size: 1.8em;
-	  background: rgba(0,0,0,.8);
-	}
-
-	.aside {
-		font-size: 1.6em;
-		width:100%;
-		margin: 1.625%;
-	}
-
-  @media screen and (min-width:1250px ) {
-  	.aside {
-  		width: 18%;
-  		margin-right: 2.625%;
-  		float: left;
-  	}
-  } */
-  	#chord-chart {
-		width: 650px;
-		/* height: 600px; */
-		
-		
-
-	}
-        
-	/* text {
-
-		transform: rotate(80)!important;
-	} */
-
-    /* .chart-title {
-            width: 98%;
-            line-height: 100px;
-            margin: 0 auto;
-            color: #ccc;
-    }		 */
-	.grid-container {
-		
-		display: grid;
-		gap: 6px;
-
-		/* grid-auto-columns: 300px 100px; */
-		/* grid-template-columns: [col1] 70% [col2] 29%; */
-
-		/* display: grid;
-		grid-template-rows: [row1] 47% [row2] 47%;
-		grid-gap: 3px;
-		
-		/* padding: 5px 5px 5px 5px; */
-
+	#yearRange span {
+		color: grey;
+		width: 30%;
+		/* text-align:right; */
+		/* padding-: 1em; */
+		font-weight: 200;
+		font-size: 90%;
 	}
 	
-	.grid-container > div {
-		justify-content: center;
-		
-		height:fit-content;
-		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.02), 0 6px 20px 0 rgba(0, 0, 0, 0.019);
-		background-color: rgba(255, 255, 255, 0);
+	.header{
+		width:100%; 
+		background-color: #bee0f2;
+	}
+	
+	.center {
+		margin-left: auto;
+		margin-right: auto;
+		margin-bottom: 2em;
+	}
 
-		margin: 20px;
-		
-		font-size: 12px;
-		border-radius: 6px;
+	
+	
+	
+	.center th {
+		border-radius: 15px;
+		margin:1em;
+		/* font-size: 12px; */
+		padding-left:2em;
+		padding-right:2em;
+		background-color: #bee0f2;
+		border: 1px solid #598cae;
+/* 		color: #fff; */
+		font-size:80%;
+	}
+
+
+	.inactive {
+		opacity: 0.6;
+		-webkit-transition: .2s;
+  		transition: opacity .2s;
+	}
+	.inactive:hover {
+		opacity: 1;
+	}
  
+
+	.grow { 
+		transition: all .2s ease-in-out; 
 	}
+	.grow:hover {
+		 transform: scale(1.33); 
+		}
 	
-	.chordGrid {
-		grid-column: 1;
-		grid-row: 1;
-		
-		
+
+	.center td {
+		text-align: left;
+		padding-left: 15px;
+		vertical-align: middle;
+		line-height: 0.7em;
 	}
-	.sankeyGrid {
-		grid-column: 1;
-		grid-row: 2;
-	}
-	.mapGrid {
-		grid-column: 1;
-		grid-row: 3;
+	.center tr { 
+		padding-left: 15em;
 		
 	}
-	.side {
-		font-size: 75%;
-		width: fit-content;
-		grid-column: 2 ;
-		grid-row:    1 / span 3;
-		/* padding: 25px; */
+	.center a {
+		font-size:70%;
+		color: #888;
+		padding-left:auto;
 	}
-	
-	/* .inputDiv {
-  width: 250px;
-  margin: 100px auto;
-  position: relative;
-}
-
-input[type='range'] {
-  display: block;
-  width: 250px;
-}
-
-input[type='range']:focus {
-  outline: none;
-}
-
-input[type='range'],
-input[type='range']::-webkit-slider-runnable-track,
-input[type='range']::-webkit-slider-thumb {
+	table {
+		min-width:180px;
+		border-spacing: 10px;
+	}
+	hr {
+		margin-top:0;
+		margin-bottom:1.6em;
+		border-top: 0.1px solid #bee0f2;
+		/* width: 18em; */
+	}
+.slider {
   -webkit-appearance: none;
-}
-
-input[type=range]::-webkit-slider-thumb {
-  background-color: #777;
-  width: 20px;
-  height: 20px;
-  border: 3px solid #333;
-  border-radius: 50%;
-  margin-top: -9px;
-}
-
-input[type=range]::-moz-range-thumb {
-  background-color: #777;
-  width: 15px;
-  height: 15px;
-  border: 3px solid #333;
-  border-radius: 50%;
-}
-
-input[type=range]::-ms-thumb {
-  background-color: #777;
-  width: 20px;
-  height: 20px;
-  border: 3px solid #333;
-  border-radius: 50%;
-}
-
-input[type=range]::-webkit-slider-runnable-track {
-  background-color: #777;
-  height: 3px;
-}
-
-input[type=range]:focus::-webkit-slider-runnable-track {
+  width: 66%;
+  height: 25px;
+  background: #bee0f2;
   outline: none;
+  opacity: 0.5;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  border-radius: 20px;
+  padding: 10px;
 }
 
-input[type=range]::-moz-range-track {
-  background-color: #777;
-  height: 3px;
-}
-
-input[type=range]::-ms-track {
-  background-color: #777;
-  height: 3px;
-}
-
-input[type=range]::-ms-fill-lower {
-  background-color: HotPink
-}
-
-input[type=range]::-ms-fill-upper {
-  background-color: black;
-}  */
-#activeData {
-	display:none;
-}
-input[type=radio] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-
-  border: 2px solid #999;
-  transition: 0.2s all linear;
-  margin-right: 2px;
-
-  position: relative;
-  top: 0.8em;
-}
-
-input[type='radio']:checked {
-  border: 6px solid black;
-}
-input[type='radio'] {
-	border: 2px solid lightgrey;
-	visibility:unset;
-}
-.subgroups label{
-
-	color: grey;
-	margin-right:5px;
-	
-}
-.subgroups input{
-	margin-left:20px;
-	
-}
-.center {
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 2em;
-  
-  
-}
-
-.center th {
-  font-size: 12px;
-  padding:0.5em;
-  /* padding: 0.2em; */
-  border: 1px solid #333;
-}
-.center td {
-  text-align: left;
-  /* padding: 0.5em; */
-}
-.center tr { 
-  padding-left: 15em;
-}
-.center a {
-  color: #888;
-}
-.sub {
-	font-size: 8.5px;
-}
-
-/* ---------------------------------------------------------
-   SVG styles
-   ---------------------------------------------------------*/
-svg {	
-  font-size: 12px;
-  max-width: 100%;
-  vector-effect: non-scaling-stroke;
-}
-.info, .label {
-  pointer-events: none;
-}
-.info text {
-  fill: white;
-}
-
-#circle circle {
-  fill: none;
-  pointer-events: all;
-}
-text {
-  cursor: default;
-  fill: #333;
-}
-.group-arc + text {
-  -webkit-transition: opacity 0.4s;
-  -moz-transition: opacity 0.4s;
-  -o-transition: opacity 0.4s;
-  transition: opacity 0.4s;
-}
-.group-arc.animate + text {
-  opacity: 0;
-}
-#circle path {
-  -webkit-transition: opacity 0.4s;
-  -moz-transition: opacity 0.4s;
-  -o-transition: opacity 0.4s;
-  transition: opacity 0.4s;
-}
-#circle:hover path.fade,
-#circle path.unselected {
-  opacity: 0;
-  pointer-events: none;
-}
-text.fade {
-  opacity: 0;
-}
-.group-arc {
-  cursor: pointer;
-}
-text.region {
-  font-family: 'CartoGothic', Arial, sans-serif;
-  font-size: 14px;
-}
-.chord {
-  opacity: 0.75;
-}
-.chord:hover {
+.slider:hover {
   opacity: 1;
 }
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20%;
+  height: 1em;
+  background: #598cae70;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 20%;
+  height: 1em;
+  background: #598cae70;
+  border: 1px solid #598cae;
+  cursor: pointer;
+}
+	
+	/* .sub {
+		font-size: 8.5px;
+	} */
+
+
+
   </style>
 
   <title>Global international migration</title>
 </head>
 
 <body>
-	
-	<!-- <aside class="aside">
-		<h2>The top 100 donors</h2>
- 		<p>Just how reliant are Labour, the Conservatives and the Liberal Democrats on a few rich benefactors? 70% of all donations received by the parties since the 2010 general election came from these 100 donor groups. 
-Labour's reliance on the unions is clear, with 90% of its cash coming from these sources. The Conservatives meanwhile have a wider spread of sources with a long list of wealthy business people, from ‘cash and carry’ owners to hedge fund directors.
+	<div class="header">
+		<header>
+			<h1>Global international migration</h1>
+	   </header>
+	</div>
+   
+   <hr>
+   <div id="main">
+	   <!-- <nav>nav</nav> -->
+	   <!-- <aside>aside</aside> -->
+	   
+	   <article>
+		<div style="text-align: center;">
+			<div>
+				<table   class="center" >
+					<tr>
+						<th>STOCKS</th>	
+						<td class="sub"><b>all</b> <!-- <a href="index.html">all</a> --></li>
+						<td class="grow"><a href="stocks_by_gender.html">by gender</a></li>
+								<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
+								<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+					</tr>
+								
+					<tr class="inactive">
+						<th >FLOWS</th>
+						<td class="grow"><a href="flows.html">all</a></td>
+						<td class="grow"><a href="flows_by_gender.html">by gender</a></td>
+						<td class="grow"><a href="flows_by_type.html">by type</a></td>
+						
+					</tr>
 
-</p><p>Hover over a name or connection to see how much each donor gave and to which party.
-</p>
- 		<p>Donations from members of the same family are grouped together as are donations from companies under the control of individual donors.</p>
- 	</aside> -->
- 	<!-- <div id="donationInfo"></div> -->
-	 <!-- <div id="activeData"></div> -->
-	 <div style="text-align: center;">
-		<div style="background-color: rgba(255, 255, 255, 0.8);">
-			<table  style="min-width:180px" class="center" >
-				<tr>
-					<th>STOCKS</th>
-					<th>FLOWS</th>
-				</tr>
-				<tr>
-					<td class="sub">→ <a href="index.html">all</a></td>
-					<td class="sub"><a href="flows.html">all</a></td>
-				</tr>
-				<tr>
-					<td class="sub"><a href="stocks_by_gender.html">by gender</a></td>
-					<td class="sub"><a href="flows_by_gender.html">by gender</a></td>
-				</tr>
-				<tr>
-					<td></td>
-					<td class="sub"><a href="flows_by_type.html">by type</a></td>
-				</tr>
-				
-			</table>
-			<!-- <hr style="fill: #ff"> -->
-		</div>
-		<div class="slider">
-			<div class="subgroups"><label> Select period: </label></div>
-			<div id="yearRange"></div>
-			<input type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-			<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
-		</div>
-		<!-- <select  id="selectYear"></select> -->
+					
+				</table>
+				<!-- <hr style="fill: #ff"> -->
+			</div>
+			<!-- <div class="slider"> -->
+			<div>
+				<div class="subgroups"><label> Select period: </label></div>
+				<input class="slider" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+				<div id="yearRange"></div>
+				<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
+			</div>
+		 <div id="chart"></div>
+		 <p>Kitty ipsum dolor sit amet, sunbathe claw bat puking, stretching feed me eat catnip fluffy fur claw sleep in the sink sleep in the sink. Hiss hairball fluffy fur lick biting, run eat the grass chase the red dot attack your ankles meow. Rip the couch catnip run meow stuck in a tree, sleep on your face stretching lick climb the curtains purr jump on the table jump on the table. Sleep in the sink feed me sniff give me fish toss the mousie, I don't like that food eat eat knock over the lamp scratched chase the red dot.</p>
+   
+	   </article>
+   
+   </div>
+   <footer>
+   Footer
+   </footer>
+   
+   <script src="https://d3js.org/d3.v7.min.js"></script>
 
-		
-		<!-- <div class="radio">
-			<form>
-				  <input type="radio" id="stockFlow" name="stockflow" value="stock" checked>
-				  <label for="stocks">Stocks</label>
-				  <input type="radio" id="stockFlow" name="stockflow" value="flow">
-				  <label for="css">Flows</label><br>
-			</form><br>
-		</div> -->
+   
+   <script src="chord-chart.js"></script>
+   <script>
+	   
+	   config.stockflow = "stock"
+	   config.sex = "all"
+	   config.type = ""
+	   config.method = ""
+	   const allGenders = ['male', 'female'].reverse()
+	   const allMethods = ""
+	   const allTypes = ""
 
-		<!-- <div class="method">
-			
-			<label for="selectMethod">Estimation method</label>
-			<select value="da_pb_closed" id="selectMethod"></select>
-		</div><br> -->
-
-		<!-- <div class="subgroups">
-			<form>
-				<div class="radio">
-					<input type="radio" id="all" name="subselector" value="all" checked>
-					<label for="all">All</label>
-					<input type="radio" id="gender" name="subselector" >
-					<label for="selectGender">by gender:</label>
-					<select value= 'female' id="selectGender"></select>
-					<input type="radio" id="type" name="subselector" value="onward">
-					<label for="selectType">by type:</label>
-					<select id="selectType"></select>
-				</div>
-			</form>
-		</div> -->
-		<!-- <div   class="grid-container"> -->
-		<div  id="chart"></div>
-		<!-- <div>
-			<div  id="chart"></div> -->
-
-			<!-- <div id="chart" class="chordGrid"></div> -->
-			<!-- <div id="sankey" class="sankeyGrid"></div> -->
-			<!-- <div id="mapflows" class="mapGrid"></div> -->
-			<!-- <div id="table" class="side"></div> -->
-		<!-- </div> -->
-	</div> 
-	<!-- <script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script> -->
-	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script> -->
-	<script src="https://d3js.org/d3.v7.min.js"></script>
-	<!-- <script src="libs/d3.min.js"></script> -->
-	<!-- <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script> -->
-
-	
-	<script src="chord-chart.js"></script>
-	<script>
-		// filename = "stocks"
-		
-		config.stockflow = "stock"
-		config.sex = "all"
-		config.type = ""
-		config.method = ""
-		const allGenders = ['male', 'female'].reverse()
-		const allMethods = ""
-		const allTypes = ""
-
-		filename = fileName(config).json
-		// chart(filename).draw(raw,config)
-		getData(filename).then(raw => {
-			draw(raw,config)
-		})
-	</script>
-	<!-- <script src="chord-chart.js"></script> -->
-	<!-- <script src="chord-chart2.js"></script> -->
-	<!-- <script src="chord.js"></script> -->
-	<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script> -->
-	<!-- <script>window.jQuery || document.write('<script src="js/jquery2.0.3.min.js"><\/script>')</script> -->
+	   filename = fileName(config).json
+	   // chart(filename).draw(raw,config)
+	   getData(filename).then(raw => {
+		   draw(raw,config)
+	   })
+   </script>
 
 </body>
 </html>

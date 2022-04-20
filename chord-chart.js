@@ -21,6 +21,10 @@ var height = width;
 const textId = "O-text-1"; 
 
 let regionIndex = 1
+
+
+
+
 var innerRadius = Math.min(width, height) *0.49-90;
 // console.log(innerRadius)
 var outerRadius = innerRadius + 10;
@@ -35,7 +39,7 @@ const chordDiagram = d3.select("#chart")
 
 // Standard chord settings    
 var chord = d3.chordDirected()
-    .padAngle(0.02)
+    .padAngle(0.03)
     .sortSubgroups(d3.descending)
     .sortChords(d3.descending);
 
@@ -152,7 +156,8 @@ getMetaData().then((meta)=>{
         let slider = document.getElementById("selectYear");
         let output = document.getElementById("yearRange");
         let sliderValue = parseInt(slider.value)+5
-        output.innerHTML =slider.value+"  –  "+sliderValue; // Display the default slider value
+        // output.innerHTML ='<span class="lighten">from </span>'+slider.value+'<p> </p> <span class="lighten"> to </span>'+sliderValue; // Display the default slider value
+        output.innerHTML =slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
 
         // Update the current slider value (each time you drag the slider handle)
         slider.oninput = function() {
@@ -221,7 +226,7 @@ function dataPrepare(input, config){
             return matrix;
     }
 
-    // FUNCTION ASSIGN REGION TO EACH COUNTRY NAME   ---   THIS WILL BE USED TO SORT EACH AFTER FILTERING OVER A THRESHOLD 
+    // FUNCTION ASSIGN REGION TO EACH COUNTRY INDEX  
     function getRegion(index) {
         var r = 0;
         for (var i = 0; i < input.regions.length; i++) {
@@ -277,7 +282,7 @@ function dataPrepare(input, config){
                 // }
             }
         }
-        // console.log(links)
+
         
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links}       
@@ -305,9 +310,8 @@ function dataPrepare(input, config){
             return region_data
         })
         
-        // console.log(filteredData)
         filteredData = setThreshold.flat() */
-        // console.log(filteredData)
+
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
         function removeNullNames(){
             let names_source = Array.from(new Set(filteredData.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified  
@@ -695,6 +699,10 @@ function draw(input,config){
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity", 0.75)
+        .style("stroke", "#598cae")
+        .style("stroke-width", "0.3px")
+        // .style("stroke-opacity", "1")
+        
         .transition()
         .duration(500)
         .attrTween("d", function(d,j) {
