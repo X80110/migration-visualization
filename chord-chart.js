@@ -760,7 +760,6 @@ function draw(input,config){
         .append("textPath")
         
         .attr("fill", d => getRegionColor(d.name))
-        
         .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
         
         .style("text-anchor","middle")
@@ -772,10 +771,11 @@ function draw(input,config){
             //     var length = a.getComputedTextLength()
             //     if ( length > 75) {
             //         console.log(a),
-                    wrapText(d,75)   
+                    wrapText(d,75)
         //         }
         // })}
         )
+        .selectAll("tspan")
         .transition()
         .duration(500)
 
@@ -821,6 +821,7 @@ function draw(input,config){
         .append("path")
         .style("opacity", 0.75)
         .attr("class", "path-item")
+        
         // .merge(chords)
         .attr("d", ribbon)
         .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
@@ -887,19 +888,22 @@ function draw(input,config){
                 line.push(word);
                 tspan.text(line.join(' '));
                 
+                
 
                 
                 
                 if (tspan.node().getComputedTextLength() > width) {
-
+                    d3.select(this.parentNode).attr("class", "wrapped")
                     line.pop();
                     tspan.text(line./* reverse(). */join(' '));
                     line = [word];
-                    tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', linenumber * lineHeight + dy +1+ 'em').text(word);
+                    tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word);
                     console.log(/* line,"$$", */words)
                 }
             }
-            
+            d3.selectAll("tspan")
+            // .filter(d=> !this.parentNode.hasClass(".wrapped"))
+            .attr("dy",-10)
         });
     }
 
@@ -934,7 +938,7 @@ function draw(input,config){
 
 function tooltipCountry(evt,d)  {
     var source = isRegion(data.names[d.source.index])
-        ? `<span style="font-size:9.5px;color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
+        ? `<span style="color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
         : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
     
     var target = isRegion(data.names[d.target.index] )
@@ -955,6 +959,7 @@ function tooltipCountry(evt,d)  {
         
         `)
         .style('background-color','#ffffff')
+        .style('padding','1em')
         .style("top", (evt.pageY-10)+"px")
         .style("left", (evt.pageX+10)+"px")
         .style("visibility", "visible")
@@ -965,8 +970,8 @@ function tooltipCountry(evt,d)  {
 function tooltipRegion(evt,d) {
 
     let source = isRegion(d.name)
-        ? `<span style="color:white; font-size:11px"> ${d.name}</span>`
-        : `<span style="color:white; font-size:11px"> ${getMeta(d.name).region_name}</span></br>
+        ? `<span style="color:white"> <b>${d.name}</b></span>`
+        : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
             <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
     
     let outflow = formatValue(d3.sum(data.matrix[d.index]))
@@ -975,8 +980,8 @@ function tooltipRegion(evt,d) {
     return tooltip
         .html(`\
         ${source} </br>
-        <b>Total outflow → </b> ${outflow} </br>
-        <b>Total inflow ←</b> ${inflow} 
+        Total outflow  →  <b> ${outflow}</b> </br>
+        Total inflow  ← <b> ${inflow} </b>
         
         
         `)
