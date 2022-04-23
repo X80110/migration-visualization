@@ -1,38 +1,20 @@
 // ##########################################################
-//  YEAR SELECTOR
-// ##########################################################
-let slider = document.getElementById("selectYear");
-let output = document.getElementById("yearRange");
-let sliderValue = parseInt(slider.value)+5
-output.innerHTML =slider.value+" · "+sliderValue; // Display the default slider value
-
-// Update the current slider value (each time you drag the slider handle)
-slider.oninput = function() {
-    let value = parseInt(this.value)+5
-    output.innerHTML = this.value+" · "+value;
-}
-
-
-// ##########################################################
 //  INITIAL PARAMETERS
 // ##########################################################
 var width = 750;
 var height = width;
 const textId = "O-text-1"; 
 
-let regionIndex = 1
-
-
-
+let regionIndex = 1        
 
 var innerRadius = Math.min(width, height) *0.49-90;
-// console.log(innerRadius)
 var outerRadius = innerRadius + 10;
+var labelRadius = labelRadius || (outerRadius + 10);
 
 let threshold = []
 let regionColors = []
-var labelRadius = labelRadius || (outerRadius + 10);
 
+// Create svg 
 const chordDiagram = d3.select("#chart")
     .append("svg")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
@@ -53,6 +35,17 @@ var ribbon = d3.ribbonArrow()
     .headRadius(15)
     .padAngle(0);
     // .padAngle(1 / innerRadius);
+
+// ##########################################################
+// Functions and initial config
+// ##########################################################
+let config = {}
+config.year = 1990 || ""
+config.stockflow = "stock"
+config.sex = "all" || ""
+config.type = "" || "outward"
+config.method = "da_pb_closed" || ""
+config.regions = []
 
 // var formatValue = (x) => `${x.toFixed(0).toLocaleString()}`;
 function formatValue(nStr, seperator) {
@@ -78,18 +71,8 @@ function labelPosition(angle) {
         x: Math.cos(temp - Math.PI / 2) * labelRadius,
         y: Math.sin(temp - Math.PI / 2) * labelRadius,
         r: angle > Math.PI ? (temp + Math.PI / 2) * 180 / Math.PI : (temp - Math.PI / 2) * 180 / Math.PI
-        
       };
     }
-
-// Functions and initial config
-let config = {}
-config.year = 1990 || ""
-config.stockflow = "stock"
-config.sex = "all" || ""
-config.type = "" || "outward"
-config.method = "da_pb_closed" || ""
-config.regions = []
 
 
 const getMetaData = async () => {
@@ -148,13 +131,17 @@ async function getData(filename) {
     }
 }
 
-// RUN SELECTORS (1st load the metadata into the environment)
+// RUN SELECTORS  (1st load the metadata into the environment)
 getMetaData().then((meta)=>{ 
     getData(filename).then((raw)=>{ 
     // CREATE SELECTORS
         // YEAR SELECTOR 
+        let input_data = raw
+        let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
+
         let slider = document.getElementById("selectYear");
         let output = document.getElementById("yearRange");
+        let value = document.getElementById("value");
         let sliderValue = parseInt(slider.value)+5
         // output.innerHTML ='<span class="lighten">from </span>'+slider.value+'<p> </p> <span class="lighten"> to </span>'+sliderValue; // Display the default slider value
         output.innerHTML =slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
@@ -162,7 +149,7 @@ getMetaData().then((meta)=>{
         // Update the current slider value (each time you drag the slider handle)
         slider.oninput = function() {
             let value = parseInt(this.value)+5
-            output.innerHTML = this.value+"  –  "+value;
+            output.innerHTML = this.value+'<span class="lighten"> — </span>'+value;
         }
 
         // METHOD SELECTOR 
@@ -200,22 +187,21 @@ getMetaData().then((meta)=>{
 // ##########################################################
 // ##########################################################
 function dataPrepare(input, config){
-
     meta = input.metadata 
     threshold = input.raw_data.threshold
     // console.log(threshold)
     colors = input.raw_data.colours
     flags = meta.map(d=>{return { [d.origin_name]:d.origin_flag }})
     
-    input = input.raw_data
-    
     year = config.year
-
     region = config.region
-    // console.log(region)
     sex = config.sex
+    
+    input = input.raw_data    
     let data = filterYear(input,year)   
-    console.log(data)
+    // console.log(region)
+    // console.log(data)
+
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
@@ -238,16 +224,14 @@ function dataPrepare(input, config){
         return input.regions[r];
     }
     
-    
+    // Returns true if the name is a region
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
+    
     const countryNames = input.names
-
     function filteredMatrix(input){
         data = input
-        // console.log(data)
-
         // GET SOURCE-TARGET STRUCTURE 
         // Create array of name & connections objects
         let matrix = data.names.map((d,i)=> {
@@ -261,12 +245,10 @@ function dataPrepare(input, config){
         })
         // List nodes 
         let nodes = matrix 
-            // console.log(nodes)
-
+        // console.log(nodes)
         // Create object to push links during loop
         let links = []
-        let l = 0 // <- iterator
-        
+        let l = 0 // <- iterator        
         // Run 1st level loop  
         for (let j in matrix){
             let target_region = matrix[j].region    // <- include region why not
@@ -282,7 +264,6 @@ function dataPrepare(input, config){
                 // }
             }
         }
-
         
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links}       
@@ -294,6 +275,7 @@ function dataPrepare(input, config){
         let filteredData = nldata.links
             .filter(d=> d.value > threshold )
 
+            // This was used to drop proportional % of countries with lower values in each region
        /*  // For each region, get its values, try to sort them by values and slice the lowest ones
         let source_region_names = Array.from(new Set(filteredData.flatMap(d => d.source_region ))); 
         // Map over each region
@@ -345,7 +327,6 @@ function dataPrepare(input, config){
     }
 
     // EXPAND COUNTRIES IN SELECTED REGION AND OUTPUT NEW MATRIX// ##########################################################
-    
     let nextNameRegionIndex
     
     function expandRegion(input, region) {
@@ -373,7 +354,7 @@ function dataPrepare(input, config){
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)
     data = dataSliced
-    let allRegions = new Array(data.regions).flat()
+    // let allRegions = new Array(data.regions).flat()
         
 /*     let metadata = {
         names: dataSliced.names,
@@ -396,10 +377,10 @@ function dataPrepare(input, config){
     }
 
     // generate data structure to expand countries of a selected region
-    console.log(config.regions)
+    // console.log(config.regions)
     let testFilter = expandRegion(data,config.regions[1]).indexList
     let filteredLayout = expandRegion(data,config.regions[0]).indexList
-    console.log("ALL!",allRegions)
+    // console.log("ALL!",allRegions)
     let mergeFilter = () =>  {
         let together = testFilter.concat(filteredLayout)
         let unique = [...new Set(together)]
@@ -418,8 +399,8 @@ function dataPrepare(input, config){
     // filteredLayout = mergeFilter()
     
 
-    console.log("AAAL",allRegions)
-    console.log(filteredLayout)
+    // console.log("AAAL",allRegions)
+    // console.log(filteredLayout)
 
 
     let names = []
@@ -502,7 +483,7 @@ function draw(input,config){
         return input.regions[r];
     }
 
-    // Compute true if 'name' is identified as a region. Will be used to run conditional styles on each element. 
+    // Computes true if 'name' is identified as a region. Will be used to run conditional styles on each element. 
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
@@ -530,7 +511,6 @@ function draw(input,config){
 
 
     function computedGroups(data)  {
-        
         let groups = chord(data.matrix).groups
         groups.map(d=>{
             d.name = data.names[d.index]
@@ -652,10 +632,9 @@ function draw(input,config){
     
 
     // Color settings
-    const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
-
-    // this gets the html color by the name of the regions (which is the var used creating the visuals)
+    // const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
     
+    // this gets the html color by the name of the regions (which is the var used creating the visuals)
     const getRegionColor = (name) => {
         a = input.regions.map((d)=> {
             return input.names[d]
@@ -901,9 +880,7 @@ function draw(input,config){
                     console.log(/* line,"$$", */words)
                 }
             }
-            d3.selectAll("tspan")
-            // .filter(d=> !this.parentNode.hasClass(".wrapped"))
-            .attr("dy",-10)
+            d3.selectAll(this.parentNode).filter(d=> d.classed("wrapped",false)).attr("translate",-10)
         });
     }
 
@@ -1037,7 +1014,7 @@ chordDiagram.selectAll(".path-item")
         return tooltip.style("visibility", "hidden");
     })
     
-chordDiagram.selectAll(".group-arc, #tooltip")
+chordDiagram.selectAll(".group-arc")
     .on("mousemove", tooltipRegion)
     .on("mouseout", function(){
         return tooltip.style("visibility", "hidden");
@@ -1072,20 +1049,7 @@ chordDiagram.selectAll(".group-arc, #tooltip")
         .on("click", function (evt, d) {
                     
             config.previous = data 
-            // config.region = isRegion(data.names[d.index]) ? data.names[d.index] : undefined
-            // print selected criteria on console
-            // console.log(names)
-            
-            // remove current content
-            d3.selectAll(".container")
-                .transition()
-                .duration(200)
-                .remove()
-             
-            chordDiagram.on("mouseout", d=> {tooltip.html(``).style('background-color','#ffffff').style("visibility", "hidden")})
-            
-            // d3.selectAll("table").remove()
-            // d3.selectAll("#sankey").remove()
+
              
             // draw new chart 
             getData(filename).then(data=> {
@@ -1094,6 +1058,12 @@ chordDiagram.selectAll(".group-arc, #tooltip")
                 /* console.log("previous",data) */
 
                 draw(data,config)})
+            
+            // remove current content
+            d3.selectAll("#tooltip, g")
+                .transition()
+                .duration(200)
+                .remove()
            
         })
         
@@ -1113,10 +1083,13 @@ chordDiagram.selectAll(".group-arc, #tooltip")
             
             getData(filename).then(data=> {
                 data = data
-                // console.log("fILE!",data)
-
                 draw(data,config)})
-            // drawSankey(config)
+
+            // Remove previous
+            d3.selectAll("g")
+                .transition()
+                .duration(200)
+                .remove();
         })        
     d3.selectAll("#stockFlow")
         .on("change", function(d) {
@@ -1125,18 +1098,16 @@ chordDiagram.selectAll(".group-arc, #tooltip")
 
             filename = fileName(config).json
             console.log(filename)
+        
+            getData(filename).then(data=> {
+                data = data
+                draw(data,config)})
 
             // Remove previous
             d3.selectAll("g")
                 .transition()
                 .duration(200)
                 .remove();
-        
-            getData(filename).then(data=> {
-                data = data
-                // console.log("fILE!",data)
-
-                draw(data,config)})
     })    
     d3.selectAll("#selectMethod")
         .on("change", function(d) {
@@ -1150,21 +1121,16 @@ chordDiagram.selectAll(".group-arc, #tooltip")
             
             // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
             // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
+                
+            getData(filename).then(data=> {
+                data = data
+                draw(data,config)})
+            
             // Remove previous
             d3.selectAll("g")
                 .transition()
                 .duration(200)
                 .remove();
-                
-            
-        
-
-            getData(filename).then(data=> {
-                data = data
-                // console.log("fILE!",data)
-
-                draw(data,config)})
-            // drawSankey(config)
     })    
         
     d3.selectAll("#selectGender")
@@ -1176,20 +1142,16 @@ chordDiagram.selectAll(".group-arc, #tooltip")
             console.log(filename)
             // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
             // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
-            // Remove previous
-            d3.selectAll("g")
-                .transition()
-                .duration(200)
-                .remove();
-                
-            
 
             getData(filename).then(data=> {
                 data = data
-                console.log("fILE!",filename)
-                console.log("CONFIG!",config)
-
                 draw(data,config)})
+
+             // Remove previous
+             d3.selectAll("g")
+                .transition()
+                .duration(200)
+                .remove();
         // drawSankey(config)
     })
     
@@ -1203,19 +1165,19 @@ chordDiagram.selectAll(".group-arc, #tooltip")
             
             // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
             // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
-            // Remove previous
-            d3.selectAll("g")
-                .transition()
-                .duration(200)
-                .remove();
+            
             
 
 
             getData(filename).then(data=> {
                 data = data
-                // console.log("fILE!",data)
-
-                draw(data,config)
-        })
+                draw(data,config)})
+            
+                // Remove previous
+            d3.selectAll("g")
+                .transition()
+                .duration(200)
+                .remove();
+      
     })
 }
