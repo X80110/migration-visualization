@@ -8,7 +8,7 @@
 	
 </style>
 <style>
-	@import url(//fonts.googleapis.com/css?family=Poppins:400,600,700,300);
+	@import url(//fonts.googleapis.com/css?family=Jost:400,600,700,300);
 	/* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
 	
 	body {
@@ -19,18 +19,20 @@
 		/* max-width: 1000px; */
 	}
 	h1 {
-		font-size:1.8em;
+		font-size:1em;
+		line-height:1em;
 		font-weight:600;
 		/* color:white; */
 		margin: 0;
 		padding: 1em ;
+		/* text-align: left; */
 
 	}
 
 
 	label {
 		color: grey;
-		font-weight: 200;
+		font-weight: 400;
 		font-size: 80%;
 	}
 
@@ -52,21 +54,23 @@
 	
 	.header{
 		width:100%; 
+		
 		background-color: #bee0f2;
 	}
 	
 	.center {
 		margin-left: auto;
 		margin-right: auto;
-		margin-bottom: 2em;
+		margin-bottom: 0.5em;
+		margin-top: 0.5em;
 	}
 
 	
 	
 	
-	.center th {
+	.center td {
 		border-radius: 15px;
-		margin:1em;
+		/* margin:1em; */
 		/* font-size: 12px; */
 		padding-left:2em;
 		padding-right:2em;
@@ -77,37 +81,44 @@
 	}
 
 
-	.inactive {
-		opacity: 0.6;
+	/* .inactive {
+		opacity: 0.8;
+	
 		-webkit-transition: .2s;
-  		transition: opacity .2s;
-	}
-	.inactive:hover {
+  		transition:  .2s;
+	} */
+	/* .inactive:hover {
 		opacity: 1;
-	}
+	} */
  
 
 	.grow { 
-		transition: text .2s ease-in-out; 
+		opacity: 0.8;
+		-webkit-transition: .2s;
+		transition:  .2s ease-in-out; 
 	}
 	.grow:hover {
-		 transform: scale(1.33); 
+		 transform: scale(1.15); 
+		 opacity: 1;
 		}
 	
 
-	.center td {
+	.center th {
 		text-align: left;
 		padding-left: 15px;
 		vertical-align: middle;
 		line-height: 0.7em;
+		font-size: 80%;
+		color: #555;
 	}
 	.center tr { 
 		padding-left: 15em;
 		
 	}
 	.center a {
-		font-size:70%;
-		color: #888;
+		font-size:80%;
+		font-weight:300;
+		color: #333;
 		padding-left:auto;
 	}
 	table {
@@ -122,9 +133,11 @@
 	}
 .slider {
   -webkit-appearance: none;
-  width: 66%;
+  /* min-width: 35%; */
+  max-width: 450px;
   height: 25px;
   background: #bee0f2;
+  border: 1px solid #598cae90;
   outline: none;
   opacity: 0.5;
   -webkit-transition: .2s;
@@ -135,30 +148,104 @@
 
 .slider:hover {
   opacity: 1;
+  background: #bee0f290;
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20%;
+  width: 16%;
   height: 1em;
   background: #598cae70;
   cursor: pointer;
 }
 
 .slider::-moz-range-thumb {
-  width: 20%;
+  width: 16%;
   height: 1em;
   background: #598cae70;
   border: 1px solid #598cae;
   cursor: pointer;
+}
+.box {
+  --min: 16ch;
+  --gap: 0rem;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+}
+
+.box > * {
+  flex: 1 1 var(--min);
+  
+}
+
+#chart svg {
+	text-align: center;
+	margin-left:auto;
+	margin-right:auto;
+	/* min-width: 500px; */
 }
 	
 	/* .sub {
 		font-size: 8.5px;
 	} */
 
-
+input[type='checkbox'] {
+	display: none;
+}
+.wrap-collabsible {
+	margin: 0em;
+}
+.lbl-toggle {
+	display: block;
+	/* font-weight: bold; */
+	text-align: center;
+	padding: 0.6em;
+	background: #d5e0e6;
+	cursor: pointer;
+	transition: all 0.25s ease-out;
+}
+.lbl-toggle:hover {
+	color: #000;
+}
+.lbl-toggle::before {
+	content: ' ';
+	display: inline-block;
+	
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent;
+	border-left: 5px solid currentColor;
+	vertical-align: middle;
+	margin-right: 0.7rem;
+	transform: translateY(-2px);
+	transition: transform 0.2s ease-out;
+}
+.toggle:checked  + .lbl-toggle::before {
+	transform: rotate(90deg) translateX(-3px);
+}
+.collapsible-content {
+	max-height: 0px;
+	background: #e7ebee;
+	overflow: hidden;
+	transition: max-height 0.25s ease-in-out;
+	
+}
+.toggle:checked + .lbl-toggle + .collapsible-content {
+	max-height: 350px;
+}
+.toggle:checked + .lbl-toggle {
+	border-bottom-right-radius: 0;
+	border-bottom-left-radius: 0;
+}
+.collapsible-content .content-inner {
+	border-bottom-left-radius: 7px;
+	border-bottom-right-radius: 7px;
+}
+.collapsible-content p {
+	margin-bottom: 0;
+}
 
   </style>
 
@@ -168,48 +255,96 @@
 <body>
 	<div class="header">
 		<header>
-			<h1>Global international migration</h1>
+			<h1>🌐 Global migration data explorer</h1>
 	   </header>
 	</div>
    
-   <hr>
+   <!-- <hr> -->
    <div id="main">
 	   <!-- <nav>nav</nav> -->
 	   <!-- <aside>aside</aside> -->
 	   
 	   <article>
 		<div style="text-align: center;">
-			<div>
-				<table   class="center" >
-					<tr>
-						<th>STOCKS</th>	
-						<td class="sub"><b>all</b> <!-- <a href="index.html">all</a> --></li>
-						<td class="grow"><a href="stocks_by_gender.html">by gender</a></li>
-								<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-								<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
-					</tr>
+			<div class="wrap-collabsible">
+				<input id="collapsible" class="toggle" type="checkbox" />
+				<label for="collapsible" class="lbl-toggle">Select data type</label>
+				<div class="collapsible-content">
+					<div class="content-inner">
+						<table   class="center" >
+							<tr>
+								<th>STOCKS</th>	
+								<td><b>all</b> <!-- <a href="index.html">all</a> --></li>
+								<td class="grow"><a href="stocks_by_gender.html">by gender</a></li>
+										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
+										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+							</tr>
+										
+							<tr class="inactive">
+								<th >FLOWS</th>
+								<td class="grow"><a href="flows.html">all</a></td>
+								<td class="grow"><a href="flows_by_gender.html">by gender</a></td>
+								<td class="grow"><a href="flows_by_type.html">by type</a></td>
 								
-					<tr class="inactive">
-						<th >FLOWS</th>
-						<td class="grow"><a href="flows.html">all</a></td>
-						<td class="grow"><a href="flows_by_gender.html">by gender</a></td>
-						<td class="grow"><a href="flows_by_type.html">by type</a></td>
-						
-					</tr>
-
-					
-				</table>
+							</tr>
+		
+							
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="wrap-collabsible">
+				<input id="collapsible" class="toggle" type="checkbox" />
+				<label for="collapsible" class="lbl-toggle">Select visualization tool</label>
+				<div class="collapsible-content">
+					<div class="content-inner">
+						<table   class="center" >
+							<tr>
+								<td class="grow"><img src="static/chord.svg"></img></li>
+								<td class="grow"><img src="static/sankey.svg"></img></li>
+								<td class="grow"><img src="static/map.svg"></img></li>
+										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
+										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+							</tr>							
+						</table>
+					</div>
+				</div>
+			</div>
+			
+			<div>
+				
 				<!-- <hr style="fill: #ff"> -->
 			</div>
 			<!-- <div class="slider"> -->
-			<div>
-				<div class="subgroups"><label> Select period: </label></div>
+			<div style="margin-top: 1em ;">
+				<div><label> Select period: </label></div>
 				<input class="slider" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+				<label for="range" id="start-value"></label>
+				<label for="range" id="end-value"></label>
+				</input>
 				<div id="yearRange"></div>
 				<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
 			</div>
-		 <div id="chart"></div>
-		 <p>Kitty ipsum dolor sit amet, sunbathe claw bat puking, stretching feed me eat catnip fluffy fur claw sleep in the sink sleep in the sink. Hiss hairball fluffy fur lick biting, run eat the grass chase the red dot attack your ankles meow. Rip the couch catnip run meow stuck in a tree, sleep on your face stretching lick climb the curtains purr jump on the table jump on the table. Sleep in the sink feed me sniff give me fish toss the mousie, I don't like that food eat eat knock over the lamp scratched chase the red dot.</p>
+			<div id="chart" class="center"></div>
+		 <div class="box">
+		 	<div>
+				 <h4>About the data</h4>
+				 <p>Some text here</p>
+		 	</div>
+		 	<div>
+				<h4>Visual tools</h4>
+			 	
+				
+					 <li>Chord chart</li>
+					 <li>Sankey chart</li>
+					 <li>Map chart</li>
+				 </ul>
+			 </div>
+			 <div>
+				<h4>Other measurements</h4>
+			 	<p>Kitty ipsum dolor sit amet, sunbathe claw bat puking, stretching feed me eat catnip fluffy fur claw sleep in the sink sleep in the sink. Hiss hairball fluffy fur lick biting, run eat the grass chase the red dot attack your ankles meow. Rip the couch catnip run meow stuck in a tree, sleep on your face stretching lick climb the curtains purr jump on the table jump on the table. Sleep in the sink feed me sniff give me fish toss the mousie, I don't like that food eat eat knock over the lamp scratched chase the red dot.</p>
+			 </div>
+		 </div>
    
 	   </article>
    
