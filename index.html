@@ -29,7 +29,9 @@
 
 	}
 
-
+	li {
+		text-align: left;
+	}
 	label {
 		color: grey;
 		font-weight: 400;
@@ -54,7 +56,6 @@
 	
 	.header{
 		width:100%; 
-		
 		background-color: #bee0f2;
 	}
 	
@@ -134,7 +135,7 @@
 .slider {
   -webkit-appearance: none;
   /* min-width: 35%; */
-  max-width: 450px;
+  width: 350px;
   height: 25px;
   background: #bee0f2;
   border: 1px solid #598cae90;
@@ -229,7 +230,7 @@ input[type='checkbox'] {
 	max-height: 0px;
 	background: #e7ebee;
 	overflow: hidden;
-	transition: max-height 0.25s ease-in-out;
+	transition:  0.25s ease-in-out;
 	
 }
 .toggle:checked + .lbl-toggle + .collapsible-content {
@@ -246,18 +247,107 @@ input[type='checkbox'] {
 .collapsible-content p {
 	margin-bottom: 0;
 }
+.tabs {
+      /* border-radius: 8px; */
+      overflow: hidden;
+      /* box-shadow: 0 4px 4px -2px rgba(0, 0, 0, 0.5); */
+}
+.nav {
+  border-bottom: 1px solid grey;
+  border-top: 1px solid grey;
+}
+.nav__toggle {
+  position: absolute;
+  cursor: pointer;
+  margin: 0rem 1rem;
+  right: 0;
+}
 
-  </style>
+.close,
+input[type="checkbox"] {
+  display: none;
+}
+.hamburger {
+  margin-top: 0.2rem;
+}
+.nav__menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+  margin: 1rem;
+}
+li {
+  list-style: none;
+  display: none;
+}
+li:first-child {
+  margin-right: auto;
+  font-weight: bold ;
+  display: block;
+}
+.nav__menu a {
+  text-decoration: none;
+  color: initial;
+  
+}
+#nav__checkbox:checked ~ ul.nav__menu li {
+  display: block;
+}
+#nav__checkbox:checked ~ label.nav__toggle .hamburger {
+  display: none;
+}
+#nav__checkbox:checked ~ label.nav__toggle .close {
+  display: block;
+}
+
+@media only screen and (min-width: 768px) {
+  .nav__toggle {
+    display: none;
+  }
+  .nav__menu {
+    flex-direction: row;
+  }
+  .nav__menu li {
+    display: block;
+  }
+}
+
+</style>
 
   <title>Global international migration</title>
 </head>
 
 <body>
-	<div class="header">
+	
+	  <div class="header">
+		<header>
+			<nav class="nav">
+				<input type="checkbox" id="nav__checkbox" class="nav__checkbox">
+				<label for="nav__checkbox" class="nav__toggle">
+				  <img src="https://img.icons8.com/material-outlined/30/000000/menu--v1.png" class="hamburger" />
+				  <img src="https://img.icons8.com/plumpy/30/000000/x.png" class="close" />
+				</label>
+			  
+				<ul class="nav__menu">
+				  <li>					
+					<a href="#">
+					  Global migration <br> data explorer
+					</a>
+				  </li>
+				  <li><a href="#">Source code</a></li>
+				  <li><a href="#">Share</a></li>
+				  <!-- <li><a href="#">Contact</a></li> -->
+				</ul>
+			  
+			  </nav>
+	   </header>
+	</div>
+<!-- 	<div class="header">
 		<header>
 			<h1>🌐 Global migration data explorer</h1>
 	   </header>
-	</div>
+	</div> -->
    
    <!-- <hr> -->
    <div id="main">
@@ -266,9 +356,10 @@ input[type='checkbox'] {
 	   
 	   <article>
 		<div style="text-align: center;">
+			
 			<div class="wrap-collabsible">
-				<input id="collapsible" class="toggle" type="checkbox" />
-				<label for="collapsible" class="lbl-toggle">Select data type</label>
+				<input id="collapsible1" class="toggle" type="checkbox" />
+				<label for="collapsible1" class="lbl-toggle">Select data type</label>
 				<div class="collapsible-content">
 					<div class="content-inner">
 						<table   class="center" >
@@ -294,15 +385,15 @@ input[type='checkbox'] {
 				</div>
 			</div>
 			<div class="wrap-collabsible">
-				<input id="collapsible" class="toggle" type="checkbox" />
-				<label for="collapsible" class="lbl-toggle">Select visualization tool</label>
+				<input id="collapsible2" class="toggle" type="checkbox" />
+				<label for="collapsible2" class="lbl-toggle">Select visualization tool</label>
 				<div class="collapsible-content">
 					<div class="content-inner">
 						<table   class="center" >
 							<tr>
-								<td class="grow"><img src="static/chord.svg"></img></li>
-								<td class="grow"><img src="static/sankey.svg"></img></li>
-								<td class="grow"><img src="static/map.svg"></img></li>
+								<td class="grow"><svg src="static/chord.svg"></svg></li>
+								<td class="grow"><svg src="static/sankey.svg"></svg></li>
+								<td class="grow"><svg src="static/map.svg"></svg></li>
 										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
 										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
 							</tr>							
@@ -333,16 +424,11 @@ input[type='checkbox'] {
 		 	</div>
 		 	<div>
 				<h4>Visual tools</h4>
-			 	
-				
-					 <li>Chord chart</li>
-					 <li>Sankey chart</li>
-					 <li>Map chart</li>
-				 </ul>
+				<p>Some text here</p>
 			 </div>
 			 <div>
 				<h4>Other measurements</h4>
-			 	<p>Kitty ipsum dolor sit amet, sunbathe claw bat puking, stretching feed me eat catnip fluffy fur claw sleep in the sink sleep in the sink. Hiss hairball fluffy fur lick biting, run eat the grass chase the red dot attack your ankles meow. Rip the couch catnip run meow stuck in a tree, sleep on your face stretching lick climb the curtains purr jump on the table jump on the table. Sleep in the sink feed me sniff give me fish toss the mousie, I don't like that food eat eat knock over the lamp scratched chase the red dot.</p>
+				<p>Some text here</p>
 			 </div>
 		 </div>
    

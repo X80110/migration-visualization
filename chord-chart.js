@@ -267,7 +267,7 @@ function dataPrepare(input, config){
         
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links}       
-             console.log(nldata.links.filter(d=>d.source === "North America" && d.target === "Latin America and the Caribbean"))
+             /* console.log(nldata.links.filter(d=>d.source === "North America" && d.target === "Latin America and the Caribbean")) */
 
         let names = nldata.nodes.map(d=> d.name)
 
@@ -350,7 +350,7 @@ function dataPrepare(input, config){
 
         return {indexList:indexList.flat(),countryRange}
     }
-    console.log()
+
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)
     data = dataSliced
@@ -678,8 +678,8 @@ function draw(input,config){
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity", 0.75)
-        .style("stroke", "#598cae")
-        .style("stroke-width", "0.3px")
+        /* .style("stroke", "#598cae")
+        .style("stroke-width", "0.3px") */
         // .style("stroke-opacity", "1")
         
         .transition()
