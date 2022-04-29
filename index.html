@@ -2,346 +2,28 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="http://127.0.0.1:5501/favicon.ico">
 <link href="styles.css" rel="stylesheet" media="all">
 
 	
-</style>
-<style>
-	@import url(//fonts.googleapis.com/css?family=Jost:400,600,700,300);
-	/* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
-	
-	body {
-		font-family:  'Jost', sans-serif !important;
-		/* font-size: 52.5%; */
-		/* font-weight: 400; */
-		margin: 0;
-		/* max-width: 1000px; */
-	}
-	h1 {
-		font-size:1em;
-		line-height:1em;
-		font-weight:600;
-		/* color:white; */
-		margin: 0;
-		padding: 1em ;
-		/* text-align: left; */
 
-	}
-
-	li {
-		text-align: left;
-	}
-	label {
-		color: grey;
-		font-weight: 400;
-		font-size: 80%;
-	}
-
-	#yearRange{
-		padding: 1em;
-		text-align:center;
-		line-height: 0.3em;
-		/* max-width:50%; */
-		font-weight: bold;
-	}
-	#yearRange span {
-		color: grey;
-		width: 30%;
-		/* text-align:right; */
-		/* padding-: 1em; */
-		font-weight: 200;
-		font-size: 90%;
-	}
-	
-	.header{
-		width:100%; 
-		background-color: #bee0f2;
-	}
-	
-	.center {
-		margin-left: auto;
-		margin-right: auto;
-		margin-bottom: 0.5em;
-		margin-top: 0.5em;
-	}
-
-	
-	
-	
-	.center td {
-		border-radius: 15px;
-		/* margin:1em; */
-		/* font-size: 12px; */
-		padding-left:2em;
-		padding-right:2em;
-		background-color: #bee0f2;
-		border: 1px solid #598cae;
-/* 		color: #fff; */
-		font-size:80%;
-	}
-
-
-	/* .inactive {
-		opacity: 0.8;
-	
-		-webkit-transition: .2s;
-  		transition:  .2s;
-	} */
-	/* .inactive:hover {
-		opacity: 1;
-	} */
- 
-
-	.grow { 
-		opacity: 0.8;
-		-webkit-transition: .2s;
-		transition:  .2s ease-in-out; 
-	}
-	.grow:hover {
-		 transform: scale(1.15); 
-		 opacity: 1;
-		}
-	
-
-	.center th {
-		text-align: left;
-		padding-left: 15px;
-		vertical-align: middle;
-		line-height: 0.7em;
-		font-size: 80%;
-		color: #555;
-	}
-	.center tr { 
-		padding-left: 15em;
-		
-	}
-	.center a {
-		font-size:80%;
-		font-weight:300;
-		color: #333;
-		padding-left:auto;
-	}
-	table {
-		min-width:180px;
-		border-spacing: 10px;
-	}
-	hr {
-		margin-top:0;
-		margin-bottom:1.6em;
-		border-top: 0.1px solid #bee0f2;
-		/* width: 18em; */
-	}
-.slider {
-  -webkit-appearance: none;
-  /* min-width: 35%; */
-  width: 350px;
-  height: 25px;
-  background: #bee0f2;
-  border: 1px solid #598cae90;
-  outline: none;
-  opacity: 0.5;
-  -webkit-transition: .2s;
-  transition: opacity .2s;
-  border-radius: 20px;
-  padding: 10px;
-}
-
-.slider:hover {
-  opacity: 1;
-  background: #bee0f290;
-}
-
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16%;
-  height: 1em;
-  background: #598cae70;
-  cursor: pointer;
-}
-
-.slider::-moz-range-thumb {
-  width: 16%;
-  height: 1em;
-  background: #598cae70;
-  border: 1px solid #598cae;
-  cursor: pointer;
-}
-.box {
-  --min: 16ch;
-  --gap: 0rem;
-
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap);
-}
-
-.box > * {
-  flex: 1 1 var(--min);
-  
-}
-
-#chart svg {
-	text-align: center;
-	margin-left:auto;
-	margin-right:auto;
-	/* min-width: 500px; */
-}
-	
-	/* .sub {
-		font-size: 8.5px;
-	} */
-
-input[type='checkbox'] {
-	display: none;
-}
-.wrap-collabsible {
-	margin: 0em;
-}
-.lbl-toggle {
-	display: block;
-	/* font-weight: bold; */
-	text-align: center;
-	padding: 0.6em;
-	background: #d5e0e6;
-	cursor: pointer;
-	transition: all 0.25s ease-out;
-}
-.lbl-toggle:hover {
-	color: #000;
-}
-.lbl-toggle::before {
-	content: ' ';
-	display: inline-block;
-	
-	border-top: 5px solid transparent;
-	border-bottom: 5px solid transparent;
-	border-left: 5px solid currentColor;
-	vertical-align: middle;
-	margin-right: 0.7rem;
-	transform: translateY(-2px);
-	transition: transform 0.2s ease-out;
-}
-.toggle:checked  + .lbl-toggle::before {
-	transform: rotate(90deg) translateX(-3px);
-}
-.collapsible-content {
-	max-height: 0px;
-	background: #e7ebee;
-	overflow: hidden;
-	transition:  0.25s ease-in-out;
-	
-}
-.toggle:checked + .lbl-toggle + .collapsible-content {
-	max-height: 350px;
-}
-.toggle:checked + .lbl-toggle {
-	border-bottom-right-radius: 0;
-	border-bottom-left-radius: 0;
-}
-.collapsible-content .content-inner {
-	border-bottom-left-radius: 7px;
-	border-bottom-right-radius: 7px;
-}
-.collapsible-content p {
-	margin-bottom: 0;
-}
-.tabs {
-      /* border-radius: 8px; */
-      overflow: hidden;
-      /* box-shadow: 0 4px 4px -2px rgba(0, 0, 0, 0.5); */
-}
-.nav {
-  border-bottom: 1px solid grey;
-  border-top: 1px solid grey;
-}
-.nav__toggle {
-  position: absolute;
-  cursor: pointer;
-  margin: 0rem 1rem;
-  right: 0;
-}
-
-.close,
-input[type="checkbox"] {
-  display: none;
-}
-.hamburger {
-  margin-top: 0.2rem;
-}
-.nav__menu {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  align-items: center;
-  margin: 1rem;
-}
-li {
-  list-style: none;
-  display: none;
-}
-li:first-child {
-  margin-right: auto;
-  font-weight: bold ;
-  display: block;
-}
-.nav__menu a {
-  text-decoration: none;
-  color: initial;
-  
-}
-#nav__checkbox:checked ~ ul.nav__menu li {
-  display: block;
-}
-#nav__checkbox:checked ~ label.nav__toggle .hamburger {
-  display: none;
-}
-#nav__checkbox:checked ~ label.nav__toggle .close {
-  display: block;
-}
-
-@media only screen and (min-width: 768px) {
-  .nav__toggle {
-    display: none;
-  }
-  .nav__menu {
-    flex-direction: row;
-  }
-  .nav__menu li {
-    display: block;
-  }
-}
-
-</style>
 
   <title>Global international migration</title>
 </head>
 
 <body>
 	
-	  <div class="header">
-		<header>
-			<nav class="nav">
-				<input type="checkbox" id="nav__checkbox" class="nav__checkbox">
-				<label for="nav__checkbox" class="nav__toggle">
-				  <img src="https://img.icons8.com/material-outlined/30/000000/menu--v1.png" class="hamburger" />
-				  <img src="https://img.icons8.com/plumpy/30/000000/x.png" class="close" />
-				</label>
-			  
-				<ul class="nav__menu">
-				  <li>					
-					<a href="#">
-					  Global migration <br> data explorer
-					</a>
-				  </li>
-				  <li><a href="#">Source code</a></li>
-				  <li><a href="#">Share</a></li>
-				  <!-- <li><a href="#">Contact</a></li> -->
-				</ul>
-			  
-			  </nav>
-	   </header>
+	<div class="header">
+		<header class="header">
+			<h1><a href="" class="logo">Global migration <br>data explorer</a></h1>
+			<input class="menu-btn" type="checkbox" id="menu-btn" />
+			<label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+			<ul class="menu">
+			  <li><a href="#careers">Source code</a></li>
+			  <li><a href="#contact">Share</a></li>
+			</ul>
+		  </header>
 	</div>
 <!-- 	<div class="header">
 		<header>
@@ -402,10 +84,10 @@ li:first-child {
 				</div>
 			</div>
 			
-			<div>
+
 				
-				<!-- <hr style="fill: #ff"> -->
-			</div>
+
+
 			<!-- <div class="slider"> -->
 			<div style="margin-top: 1em ;">
 				<div><label> Select period: </label></div>

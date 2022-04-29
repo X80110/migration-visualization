@@ -1,146 +1,137 @@
+
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8">
-<link rel="icon" type="image/x-icon" href="http://127.0.0.1:5503/favicon.ico">
-<style>
-	
-</style>
-<style>
-	@import url(//fonts.googleapis.com/css?family=Poppins:400,600,700,300);
-	/* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
-	
-	body {
-		font-family:  'Poppins', sans-serif;
-		font-size: 52.5%;
-		font-weight: 400;
-		max-width: 900px;
-		margin: auto;
-		max-width: 900px;
-	}
-
-	.center {
-		margin-left: auto;
-		margin-right: auto;
-		margin-bottom: 2em;
-	}
-
-	.center th {
-		font-size: 12px;
-		padding:0.5em;
-		border: 1px solid #333;
-	}
-	.center td {
-		text-align: left;
-	}
-	.center tr { 
-		padding-left: 15em;
-	}
-	.center a {
-		color: #888;
-	}
-	.sub {
-		font-size: 8.5px;
-	}
-
-  </style>
-
-  <title>Global international migration</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/x-icon" href="http://127.0.0.1:5501/favicon.ico">
+	<link href="styles.css" rel="stylesheet" media="all">
+  	<title>Global international migration</title>
 </head>
 
 <body>
 	
-	<!-- <aside class="aside">
-		<h2>The top 100 donors</h2>
- 		<p>Just how reliant are Labour, the Conservatives and the Liberal Democrats on a few rich benefactors? 70% of all donations received by the parties since the 2010 general election came from these 100 donor groups. 
-Labour's reliance on the unions is clear, with 90% of its cash coming from these sources. The Conservatives meanwhile have a wider spread of sources with a long list of wealthy business people, from ‘cash and carry’ owners to hedge fund directors.
-
-</p><p>Hover over a name or connection to see how much each donor gave and to which party.
-</p>
- 		<p>Donations from members of the same family are grouped together as are donations from companies under the control of individual donors.</p>
- 	</aside> -->
- 	<!-- <div id="donationInfo"></div> -->
-	 <!-- <div id="activeData"></div> -->
-	 <div style="text-align: center;">
-		<div style="background-color: rgba(255, 255, 255, 0.8);">
-			<table class="center" >
-				<tr>
-					<th>STOCKS</th>
-					<th>FLOWS</th>
-				</tr>
-				<tr>
-					<td class="sub"><a href="index.html">all</a></td>
-					<td class="sub">→ <a href="flows.html">all</a></td>
-				</tr>
-				<tr>
-					<td class="sub"><a href="stocks_by_gender.html">by gender</a></td>
-					<td class="sub"><a href="flows_by_gender.html">by gender</a></td>
-				</tr>
-				<tr>
-					<td></td>
-					<td class="sub"><a href="flows_by_type.html">by type</a></td>
-				</tr>
-				
-			</table>
+	<div class="header">
+		<header class="header">
+			<h1><a href="" class="logo">Global migration <br>data explorer</a></h1>
+			<input class="menu-btn" type="checkbox" id="menu-btn" />
+			<label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+			<ul class="menu">
+			  <li><a href="#careers">Source code</a></li>
+			  <li><a href="#contact">Share</a></li>
+			</ul>
+		  </header>
+	</div>
+<!-- 	<div class="header">
+		<header>
+			<h1>🌐 Global migration data explorer</h1>
+	   </header>
+	</div> -->
+   
+   <!-- <hr> -->
+   <div id="main">
+	   <!-- <nav>nav</nav> -->
+	   <!-- <aside>aside</aside> -->
+	   
+	   <article>
+		<div style="text-align: center;">
 			
-		</div>
-		<div class="slider">
-			<div class="subgroups"><label> Select period: </label></div>
-			<div id="yearRange"></div>
-			<input type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-			<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
-		</div>
-		<!-- <select  id="selectYear"></select> -->
-
+			<div class="wrap-collabsible">
+				<input id="collapsible1" class="toggle" type="checkbox" />
+				<label for="collapsible1" class="lbl-toggle">Select data type</label>
+				<div class="collapsible-content">
+					<div class="content-inner">
+						<table   class="center" >
+							<tr>
+								<th>STOCKS</th>	
+								<!-- <td><b>all</b>></li> -->
+								<td class="grow"><a href="index.html">all</a></li>
+								<td class="grow"><a href="stocks_by_gender.html">by gender</a></td>
+								
+										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
+										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+							</tr>
+										
+							<tr class="inactive">
+								<th >FLOWS</th>
+								<td><b>all</b></li>
+								<td class="grow"><a href="flows_by_gender.html">by gender</a></td>
+								<td class="grow"><a href="flows_by_type.html">by type</a></td>
+								
+							</tr>
 		
-		<!-- <div class="radio">
-			<form>
-				  <input type="radio" id="stockFlow" name="stockflow" value="stock" checked>
-				  <label for="stocks">Stocks</label>
-				  <input type="radio" id="stockFlow" name="stockflow" value="flow">
-				  <label for="css">Flows</label><br>
-			</form><br>
-		</div> -->
-
-		<div class="subgroups">
-			
-			<label for="selectMethod">Select estimation method: </label>
-			<select  id="selectMethod"></select>
-		</div><br>
-
-		<div class="subgroups">
-			<form>
-				<div class="radio">
-					<!-- <input type="radio" id="all" name="subselector" value="all" checked>
-					<label for="all">All</label> -->
-					<!-- <input type="radio" id="gender" name="subselector" > -->
-				<!-- 	<label for="selectGender">by gender:</label>
-					<select value= 'female' id="selectGender"></select> -->
-					<!-- <input type="radio" id="type" name="subselector" value="onward"> -->
-					<!-- <label for="selectType">by type:</label>
-					<select id="selectType"></select> -->
+							
+						</table>
+					</div>
 				</div>
-			</form>
-		</div>
-		<div>
-		<!-- <div   class="grid-container"> -->
-			<div  id="chart" class="chordGrid"></div>
-			<!-- <div id="chart" class="chordGrid"></div> -->
-			<!-- <div id="sankey" class="sankeyGrid"></div> -->
-			<!-- <div id="mapflows" class="mapGrid"></div> -->
-			<!-- <div id="table" class="side"></div> -->
-		</div>
-	</div> 
-	<!-- <script src="https://cdn.jsdelivr.net/npm/arquero@latest"></script> -->
-	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.1.0/chroma.min.js" integrity="sha512-yocoLferfPbcwpCMr8v/B0AB4SWpJlouBwgE0D3ZHaiP1nuu5djZclFEIj9znuqghaZ3tdCMRrreLoM8km+jIQ==" crossorigin="anonymous"></script> -->
-	<!-- <script src="https://d3js.org/d3.v7.min.js"></script> -->
-	<script src="https://d3js.org/d3.v7.min.js"></script>
-	<!-- <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script> -->
+			</div>
+			<div class="wrap-collabsible">
+				<input id="collapsible2" class="toggle" type="checkbox" />
+				<label for="collapsible2" class="lbl-toggle">Select visualization tool</label>
+				<div class="collapsible-content">
+					<div class="content-inner">
+						<table   class="center" >
+							<tr>
+								<td class="grow"><svg src="static/chord.svg"></svg></li>
+								<td class="grow"><svg src="static/sankey.svg"></svg></li>
+								<td class="grow"><svg src="static/map.svg"></svg></li>
+										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
+										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+							</tr>							
+						</table>
+					</div>
+				</div>
+			</div>
+			
 
+				
+
+
+			<!-- <div class="slider"> -->
+			<div style="margin-top: 1em ;">
+				<div><label> Select period: </label></div>
+				<input class="slider" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+				<label for="range" id="start-value"></label>
+				<label for="range" id="end-value"></label>
+				</input>
+				<div id="yearRange"></div>
+			</div>
+			
 	
-	<script src="chord-chart.js"></script>
-	<script>
-		config.stockflow = "flow"
+			<div class="subgroups">
+			
+				<label for="selectMethod">Select estimation method: </label>
+				<select value="da_pb_closed" id="selectMethod"></select>
+			</div><br>
+		<div id="chart" class="center"></div>
+		<div class="box">
+		 	<div>
+				 <h4>About the data</h4>
+				 <p>Some text here</p>
+		 	</div>
+		 	<div>
+				<h4>Visual tools</h4>
+				<p>Some text here</p>
+			 </div>
+			 <div>
+				<h4>Other measurements</h4>
+				<p>Some text here</p>
+			 </div>
+		</div>
+   
+	   </article>
+   
+   </div>
+   <footer>
+   Footer
+   </footer>
+   
+   <script src="https://d3js.org/d3.v7.min.js"></script>
+
+   
+   <script src="chord-chart.js"></script>
+   <script>
+	config.stockflow = "flow"
 		config.sex = ""
 		config.type = ""
 		// config.method = "" || "da_pb_closed"
@@ -155,12 +146,7 @@ Labour's reliance on the unions is clear, with 90% of its cash coming from these
 		getData(filename).then(raw => {
 			draw(raw,config)
 		})
-	</script>
-	<!-- <script src="chord-chart.js"></script> -->
-	<!-- <script src="chord-chart2.js"></script> -->
-	<!-- <script src="chord.js"></script> -->
-	<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script> -->
-	<!-- <script>window.jQuery || document.write('<script src="js/jquery2.0.3.min.js"><\/script>')</script> -->
+   </script>
 
 </body>
 </html>
