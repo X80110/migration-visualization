@@ -8,7 +8,7 @@ body {
 }
 #chart {
    margin: 0 auto;
-
+   max-width: 1200px;
 	/* background-color: #000; */
 }
 p {
