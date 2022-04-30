@@ -699,9 +699,9 @@ function draw(input,config){
         .filter(d=>!isRegion(d.name))
         .append("text")
         .attr("class","country-label")
-        .merge(arcs)
+        /* .merge(arcs) */
         .attr("font-size",7.6  )
-        .attr("dy", 3 )
+        /* .attr("dy", 3 ) */
         // Hide labels for low values
         // .style("visibility", d=> d.endAngle-d.startAngle< 0.015 ?"hidden":"")// ? "hidden" : "" ) 
         .attr("transform", d => `
@@ -760,7 +760,7 @@ function draw(input,config){
 
    
 
-    countryLabels.selectAll('text').exit()
+    /* countryLabels.selectAll('text').exit()
         .transition()
         .duration(87000)
         .style('opacity', 0)
@@ -784,7 +784,7 @@ function draw(input,config){
                 return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
             };
         })
-       
+        */
 
 
     const chords = container.append("g")
