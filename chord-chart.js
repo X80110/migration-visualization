@@ -876,7 +876,7 @@ function draw(input,config){
                     tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word);
                     console.log(/* line,"$$", */words)
                 }
-            } 
+            }
             d3.selectAll(this.parentNode).filter(d=> d.classed("wrapped",false)).attr("translate",-10)
         });
     }
@@ -985,12 +985,12 @@ arcs
     })
     .on('click', function(evt, d) {
         config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
-    console.log(config.regions)
+    // console.log(config.regions)
 });
 
 
 
-const tooltip = d3.select('body').append('div')
+const tooltip = d3.select('body').append('g')
     .attr('id', 'tooltip')
     .style('background-color','#ffffff')
     // .style('filter', 'blur(10px)') 
@@ -1011,9 +1011,10 @@ chordDiagram.selectAll(".path-item")
         return tooltip.style("visibility", "hidden");
     })
     
-chordDiagram.selectAll(".group-arc")
+chordDiagram.selectAll(".group-arc ")
     .on("mousemove", tooltipRegion)
     .on("mouseout", function(){
+        d3.select("#tooltip").style("visibility", "hidden")
         return tooltip.style("visibility", "hidden");
     })
     
@@ -1047,7 +1048,7 @@ chordDiagram.selectAll(".group-arc")
                     
             config.previous = data 
 
-             
+            
             // draw new chart 
             getData(filename).then(data=> {
                 data = data
@@ -1057,11 +1058,11 @@ chordDiagram.selectAll(".group-arc")
                 draw(data,config)})
             
             // remove current content
-            d3.selectAll("#tooltip, g")
+            d3.selectAll("g")
                 .transition()
                 .duration(200)
                 .remove()
-           
+
         })
         
 

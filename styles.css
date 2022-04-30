@@ -11,7 +11,6 @@ body {
 	margin: 0;
 	/* background-color: #000; */
 }
-
 p {
     margin:1.66em ;
     text-align: left ;
@@ -20,10 +19,10 @@ p {
 #main {
    margin: 0;
    padding: 0;
-   display: -webkit-flex;
+  /*  display: -webkit-flex;
    display: flex;
    -webkit-flex-flow: row;
-   flex-flow: row;
+   flex-flow: row; */
 }
 a {
 	color:#333
@@ -59,10 +58,7 @@ label {
 	font-size: 90%;
 }
 
-.header{
-	width:100%; 
-	background-color: #d5e0e6;
-}
+
 
 .center {
 	margin-left: auto;
@@ -112,17 +108,17 @@ label {
 	color: #333;
 	padding-left:auto;
 }
-table {
+/* table {
 	min-width:180px;
 	border-spacing: 10px;
-}
+} */
 
 .slider {
   -webkit-appearance: none;
   /* min-width: 35%; */
   width: 350px;
   height: 25px;
-  background: #d5e0e6;
+  /* background: #d5e0e6; */
   border: 1px solid #598cae90;
   outline: none;
   opacity: 0.5;
@@ -152,8 +148,7 @@ table {
   background: #598cae70;
   border: 1px solid #598cae;
   cursor: pointer;
-}
-
+}ç
 .box {
   --min: 16ch;
   --gap: 0rem;
@@ -190,7 +185,7 @@ footer {
 	/* font-weight: bold; */
 	text-align: center;
 	padding: 0.6em;
-	background: #d5e0e6;
+	/* background: #d5e0e6; */
 	cursor: pointer;
 	transition: all 0.25s ease-out;
 }
@@ -214,7 +209,7 @@ footer {
 }
 .collapsible-content {
 	max-height: 0px;
-	background: #d5e0e6;
+	background: #f4f4f4;
 	overflow: hidden;
 	transition:  0.25s ease-in-out;
 	
@@ -242,31 +237,33 @@ footer {
   padding: 0;
   list-style: none;
   overflow: hidden;
+  
   /* background-color: #fff; */
 }
 
 .header li a {
   display: block;
   padding: 20px 20px;
-  border-right: 1px solid #f4f4f4;
+  /* border-right: 1px solid #f4f4f4; */
   text-decoration: none;
 }
 
 .header li a:hover,
 .header .menu-btn:hover {
-  background-color: #f4f4f4;
+  /* background-color: #f4f4f4; */
 }
 
 .header .logo {
   display: block;
   float: left;
   font-size: 1.2rem;
-  padding:  20px;
+  padding: 10px 20px;
   text-decoration: none;
 }
 
 /* menu */
 .header .menu {
+   line-height: 1em;
 	text-decoration: none;
   font-size: 0.8em;
   color: initial;
@@ -278,7 +275,7 @@ footer {
 /* menu icon */
 .header .menu-icon {
   cursor: pointer;
-  display: inline-block;
+  display: inline;
   float: right;
   padding: 28px 20px;
   position: relative;
@@ -341,17 +338,16 @@ footer {
 
 /* 48em = 768px */
 @media (min-width: 768px) {
-  /* .header h1 {
-     display:none
-  } */
   .header li {
     float: left;
   }
   .header li a {
+     
     padding: 20px 30px;
   }
   .header .menu {
     clear: none;
+    
     float: right;
     max-height: none;
   }

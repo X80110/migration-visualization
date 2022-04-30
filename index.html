@@ -11,20 +11,20 @@
 
   <title>Global international migration</title>
 </head>
-
+<div class="header">
+	<header class="header">
+		<h1><a href="" class="logo">Global migration <br>data explorer</a></h1>
+		<input class="menu-btn" type="checkbox" id="menu-btn" />
+		<label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
+		<ul class="menu">
+		  <li><a href="#careers">Source code</a></li>
+		  <li><a href="#contact">Share</a></li>
+		</ul>
+	  </header>
+</div>
 <body>
 	
-	<div class="header">
-		<header class="header">
-			<h1><a href="" class="logo">Global migration <br>data explorer</a></h1>
-			<input class="menu-btn" type="checkbox" id="menu-btn" />
-			<label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
-			<ul class="menu">
-			  <li><a href="#careers">Source code</a></li>
-			  <li><a href="#contact">Share</a></li>
-			</ul>
-		  </header>
-	</div>
+	
 <!-- 	<div class="header">
 		<header>
 			<h1>🌐 Global migration data explorer</h1>
@@ -53,7 +53,7 @@
 										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
 							</tr>
 										
-							<tr class="inactive">
+							<tr>
 								<th >FLOWS</th>
 								<td class="grow"><a href="flows.html">all</a></td>
 								<td class="grow"><a href="flows_by_gender.html">by gender</a></td>
@@ -89,17 +89,17 @@
 
 
 			<!-- <div class="slider"> -->
-			<div style="margin-top: 1em ;">
-				<div><label> Select period: </label></div>
-				<input class="slider" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-				<label for="range" id="start-value"></label>
-				<label for="range" id="end-value"></label>
-				</input>
-				<div id="yearRange"></div>
-				<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
-			</div>
-			<div id="chart" class="center"></div>
-		 <div class="box">
+		<div class = "selector">
+			<div><label> Select period: </label></div>
+			<input class="slider" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+			<label for="range" id="start-value"></label>
+			<label for="range" id="end-value"></label>
+			</input>
+			<div id="yearRange"></div>
+			<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
+		</div>
+		<div id="chart" ></div>
+		<div class="box">
 		 	<div>
 				 <h4>About the data</h4>
 				 <p>Some text here</p>
