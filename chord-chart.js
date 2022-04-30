@@ -151,7 +151,7 @@ getMetaData().then((meta)=>{
             let value = parseInt(this.value)+5
             output.innerHTML = this.value+'<span class="lighten"> — </span>'+value;
         }
-
+        
         // METHOD SELECTOR 
         d3.select("#selectMethod")
             .selectAll('myOptions')

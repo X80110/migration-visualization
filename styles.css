@@ -15,6 +15,9 @@ p {
     margin:1.66em ;
     text-align: left ;
 }
+.selector{
+   opacity:0.5;
+}
 
 #main {
    margin: 0;
@@ -117,7 +120,8 @@ label {
   -webkit-appearance: none;
   /* min-width: 35%; */
   width: 350px;
-  height: 25px;
+  
+  height: 0.1em;
   /* background: #d5e0e6; */
   border: 1px solid #598cae90;
   outline: none;
@@ -149,6 +153,25 @@ label {
   border: 1px solid #598cae;
   cursor: pointer;
 }
+.sliderticks {
+   display: flex;
+   width: 350px;
+   margin: 0 auto;
+   justify-content: space-between;
+   
+ }
+ 
+.sliderticks p {
+   position: relative;
+   display: flex;
+   justify-content: center;
+   text-align: center;
+   margin: 0 0 10px 0;
+   font-size:60%;
+   color:#aaa;
+}
+
+
 .box {
   --min: 16ch;
   --gap: 0rem;
@@ -248,10 +271,6 @@ footer {
   text-decoration: none;
 }
 
-.header li a:hover,
-.header .menu-btn:hover {
-  /* background-color: #f4f4f4; */
-}
 
 .header .logo {
   display: block;
