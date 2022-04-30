@@ -7,8 +7,8 @@ body {
 	margin: 0;
 }
 #chart {
-	/* width: 100vh; */
-	margin: 0;
+   margin: 0 auto;
+
 	/* background-color: #000; */
 }
 p {
