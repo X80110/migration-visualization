@@ -1,3 +1,194 @@
+let scope = {}
+function chord() {
+    function d3_functor(x) {
+      return function() {
+        return x;
+      };
+    }
+    function d3_source(d) {
+        return d.source;
+      }
+      // import "../core/target";
+      function d3_target(d) {
+        return d.target;
+      }
+      // import "../math/trigonometry";
+      var π = Math.PI;
+      // import "arc";
+      var d3_svg_arcOffset = -π / 2;
+      function d3_svg_arcStartAngle(d) {
+        return d.startAngle;
+      }
+      function d3_svg_arcEndAngle(d) {
+        return d.endAngle;
+      }
+      // import "svg";
+    
+      scope.chord = function(arrowRatio) {
+        var source = d3_source,
+            target = d3_target,
+            radius = d3_svg_chordRadius,
+            sourcePadding = d3_svg_chordSourcePadding,
+            targetPadding = d3_svg_chordTargetPadding,
+            startAngle = d3_svg_arcStartAngle,
+            endAngle = d3_svg_arcEndAngle;
+    
+        function chord(d, i) {
+          var s = subgroup(this, source, d, i),
+              t = subgroup(this, target, d, i, true, 1 - arrowRatio);
+    
+    
+          if (equals(s, t)) {
+    
+            // Previously :::
+            // s.a1 = s.a1 - (s.a1 - s.a0) / 2;
+            // s.p1 = [s.r * Math.cos(s.a1), s.r * Math.sin(s.a1)];
+            //
+            // t.a0 = t.a0 + (t.a1 - t.a0) / 2;
+            // t.p0 = [t.r * Math.cos(t.a0), t.r * Math.sin(t.a0)];
+    
+            s.a0 = s.a1 + (s.a1 - s.a0) / 2;
+            s.p0 = [s.r * Math.cos(s.a0), s.r * Math.sin(s.a0)];
+    
+            t.a1 = t.a0 - (t.a1 - t.a0) / 2;
+            t.p1 = [t.r * Math.cos(t.a1), t.r * Math.sin(t.a1)];
+            t.aMid=(t.a1-t.a0)/2+t.a0;
+            t.pMid= [t.r * Math.cos(t.aMid), t.r * Math.sin(t.aMid)]; 
+    
+          }
+    
+          var ccp = cubic_control_points(s, t, s.r * 0.45);
+    
+          return "M" + s.p0
+            + arc(s.r, s.p1, s.a1 - s.a0)
+            + cubic_curve(ccp.cps1, ccp.cpt0, t.p0)
+            + (arrowRatio === 0 ? arc(t.r, t.p1, t.a1 - t.a0) : arrow(t.pMid, t.p1))
+            + cubic_curve(ccp.cpt1, ccp.cps0, s.p0)
+            + "Z";
+        }
+    
+        function cubic_control_points(s, t, factor) {
+          cps0 = [factor * Math.cos(s.a0), factor * Math.sin(s.a0)];
+          cps1 = [factor * Math.cos(s.a1), factor * Math.sin(s.a1)];
+          cpt0 = [factor * Math.cos(t.a0), factor * Math.sin(t.a0)];
+          cpt1 = [factor * Math.cos(t.a1), factor * Math.sin(t.a1)];
+          return {
+            cps0: cps0,
+            cps1: cps1,
+            cpt0: cpt0,
+            cpt1: cpt1
+          };
+        }
+    
+        function subgroup(self, f, d, i, target, scale) {
+    
+          if(!scale) {
+            scale =  1 ;
+            /* scale =  0.15 ; */
+          }
+    
+          var subgroup = f.call(self, d, i),
+              r = radius.call(self, subgroup, i),
+              a0 = startAngle.call(self, subgroup, i) + d3_svg_arcOffset,
+              a1 = endAngle.call(self, subgroup, i) + d3_svg_arcOffset;
+           aMid = (a1-a0)/2 + a0 ;
+    
+    
+          if (target) {
+            var d = targetPadding.call(self, subgroup, i) || 0;
+            r = r - d;
+          } else {
+            var d = sourcePadding.call(self, subgroup, i) || 0;
+            r = r - d;
+          }
+    
+          return {
+            r: r,
+            a0: a0 ,
+            a1: a1 ,
+            p0: [r * scale * Math.cos(a0), r * scale * Math.sin(a0)],
+            p1: [r * scale * Math.cos(a1), r * scale * Math.sin(a1)],
+            pMid : [r * Math.cos(aMid), r * Math.sin(aMid)]
+          };
+        }
+    
+        function equals(a, b) {
+          return a.a0 == b.a0 && a.a1 == b.a1;
+        }
+    
+        function arc(r, p, a) {
+          return "A" + r + "," + r + " 0 " + +(a > π) + ",1 " + p;
+        }
+    
+        function curve(r0, p0, r1, p1) {
+          return "Q 0,0 " + p1;
+        }
+    
+        function arrow(pMid, p1) {
+            return "L" + pMid + "L" + p1 ;
+        }
+    
+        function cubic_curve(cp0, cp1, p1) {
+          return "C " + cp0 + " " + cp1 + " " + p1;
+        }
+    
+        chord.radius = function(v) {
+          if (!arguments.length) return radius;
+          radius = d3_functor(v);
+          return chord;
+        };
+    
+        // null2
+        chord.sourcePadding = function(v) {
+          if (!arguments.length) return sourcePadding;
+          sourcePadding = d3_functor(v);
+          return chord;
+        };
+        chord.targetPadding = function(v) {
+          if (!arguments.length) return targetPadding;
+          targetPadding = d3_functor(v);
+          return chord;
+        };
+    
+        chord.source = function(v) {
+          if (!arguments.length) return source;
+          source = d3_functor(v);
+          return chord;
+        };
+    
+        chord.target = function(v) {
+          if (!arguments.length) return target;
+          target = d3_functor(v);
+          return chord;
+        };
+    
+        chord.startAngle = function(v) {
+          if (!arguments.length) return startAngle;
+          startAngle = d3_functor(v);
+          return chord;
+        };
+    
+        chord.endAngle = function(v) {
+          if (!arguments.length) return endAngle;
+          endAngle = d3_functor(v);
+          return chord;
+        };
+    
+        return chord;
+      };
+    
+      function d3_svg_chordRadius(d) {
+        return d.radius;
+      }
+      function d3_svg_chordTargetPadding(d) {
+        return d.targetPadding;
+      }
+      function d3_svg_chordSourcePadding(d) {
+        return d.sourcePadding;
+      }
+    }
+chord()
+
 // ##########################################################
 //  INITIAL PARAMETERS
 // ##########################################################
@@ -8,7 +199,7 @@ const textId = "O-text-1";
 let regionIndex = 1        
 
 var innerRadius = Math.min(width, height) *0.49-90;
-var outerRadius = innerRadius + 10;
+var outerRadius = innerRadius + 20;
 var labelRadius = labelRadius || (outerRadius + 10);
 
 let threshold = []
@@ -29,12 +220,19 @@ var arc = d3.arc()
     .innerRadius(innerRadius)
     .outerRadius(outerRadius);
 
-var ribbon = d3.ribbonArrow()
+/* var ribbon = d3.ribbonArrow()
     .radius(innerRadius)
     // .radius(innerRadius - 5)
     .headRadius(15)
     .padAngle(0);
     // .padAngle(1 / innerRadius);
+ */
+var ribbon = scope.chord(0.07) // how sharp the pointed edges should be
+// more the value, more pointed...
+    .radius(innerRadius )
+    .sourcePadding(0) // can increase/decrease the spaces
+    .targetPadding(8);  // between the chords and arcs here
+
 
 // ##########################################################
 // Functions and initial config
@@ -881,10 +1079,6 @@ function draw(input,config){
         });
     }
 
-//     labels.call(g => g.append("title")
-//         .text(d => {
-//             return `${names[d.index]} outflow ${formatValue(d3.sum(matrix[d.index]))} people and inflow ${formatValue(d3.sum(matrix, row => row[d.index]))} people`
-//         }))
 //     function wrap(text, width) {
 //         text.each(function() {
 //             var text = d3.select(this),
@@ -947,8 +1141,8 @@ function tooltipRegion(evt,d) {
         ? `<span style="color:white"> <b>${d.name}</b></span>`
         : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
             <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
-    
-    let outflow = formatValue(d3.sum(data.matrix[d.index]))
+
+    let outflow = /* d.index = */ formatValue(d3.sum(data.matrix[d.index]))
     let inflow = formatValue(d3.sum(data.matrix, row => row[d.index]))
 
     return tooltip
@@ -966,14 +1160,30 @@ function tooltipRegion(evt,d) {
         .transition()       
 }
 
+const tooltip = d3.select('body').append('g')
+    .attr('id', 'tooltip')
+    .style('background-color','#ffffff')
+    // .style('filter', 'blur(10px)') 
+    // .style('-webkit-filter', 'blur(10px)') /* Safari 6.0 - 9.0 */    
+    .style('padding','1em')
+    .style('border-radius','4px')
+    .style('position', 'absolute')
+    .style('visibility', 'hidden')
+    // .text('ege')
+    // .style('box-shadow',' rgba(100, 100, 111, 0.2) 0px 7px 29px 0px')
+    .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')
+    
+    
+
+
+// INTERACTIONS
 // open regions
 config.maxRegionsOpen = 2 // config.regions = region || config.regions
 
 arcs.on('click', function(evt, d) {
         
         if (config.regions.length + 1 > config.maxRegionsOpen) {
-            config.regions.shift();
-            
+            config.regions.shift();       
         }
         config.regions.push(d.name) // console.log(d.name)
     })
@@ -988,83 +1198,73 @@ arcs
     // console.log(config.regions)
 });
 
+chordDiagram.selectAll(".group-arc")
+    .on("click", function (evt, d) {
+                
+        config.previous = data 
 
-
-const tooltip = d3.select('body').append('g')
-    .attr('id', 'tooltip')
-    .style('background-color','#ffffff')
-    // .style('filter', 'blur(10px)') 
-    // .style('-webkit-filter', 'blur(10px)') /* Safari 6.0 - 9.0 */    
-    .style('padding','6px')
-    .style('border-radius','4px')
-    .style('position', 'absolute')
-    .style('visibility', 'hidden')
-    // .text('ege')
-    // .style('box-shadow',' rgba(100, 100, 111, 0.2) 0px 7px 29px 0px')
-    .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')
-    
-    
-
-chordDiagram.selectAll(".path-item")
-    .on("mousemove", tooltipCountry)
-    .on("mouseout", function(){
-        return tooltip.style("visibility", "hidden");
-    })
-    
-chordDiagram.selectAll(".group-arc ")
-    .on("mousemove", tooltipRegion)
-    .on("mouseout", function(){
-        d3.select("#tooltip").style("visibility", "hidden")
-        return tooltip.style("visibility", "hidden");
-    })
-    
-
-
-        // INTERACTIONS
-  /*   chordDiagram.selectAll(".group-arc, .path-item")
-        .on("mouseover", function (evt, d) {
-            console.log(d.id)
-            chordDiagram
-                .selectAll(".path-item")
-                .transition()
-                .duration(200)
-                .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.2:1)
-
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .style("opacity", 1)
-            })       
         
-        .on("mouseout", function (evt, d) {
-            chordDiagram.selectAll(".path-item")
-                .transition()
-                .duration(200)
-                .style("opacity", 0.75);
-            })  */ 
+        // draw new chart 
+        data = getData(filename).then(data=> {
+            data = data
 
-    chordDiagram.selectAll(".group-arc")
-        .on("click", function (evt, d) {
-                    
-            config.previous = data 
-
-            
-            // draw new chart 
-            getData(filename).then(data=> {
-                data = data
-                /* console.log("fILE!",data) */
-                /* console.log("previous",data) */
-
-                draw(data,config)})
-            
-            // remove current content
+        // remove current content
             d3.selectAll("g")
                 .transition()
                 .duration(200)
                 .remove()
+            /* console.log("fILE!",data) */
+            /* console.log("previous",data) */
 
+            return draw(data,config)
         })
         
+        /* // remove current content
+        d3.selectAll("g")
+            .transition()
+            .duration(200)
+            .remove() */
+
+    })
+
+/* chordDiagram.selectAll(".group-arc, .path-item")
+    .on("mouseover", function (evt, d) {
+        console.log(d.id)
+        chordDiagram
+            .selectAll(".path-item")
+            .transition()
+            .duration(200)
+            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:1)
+
+        d3.select(this)
+            .transition()
+            .duration(200)
+            .style("opacity", 1)
+        })       
+    
+    .on("mouseout", function (evt, d) {
+        chordDiagram.selectAll(".path-item")
+            .transition()
+            .duration(200)
+            .style("opacity", 0.75);
+        })  
+
+
+ */
+    chordDiagram.selectAll(".path-item")
+        .on("mousemove", tooltipCountry)
+        .on("mouseout", function(){
+            return tooltip.style("visibility", "hidden");
+        })
+        
+    chordDiagram.selectAll(".group-arc")
+        .on("mousemove", tooltipRegion)
+        .on("mouseout", function(){
+            /* d3.select("#tooltip").style("visibility", "hidden") */
+            return tooltip.style("visibility", "hidden");
+        })
+        
+
 
     d3.selectAll("#selectYear")
         .on("change", function(d) {
@@ -1081,13 +1281,13 @@ chordDiagram.selectAll(".group-arc ")
             
             getData(filename).then(data=> {
                 data = data
-                draw(data,config)})
+                // Remove previous
+                d3.selectAll("g")
+                    .transition()
+                    .duration(200)
+                    .remove();
+                return draw(data,config)})
 
-            // Remove previous
-            d3.selectAll("g")
-                .transition()
-                .duration(200)
-                .remove();
         })        
     d3.selectAll("#stockFlow")
         .on("change", function(d) {
@@ -1099,13 +1299,13 @@ chordDiagram.selectAll(".group-arc ")
         
             getData(filename).then(data=> {
                 data = data
-                draw(data,config)})
+                // Remove previous
+                d3.selectAll("g")
+                    .transition()
+                    .duration(200)
+                    .remove();
+                return draw(data,config)})
 
-            // Remove previous
-            d3.selectAll("g")
-                .transition()
-                .duration(200)
-                .remove();
     })    
     d3.selectAll("#selectMethod")
         .on("change", function(d) {
@@ -1122,13 +1322,13 @@ chordDiagram.selectAll(".group-arc ")
                 
             getData(filename).then(data=> {
                 data = data
-                draw(data,config)})
+                // Remove previous
+                d3.selectAll("g")
+                    .transition()
+                    .duration(200)
+                    .remove();
+                return draw(data,config)})
             
-            // Remove previous
-            d3.selectAll("g")
-                .transition()
-                .duration(200)
-                .remove();
     })    
         
     d3.selectAll("#selectGender")
@@ -1143,13 +1343,13 @@ chordDiagram.selectAll(".group-arc ")
 
             getData(filename).then(data=> {
                 data = data
-                draw(data,config)})
+                // Remove previous
+                d3.selectAll("g")
+                   .transition()
+                   .duration(200)
+                   .remove();
+                return draw(data,config)})
 
-             // Remove previous
-             d3.selectAll("g")
-                .transition()
-                .duration(200)
-                .remove();
         // drawSankey(config)
     })
     
@@ -1169,13 +1369,14 @@ chordDiagram.selectAll(".group-arc ")
 
             getData(filename).then(data=> {
                 data = data
-                draw(data,config)})
-            
                 // Remove previous
-            d3.selectAll("g")
-                .transition()
-                .duration(200)
-                .remove();
+                d3.selectAll("g")
+                    .transition()
+                    .duration(200)
+                    .remove();
+
+               return draw(data,config)})
+            
       
     })
 }
