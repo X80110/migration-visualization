@@ -958,7 +958,7 @@ function draw(input,config){
 
    
 
-    /* countryLabels.selectAll('text').exit()
+    /* countryLabels.selectAll('.country-label').exit()
         .transition()
         .duration(87000)
         .style('opacity', 0)
@@ -981,8 +981,8 @@ function draw(input,config){
                 var t = labelPosition(i(t).angle);
                 return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
             };
-        })
-        */
+        }) */
+       
 
 
     const chords = container.append("g")
