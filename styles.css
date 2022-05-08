@@ -171,7 +171,44 @@ label {
    color:#aaa;
 }
 
-
+/*------ SLIDER FOR STOCKS -----------------*/
+.slider-stock {
+   -webkit-appearance: none;
+   /* min-width: 35%; */
+   width: 350px;
+   
+   height: 0.1em;
+   /* background: #d5e0e6; */
+   border: 1px solid #598cae90;
+   outline: none;
+   opacity: 0.5;
+   -webkit-transition: .2s;
+   transition: opacity .2s;
+   border-radius: 20px;
+   padding: 10px;
+ }
+ 
+ .slider-stock:hover {
+   opacity: 1;
+   background: #bee0f290;
+ }
+ 
+ .slider-stock::-webkit-slider-thumb {
+   -webkit-appearance: none;
+   appearance: none;
+   width: 16%;
+   height: 1em;
+   background: #598cae70;
+   cursor: pointer;
+ }
+ 
+ .slider-stock::-moz-range-thumb {
+   /* width: 16%; */
+   height: 1em;
+   background: #598cae70;
+   border: 1px solid #598cae;
+   cursor: pointer;
+ }
 .box {
   --min: 16ch;
   --gap: 0rem;

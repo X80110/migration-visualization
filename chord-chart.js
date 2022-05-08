@@ -212,8 +212,8 @@ const chordDiagram = d3.select("#chart")
 
 // Standard chord settings    
 var chord = d3.chordDirected()
-    .padAngle(0.03)
-    .sortSubgroups(d3.descending)
+    .padAngle(0.035)
+    .sortSubgroups(d3.ascending)
     .sortChords(d3.descending);
 
 var arc = d3.arc() 
@@ -360,9 +360,9 @@ getMetaData().then((meta)=>{
             .attr("value",d=> { return d; }) 
         
         // GENDER SELECTOR 
-        d3.select("#selectGender")
+        d3.select("#selectSex")
             .selectAll('myOptions')
-            .data(allGenders)
+            .data(allSexes)
             .enter()
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu dropdown
@@ -403,7 +403,7 @@ function dataPrepare(input, config){
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
-        // console.log(index)
+        console.log(index)
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
 
         for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
@@ -497,7 +497,7 @@ function dataPrepare(input, config){
             let names_source = Array.from(new Set(filteredData.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified  
             let names_target = Array.from(new Set(filteredData.flatMap(d => d.target ))); 
             let bothWayNames = names.filter(d=> names_target.includes(d) && names_source.includes(d))// && names_target.includes(d) ? d:"")//  && names_target.includes(d))
-            // console.log(names.length, names_source.length, names_target.length, bothWayNames.length)
+           /*  console.log(names.length, names_source.length, names_target.length, bothWayNames.length) */
             return bothWayNames
         } 
         names = removeNullNames()
@@ -505,9 +505,15 @@ function dataPrepare(input, config){
         // let names = names_source // > names_target ? names_source : names_target
         
         // Filter countries without values in both directions (target <-> source)
-        filteredData = filteredData.filter(d=> names.includes(d.source) && names.includes(d.target))
-        
-        // console.log(filteredData)
+        filteredData = filteredData.filter(d=> 
+            names.includes(d.source) && names.includes(d.source)  
+            && names.includes(d.target)
+         /*    && d.source_region != d.target 
+            && d.source != d.target_region  */
+            
+            )
+        console.log(filteredData.filter(d=> d.target.includes("Croatia")))
+        console.log(filteredData)
       
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names,filteredData)
@@ -665,8 +671,8 @@ function draw(input,config){
         const id = input.names.indexOf(name)
         return {flag: flag(name), region,region_name,id}
     }
-    let a = getMeta("France")
-    console.log(a, input.names)
+    /* let a = getMeta("France")
+    console.log(a, input.names) */
 
  
     // GET REGION INDEX FOR A GIVEN COUNTRY NAME
@@ -847,7 +853,7 @@ function draw(input,config){
     // this gets the html color of the region selected by the user and decreases its opacity
     // const colorCountries = [colors[regionIndex]]
     const colorCountries = (name) => {
-        console.log(getRegionColor("Europe"))
+        /* console.log(getRegionColor("Europe")) */
         return getRegionColor(getMeta(name).region_name)
     }
     
@@ -1049,7 +1055,7 @@ function draw(input,config){
 
     function wrapText(text, width) {
         text.each(function (d) {
-            console.log(d.name)
+            /* console.log(d.name) */
             var textEl = d3.select(this),
                 words = textEl.text().split(/\s+/).reverse(),
                 word,
@@ -1072,7 +1078,7 @@ function draw(input,config){
                     tspan.text(line./* reverse(). */join(' '));
                     line = [word];
                     tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word);
-                    console.log(/* line,"$$", */words)
+                    // console.log(/* line,"$$", */words)
                 }
             }
             d3.selectAll(this.parentNode).filter(d=> d.classed("wrapped",false)).attr("translate",-10)
@@ -1272,12 +1278,12 @@ chordDiagram.selectAll(".group-arc")
             config.year = d3.select(this).property("value")
 
             // data = filterYear(raw,year)
-            
+          /*   
             // Remove previous
             d3.selectAll("g")
                 .transition()
                 .duration(200)
-                .remove();
+                .remove(); */
             
             getData(filename).then(data=> {
                 data = data
@@ -1331,7 +1337,7 @@ chordDiagram.selectAll(".group-arc")
             
     })    
         
-    d3.selectAll("#selectGender")
+    d3.selectAll("#selectSex")
         .on("change", function(d) {
             config.previous = data 
             config.sex = d3.select(this).property("value")

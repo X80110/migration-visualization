@@ -141,7 +141,7 @@ getMetaData().then((meta)=>{
         // GENDER SELECTOR 
         d3.select("#selectGender")
             .selectAll('myOptions')
-            .data(allGenders)
+            .data(allSexes)
             .enter()
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu dropdown

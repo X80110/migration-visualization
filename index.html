@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-<meta charset="utf-8">
+<meta charset="utf-8">	
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="http://127.0.0.1:5501/favicon.ico">
 <link href="styles.css" rel="stylesheet" media="all">
@@ -48,15 +48,15 @@
 							<tr>
 								<th>STOCKS</th>	
 								<td><b>all</b> <!-- <a href="index.html">all</a> --></li>
-								<td class="grow"><a href="stocks_by_gender.html">by gender</a></li>
+								<td class="grow"><a href="stocks_by_sex.html">by sex</a></li>
 										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+										<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
 							</tr>
 										
 							<tr>
 								<th >FLOWS</th>
 								<td class="grow"><a href="flows.html">all</a></td>
-								<td class="grow"><a href="flows_by_gender.html">by gender</a></td>
+								<td class="grow"><a href="flows_by_sex.html">by sex</a></td>
 								<td class="grow"><a href="flows_by_type.html">by type</a></td>
 								
 							</tr>
@@ -77,7 +77,7 @@
 								<td class="grow"><svg src="static/sankey.svg"></svg></li>
 								<td class="grow"><svg src="static/map.svg"></svg></li>
 										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+										<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
 							</tr>							
 						</table>
 					</div>
@@ -88,12 +88,12 @@
 				
 
 
-			<!-- <div class="slider"> -->
+			<!-- <div class="slider_range"> -->
 		<div class = "selector">
-			<div><label> Select period: </label></div>
-			<input class="slider" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+			<div><label> Select year: </label></div>
+			<input class="slider-stock" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
 			<div class="sliderticks">
-				<p>1990</p>
+				<!-- <p>1990</p> -->
 				<p>1995</p>
 				<p>2000</p>
 				<p>2005</p>
@@ -139,7 +139,7 @@
 	   config.sex = "all"
 	   config.type = ""
 	   config.method = ""
-	   const allGenders = ['male', 'female'].reverse()
+	   const allSexes = ['male', 'female'].reverse()
 	   const allMethods = ""
 	   const allTypes = ""
 

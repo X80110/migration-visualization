@@ -157,7 +157,7 @@ getData().then((data)=>{
     // INITIAL DATA INPUTS
     const allYears = [...new Set(data.raw_data.map((d) => d.year))].reverse();
     const allVars = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg']
-    const allGenders = ['male', 'female'].reverse()
+    const allSexes = ['male', 'female'].reverse()
     
     let selectedYear = allYears[0] 
     let selectedRegion = []
@@ -185,7 +185,7 @@ getData().then((data)=>{
 
     d3.select("#selectGender")
         .selectAll('myOptions')
-        .data(allGenders)
+        .data(allSexes)
         .enter()
         .append('option')
         .text(d=>{ return d; })    // text showed in the menu dropdown

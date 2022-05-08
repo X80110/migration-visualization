@@ -46,15 +46,16 @@
 								<th>STOCKS</th>	
 								<!-- <td><b>all</b>></li> -->
 								<td class="grow"><a href="index.html">all</a></li>
-								<td class="grow"><a href="stocks_by_gender.html">by gender</a></li>
+								<td><b>by sex</b></li>
+								
 										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+										<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
 							</tr>
 										
 							<tr class="inactive">
 								<th >FLOWS</th>
 								<td class="grow"><a href="flows.html">all</a></td>
-								<td><b>by gender</b></li>
+								<td class="grow"><a href="flows_by_sex.html">by sex</a></td>
 								<td class="grow"><a href="flows_by_type.html">by type</a></td>
 								
 							</tr>
@@ -75,7 +76,7 @@
 								<td class="grow"><svg src="static/sankey.svg"></svg></li>
 								<td class="grow"><svg src="static/map.svg"></svg></li>
 										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-										<!-- <td class="sub"><a href="stocks_by_gender.html">by gender</a></td> -->
+										<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
 							</tr>							
 						</table>
 					</div>
@@ -86,34 +87,30 @@
 				
 
 
-			<!-- <div class="slider"> -->
-			<div class = "selector">
-				<div><label> Select period: </label></div>
-				<input class="slider" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-				<div class="sliderticks">
-					<p>1990</p>
-					<p>1995</p>
-					<p>2000</p>
-					<p>2005</p>
-					<p>2010</p>
-					<p>2015</p>
-					<p>2020</p>
-				</div>
+			<!-- <div class="slider_range"> -->
+			<div style="margin-top: 1em ;">
+				<div><label> Select year: </label></div>
+			<input class="slider-stock" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+			<div class="sliderticks">
+				<!-- <p>1990</p> -->
+				<p>1995</p>
+				<p>2000</p>
+				<p>2005</p>
+				<p>2010</p>
+				<p>2015</p>
+				<p>2020</p>
+			  </div>
 			
 				<label for="range" id="start-value"></label>
 				<label for="range" id="end-value"></label>
 				</input>
 				<div id="yearRange"></div>
 			</div>
-			<div class="subgroups">
 			
-				<label for="selectMethod">Select estimation method: </label>
-				<select value="da_pb_closed" id="selectMethod"></select>
-			</div><br>
 	
 		<div class="subgroups">
-						<label for="selectGender">Select gender:</label>
-						<select value= 'female' id="selectGender"></select>
+						<label for="selectSex">Select sex:</label>
+						<select value= 'female' id="selectSex"></select>
 		</div>
 		<div id="chart" class="center"></div>
 		<div class="box">
@@ -143,21 +140,19 @@
    
    <script src="chord-chart.js"></script>
    <script>
-	config.stockflow = "flow"
-	config.sex = "female"
-	config.type = ""
-	// config.method = "da_pb_closed"
-	
-	const allMethods = config.method === "" 
-			? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
-			: ['da_min_closed', 'da_min_open','da_pb_closed'].reverse()
-	const allTypes = ['outward','transit','return']
-	const allGenders = ['male', 'female'].reverse()
-
-	filename = fileName(config).json
-	getData(filename).then(raw => {
-		draw(raw,config)
-	})
+		// filename = "stocks"
+		config.stockflow = "stock"
+		config.sex = "female"
+		config.type = ""
+		config.method = ""
+		
+		const allSexes = ['male', 'female'].reverse()
+		const allMethods = ""
+		const allTypes = ""
+		filename = fileName(config).json
+		getData(filename).then(raw => {
+			draw(raw,config)
+		})
    </script>
 
 </body>
