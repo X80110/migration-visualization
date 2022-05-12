@@ -116,6 +116,7 @@ label {
 	border-spacing: 10px;
 } */
 
+/*------ SLIDER each 5 years -----------------*/
 .slider {
   -webkit-appearance: none;
   /* min-width: 35%; */
@@ -171,7 +172,7 @@ label {
    color:#aaa;
 }
 
-/*------ SLIDER FOR STOCKS -----------------*/
+/*------ SLIDER FOR STOCKS (specific to year) -----------------*/
 .slider-stock {
    -webkit-appearance: none;
    /* min-width: 35%; */
@@ -196,7 +197,7 @@ label {
  .slider-stock::-webkit-slider-thumb {
    -webkit-appearance: none;
    appearance: none;
-   width: 16%;
+   width: 1em;
    height: 1em;
    background: #598cae70;
    cursor: pointer;
@@ -209,6 +210,9 @@ label {
    border: 1px solid #598cae;
    cursor: pointer;
  }
+
+
+
 .box {
   --min: 16ch;
   --gap: 0rem;

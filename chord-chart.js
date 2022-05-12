@@ -305,28 +305,30 @@ let fileName = (config) => {
     
     // clean non-lineal irregularities
     json = json.replace("__","_").replace("_.",".")
-    
+    console.log( config.method, config.stockflow)
     return {
          json:json,
          values: stockflow, sex, type, method,
          type: config.type
         }
-    }
-     
+}
+
 let filename = fileName(config).json
-// console.log(filename)
+console.log(filename)
 
 // gets the data from files
 async function getData(filename) {
+    // console.log(filename)
     try {
-        const raw_data = d3.json(filename) 
+        const data = d3.json(filename) 
         const metadata = d3.csv("data/country-metadata-flags.csv")
-        return  {raw_data:await raw_data, metadata: await metadata}
+        return  {raw_data:await data, metadata: await metadata}
     }
     catch (err) {
         console.log(err)
         throw Error("Failed to load data")
     }
+  
 }
 
 // RUN SELECTORS  (1st load the metadata into the environment)
@@ -1150,8 +1152,25 @@ function tooltipRegion(evt,d) {
 
     let outflow = /* d.index = */ formatValue(d3.sum(data.matrix[d.index]))
     let inflow = formatValue(d3.sum(data.matrix, row => row[d.index]))
-
-    return tooltip
+    
+    // console.log(filename.includes("stock")) ---> false ? then synthax is outflow/inflow instead of emigrants/immigrants
+    if (filename.includes('stock')){
+        return tooltip
+        .html(`\
+        ${source} </br>
+        Total emigrants  →  <b> ${outflow}</b> </br>
+        Total immigrants  ← <b> ${inflow} </b>
+        
+        
+        `)
+        .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+        .style("top", (evt.pageY-10)+"px")
+        .style("left", (evt.pageX+10)+"px")
+        .style("visibility", "visible")
+        .transition()       
+    }
+    else {
+        return tooltip
         .html(`\
         ${source} </br>
         Total outflow  →  <b> ${outflow}</b> </br>
@@ -1164,6 +1183,9 @@ function tooltipRegion(evt,d) {
         .style("left", (evt.pageX+10)+"px")
         .style("visibility", "visible")
         .transition()       
+
+    }
+    
 }
 
 const tooltip = d3.select('body').append('g')
@@ -1292,7 +1314,8 @@ chordDiagram.selectAll(".group-arc")
                     .transition()
                     .duration(200)
                     .remove();
-                return draw(data,config)})
+                return draw(data,config)
+            })
 
         })        
     d3.selectAll("#stockFlow")
@@ -1301,8 +1324,8 @@ chordDiagram.selectAll(".group-arc")
             config.stockflow = d3.select(this).property("value")
 
             filename = fileName(config).json
-            console.log(filename)
-        
+            // console.log(filename)
+            
             getData(filename).then(data=> {
                 data = data
                 // Remove previous
@@ -1310,7 +1333,8 @@ chordDiagram.selectAll(".group-arc")
                     .transition()
                     .duration(200)
                     .remove();
-                return draw(data,config)})
+                return draw(data,config)
+            })
 
     })    
     d3.selectAll("#selectMethod")
@@ -1333,7 +1357,8 @@ chordDiagram.selectAll(".group-arc")
                     .transition()
                     .duration(200)
                     .remove();
-                return draw(data,config)})
+                return draw(data,config)
+            })
             
     })    
         
@@ -1354,7 +1379,8 @@ chordDiagram.selectAll(".group-arc")
                    .transition()
                    .duration(200)
                    .remove();
-                return draw(data,config)})
+                return draw(data,config)
+            })
 
         // drawSankey(config)
     })
@@ -1365,7 +1391,7 @@ chordDiagram.selectAll(".group-arc")
             config.type = d3.select(this).property("value")
 
             filename = fileName(config).json
-            console.log(filename)
+            // console.log(filename)
             
             // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
             // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
@@ -1381,7 +1407,8 @@ chordDiagram.selectAll(".group-arc")
                     .duration(200)
                     .remove();
 
-               return draw(data,config)})
+               return draw(data,config)
+            })
             
       
     })
