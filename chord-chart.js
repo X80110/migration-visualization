@@ -305,7 +305,7 @@ let fileName = (config) => {
     
     // clean non-lineal irregularities
     json = json.replace("__","_").replace("_.",".")
-    console.log( config.method, config.stockflow)
+    // console.log( config.method, config.stockflow)
     return {
          json:json,
          values: stockflow, sex, type, method,
@@ -394,7 +394,7 @@ function dataPrepare(input, config){
     flags = meta.map(d=>{return { [d.origin_name]:d.origin_flag }})
     
     year = config.year
-    region = config.region
+    /* region = config.region */
     sex = config.sex
     
     input = input.raw_data    
@@ -405,7 +405,7 @@ function dataPrepare(input, config){
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
-        console.log(index)
+        console.log("a", year, index)
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
 
         for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
@@ -514,8 +514,8 @@ function dataPrepare(input, config){
             && d.source != d.target_region  */
             
             )
-        console.log(filteredData.filter(d=> d.target.includes("Croatia")))
-        console.log(filteredData)
+        /* console.log(filteredData.filter(d=> d.target.includes("Croatia")))
+        console.log(filteredData) */
       
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names,filteredData)
@@ -1255,30 +1255,37 @@ chordDiagram.selectAll(".group-arc")
 
     })
 
-/* chordDiagram.selectAll(".group-arc, .path-item")
+chordDiagram.selectAll(".group-arc, .path-item")
+// .transition()
+            // .duration(200)
     .on("mouseover", function (evt, d) {
-        console.log(d.id)
+        // console.log(d.id)
         chordDiagram
             .selectAll(".path-item")
-            .transition()
-            .duration(200)
-            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:1)
+            // .transition()
+            // .duration(200)
+            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:0.75)
+        chordDiagram.selectAll("g")
+            // .transition()
+            // .duration(200)
+            .style("opacity", p=>console.log(p))
 
         d3.select(this)
-            .transition()
-            .duration(200)
-            .style("opacity", 1)
+            // .transition()
+            // .duration(200)
+            .style("opacity", 0.75)
         })       
     
-    .on("mouseout", function (evt, d) {
-        chordDiagram.selectAll(".path-item")
-            .transition()
-            .duration(200)
+chordDiagram.selectAll("g")
+    .on("mouseout", function (evt, d) {        
+            chordDiagram.selectAll(".path-item")
+            // .transition()
+            // .duration(200)
             .style("opacity", 0.75);
         })  
 
 
- */
+
     chordDiagram.selectAll(".path-item")
         .on("mousemove", tooltipCountry)
         .on("mouseout", function(){
