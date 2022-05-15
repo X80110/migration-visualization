@@ -109,7 +109,7 @@ label {
 	font-size:80%;
 	font-weight:300;
 	color: #333;
-	padding-left:auto;
+	/* padding-left:auto; */
 }
 /* table {
 	min-width:180px;

@@ -1,193 +1,193 @@
-let scope = {}
-function chord() {
-    function d3_functor(x) {
-      return function() {
-        return x;
-      };
-    }
-    function d3_source(d) {
-        return d.source;
-      }
-      // import "../core/target";
-      function d3_target(d) {
-        return d.target;
-      }
-      // import "../math/trigonometry";
-      var π = Math.PI;
-      // import "arc";
-      var d3_svg_arcOffset = -π / 2;
-      function d3_svg_arcStartAngle(d) {
-        return d.startAngle;
-      }
-      function d3_svg_arcEndAngle(d) {
-        return d.endAngle;
-      }
-      // import "svg";
+// let scope = {}
+// function chord() {
+//     function d3_functor(x) {
+//       return function() {
+//         return x;
+//       };
+//     }
+//     function d3_source(d) {
+//         return d.source;
+//       }
+//       // import "../core/target";
+//       function d3_target(d) {
+//         return d.target;
+//       }
+//       // import "../math/trigonometry";
+//       var π = Math.PI;
+//       // import "arc";
+//       var d3_svg_arcOffset = -π / 2;
+//       function d3_svg_arcStartAngle(d) {
+//         return d.startAngle;
+//       }
+//       function d3_svg_arcEndAngle(d) {
+//         return d.endAngle;
+//       }
+//       // import "svg";
     
-      scope.chord = function(arrowRatio) {
-        var source = d3_source,
-            target = d3_target,
-            radius = d3_svg_chordRadius,
-            sourcePadding = d3_svg_chordSourcePadding,
-            targetPadding = d3_svg_chordTargetPadding,
-            startAngle = d3_svg_arcStartAngle,
-            endAngle = d3_svg_arcEndAngle;
+//       scope.chord = function(arrowRatio) {
+//         var source = d3_source,
+//             target = d3_target,
+//             radius = d3_svg_chordRadius,
+//             sourcePadding = d3_svg_chordSourcePadding,
+//             targetPadding = d3_svg_chordTargetPadding,
+//             startAngle = d3_svg_arcStartAngle,
+//             endAngle = d3_svg_arcEndAngle;
     
-        function chord(d, i) {
-          var s = subgroup(this, source, d, i),
-              t = subgroup(this, target, d, i, true, 1 - arrowRatio);
-    
-    
-          if (equals(s, t)) {
-    
-            // Previously :::
-            // s.a1 = s.a1 - (s.a1 - s.a0) / 2;
-            // s.p1 = [s.r * Math.cos(s.a1), s.r * Math.sin(s.a1)];
-            //
-            // t.a0 = t.a0 + (t.a1 - t.a0) / 2;
-            // t.p0 = [t.r * Math.cos(t.a0), t.r * Math.sin(t.a0)];
-    
-            s.a0 = s.a1 + (s.a1 - s.a0) / 2;
-            s.p0 = [s.r * Math.cos(s.a0), s.r * Math.sin(s.a0)];
-    
-            t.a1 = t.a0 - (t.a1 - t.a0) / 2;
-            t.p1 = [t.r * Math.cos(t.a1), t.r * Math.sin(t.a1)];
-            t.aMid=(t.a1-t.a0)/2+t.a0;
-            t.pMid= [t.r * Math.cos(t.aMid), t.r * Math.sin(t.aMid)]; 
-    
-          }
-    
-          var ccp = cubic_control_points(s, t, s.r * 0.45);
-    
-          return "M" + s.p0
-            + arc(s.r, s.p1, s.a1 - s.a0)
-            + cubic_curve(ccp.cps1, ccp.cpt0, t.p0)
-            + (arrowRatio === 0 ? arc(t.r, t.p1, t.a1 - t.a0) : arrow(t.pMid, t.p1))
-            + cubic_curve(ccp.cpt1, ccp.cps0, s.p0)
-            + "Z";
-        }
-    
-        function cubic_control_points(s, t, factor) {
-          cps0 = [factor * Math.cos(s.a0), factor * Math.sin(s.a0)];
-          cps1 = [factor * Math.cos(s.a1), factor * Math.sin(s.a1)];
-          cpt0 = [factor * Math.cos(t.a0), factor * Math.sin(t.a0)];
-          cpt1 = [factor * Math.cos(t.a1), factor * Math.sin(t.a1)];
-          return {
-            cps0: cps0,
-            cps1: cps1,
-            cpt0: cpt0,
-            cpt1: cpt1
-          };
-        }
-    
-        function subgroup(self, f, d, i, target, scale) {
-    
-          if(!scale) {
-            scale =  1 ;
-            /* scale =  0.15 ; */
-          }
-    
-          var subgroup = f.call(self, d, i),
-              r = radius.call(self, subgroup, i),
-              a0 = startAngle.call(self, subgroup, i) + d3_svg_arcOffset,
-              a1 = endAngle.call(self, subgroup, i) + d3_svg_arcOffset;
-           aMid = (a1-a0)/2 + a0 ;
+//         function chord(d, i) {
+//           var s = subgroup(this, source, d, i),
+//               t = subgroup(this, target, d, i, true, 1 - arrowRatio);
     
     
-          if (target) {
-            var d = targetPadding.call(self, subgroup, i) || 0;
-            r = r - d;
-          } else {
-            var d = sourcePadding.call(self, subgroup, i) || 0;
-            r = r - d;
-          }
+//           if (equals(s, t)) {
     
-          return {
-            r: r,
-            a0: a0 ,
-            a1: a1 ,
-            p0: [r * scale * Math.cos(a0), r * scale * Math.sin(a0)],
-            p1: [r * scale * Math.cos(a1), r * scale * Math.sin(a1)],
-            pMid : [r * Math.cos(aMid), r * Math.sin(aMid)]
-          };
-        }
+//             // Previously :::
+//             // s.a1 = s.a1 - (s.a1 - s.a0) / 2;
+//             // s.p1 = [s.r * Math.cos(s.a1), s.r * Math.sin(s.a1)];
+//             //
+//             // t.a0 = t.a0 + (t.a1 - t.a0) / 2;
+//             // t.p0 = [t.r * Math.cos(t.a0), t.r * Math.sin(t.a0)];
     
-        function equals(a, b) {
-          return a.a0 == b.a0 && a.a1 == b.a1;
-        }
+//             s.a0 = s.a1 + (s.a1 - s.a0) / 2;
+//             s.p0 = [s.r * Math.cos(s.a0), s.r * Math.sin(s.a0)];
     
-        function arc(r, p, a) {
-          return "A" + r + "," + r + " 0 " + +(a > π) + ",1 " + p;
-        }
+//             t.a1 = t.a0 - (t.a1 - t.a0) / 2;
+//             t.p1 = [t.r * Math.cos(t.a1), t.r * Math.sin(t.a1)];
+//             t.aMid=(t.a1-t.a0)/2+t.a0;
+//             t.pMid= [t.r * Math.cos(t.aMid), t.r * Math.sin(t.aMid)]; 
     
-        function curve(r0, p0, r1, p1) {
-          return "Q 0,0 " + p1;
-        }
+//           }
     
-        function arrow(pMid, p1) {
-            return "L" + pMid + "L" + p1 ;
-        }
+//           var ccp = cubic_control_points(s, t, s.r * 0.45);
     
-        function cubic_curve(cp0, cp1, p1) {
-          return "C " + cp0 + " " + cp1 + " " + p1;
-        }
+//           return "M" + s.p0
+//             + arc(s.r, s.p1, s.a1 - s.a0)
+//             + cubic_curve(ccp.cps1, ccp.cpt0, t.p0)
+//             + (arrowRatio === 0 ? arc(t.r, t.p1, t.a1 - t.a0) : arrow(t.pMid, t.p1))
+//             + cubic_curve(ccp.cpt1, ccp.cps0, s.p0)
+//             + "Z";
+//         }
     
-        chord.radius = function(v) {
-          if (!arguments.length) return radius;
-          radius = d3_functor(v);
-          return chord;
-        };
+//         function cubic_control_points(s, t, factor) {
+//           cps0 = [factor * Math.cos(s.a0), factor * Math.sin(s.a0)];
+//           cps1 = [factor * Math.cos(s.a1), factor * Math.sin(s.a1)];
+//           cpt0 = [factor * Math.cos(t.a0), factor * Math.sin(t.a0)];
+//           cpt1 = [factor * Math.cos(t.a1), factor * Math.sin(t.a1)];
+//           return {
+//             cps0: cps0,
+//             cps1: cps1,
+//             cpt0: cpt0,
+//             cpt1: cpt1
+//           };
+//         }
     
-        // null2
-        chord.sourcePadding = function(v) {
-          if (!arguments.length) return sourcePadding;
-          sourcePadding = d3_functor(v);
-          return chord;
-        };
-        chord.targetPadding = function(v) {
-          if (!arguments.length) return targetPadding;
-          targetPadding = d3_functor(v);
-          return chord;
-        };
+//         function subgroup(self, f, d, i, target, scale) {
     
-        chord.source = function(v) {
-          if (!arguments.length) return source;
-          source = d3_functor(v);
-          return chord;
-        };
+//           if(!scale) {
+//             scale =  1 ;
+//             /* scale =  0.15 ; */
+//           }
     
-        chord.target = function(v) {
-          if (!arguments.length) return target;
-          target = d3_functor(v);
-          return chord;
-        };
+//           var subgroup = f.call(self, d, i),
+//               r = radius.call(self, subgroup, i),
+//               a0 = startAngle.call(self, subgroup, i) + d3_svg_arcOffset,
+//               a1 = endAngle.call(self, subgroup, i) + d3_svg_arcOffset;
+//            aMid = (a1-a0)/2 + a0 ;
     
-        chord.startAngle = function(v) {
-          if (!arguments.length) return startAngle;
-          startAngle = d3_functor(v);
-          return chord;
-        };
     
-        chord.endAngle = function(v) {
-          if (!arguments.length) return endAngle;
-          endAngle = d3_functor(v);
-          return chord;
-        };
+//           if (target) {
+//             var d = targetPadding.call(self, subgroup, i) || 0;
+//             r = r - d;
+//           } else {
+//             var d = sourcePadding.call(self, subgroup, i) || 0;
+//             r = r - d;
+//           }
     
-        return chord;
-      };
+//           return {
+//             r: r,
+//             a0: a0 ,
+//             a1: a1 ,
+//             p0: [r * scale * Math.cos(a0), r * scale * Math.sin(a0)],
+//             p1: [r * scale * Math.cos(a1), r * scale * Math.sin(a1)],
+//             pMid : [r * Math.cos(aMid), r * Math.sin(aMid)]
+//           };
+//         }
     
-      function d3_svg_chordRadius(d) {
-        return d.radius;
-      }
-      function d3_svg_chordTargetPadding(d) {
-        return d.targetPadding;
-      }
-      function d3_svg_chordSourcePadding(d) {
-        return d.sourcePadding;
-      }
-    }
-chord()
+//         function equals(a, b) {
+//           return a.a0 == b.a0 && a.a1 == b.a1;
+//         }
+    
+//         function arc(r, p, a) {
+//           return "A" + r + "," + r + " 0 " + +(a > π) + ",1 " + p;
+//         }
+    
+//         function curve(r0, p0, r1, p1) {
+//           return "Q 0,0 " + p1;
+//         }
+    
+//         function arrow(pMid, p1) {
+//             return "L" + pMid + "L" + p1 ;
+//         }
+    
+//         function cubic_curve(cp0, cp1, p1) {
+//           return "C " + cp0 + " " + cp1 + " " + p1;
+//         }
+    
+//         chord.radius = function(v) {
+//           if (!arguments.length) return radius;
+//           radius = d3_functor(v);
+//           return chord;
+//         };
+    
+//         // null2
+//         chord.sourcePadding = function(v) {
+//           if (!arguments.length) return sourcePadding;
+//           sourcePadding = d3_functor(v);
+//           return chord;
+//         };
+//         chord.targetPadding = function(v) {
+//           if (!arguments.length) return targetPadding;
+//           targetPadding = d3_functor(v);
+//           return chord;
+//         };
+    
+//         chord.source = function(v) {
+//           if (!arguments.length) return source;
+//           source = d3_functor(v);
+//           return chord;
+//         };
+    
+//         chord.target = function(v) {
+//           if (!arguments.length) return target;
+//           target = d3_functor(v);
+//           return chord;
+//         };
+    
+//         chord.startAngle = function(v) {
+//           if (!arguments.length) return startAngle;
+//           startAngle = d3_functor(v);
+//           return chord;
+//         };
+    
+//         chord.endAngle = function(v) {
+//           if (!arguments.length) return endAngle;
+//           endAngle = d3_functor(v);
+//           return chord;
+//         };
+    
+//         return chord;
+//       };
+    
+//       function d3_svg_chordRadius(d) {
+//         return d.radius;
+//       }
+//       function d3_svg_chordTargetPadding(d) {
+//         return d.targetPadding;
+//       }
+//       function d3_svg_chordSourcePadding(d) {
+//         return d.sourcePadding;
+//       }
+//     }
+// chord()
 
 // ##########################################################
 //  INITIAL PARAMETERS
@@ -211,27 +211,32 @@ const chordDiagram = d3.select("#chart")
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
 // Standard chord settings    
+// var chord = d3.chordDirected()
+//     .padAngle(0.035)
+//     .sortSubgroups(d3.ascending)
+//     .sortChords(d3.descending);
 var chord = d3.chordDirected()
     .padAngle(0.035)
     .sortSubgroups(d3.ascending)
-    .sortChords(d3.descending);
+    .sortChords(d3.ascending);
 
 var arc = d3.arc() 
     .innerRadius(innerRadius)
     .outerRadius(outerRadius);
 
-/* var ribbon = d3.ribbonArrow()
-    .radius(innerRadius)
+var ribbon = d3.ribbonArrow()
+    .sourceRadius(innerRadius)
     // .radius(innerRadius - 5)
+    .targetRadius(innerRadius -10) 
     .headRadius(15)
-    .padAngle(0);
-    // .padAngle(1 / innerRadius);
- */
-var ribbon = scope.chord(0.07) // how sharp the pointed edges should be
-// more the value, more pointed...
-    .radius(innerRadius )
-    .sourcePadding(0) // can increase/decrease the spaces
-    .targetPadding(8);  // between the chords and arcs here
+    .padAngle(0)
+    .padAngle(1 / innerRadius);
+
+// var ribbon = scope.chord(0.07) // how sharp the pointed edges should be
+// // more the value, more pointed...
+//     .radius(innerRadius )
+//     .sourcePadding(0) // can increase/decrease the spaces
+//     .targetPadding(8);  // between the chords and arcs here
 
 
 // ##########################################################
@@ -947,7 +952,7 @@ function draw(input,config){
         .attr("fill", d => getRegionColor(d.name))
         .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
         
-        .style("text-anchor","middle")
+        .attr("text-anchor","middle")
         .attr("xlink:href",d=>"#"+textId)
         .text(d =>d.name)
         
@@ -992,11 +997,11 @@ function draw(input,config){
         }) */
        
 
-
+    /* console.log(data) */
     const chords = container.append("g")
         .attr("class", "ribbon")
         .selectAll("g")
-        .data(computedChords(data),d=> d.id)    
+        .data(computedChords(data))    
         .join("g")
         .attr("class", d=>"ribbon-"+d.id)
         
@@ -1163,14 +1168,18 @@ function tooltipRegion(evt,d) {
         
         
         `)
+        // .transition()
+        // .duration(50)
         .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
         .style("top", (evt.pageY-10)+"px")
         .style("left", (evt.pageX+10)+"px")
         .style("visibility", "visible")
-        .transition()       
+       
     }
     else {
         return tooltip
+        // .transition()
+        // .duration(50)
         .html(`\
         ${source} </br>
         Total outflow  →  <b> ${outflow}</b> </br>
@@ -1182,7 +1191,7 @@ function tooltipRegion(evt,d) {
         .style("top", (evt.pageY-10)+"px")
         .style("left", (evt.pageX+10)+"px")
         .style("visibility", "visible")
-        .transition()       
+        
 
     }
     
@@ -1238,8 +1247,6 @@ chordDiagram.selectAll(".group-arc")
 
         // remove current content
             d3.selectAll("g")
-                .transition()
-                .duration(200)
                 .remove()
             /* console.log("fILE!",data) */
             /* console.log("previous",data) */
@@ -1255,42 +1262,45 @@ chordDiagram.selectAll(".group-arc")
 
     })
 
-chordDiagram.selectAll(".group-arc, .path-item")
-// .transition()
-            // .duration(200)
-    .on("mouseover", function (evt, d) {
+chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
+
+function mouseover() {
+    chordDiagram.selectAll(".group-arc, .path-item")
+        .on("mouseover", function (evt, d) {
         // console.log(d.id)
-        chordDiagram
-            .selectAll(".path-item")
-            // .transition()
-            // .duration(200)
-            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:0.75)
-        chordDiagram.selectAll("g")
-            // .transition()
-            // .duration(200)
-            .style("opacity", p=>console.log(p))
+            chordDiagram
+                .selectAll(".path-item")
+                // .transition()
+                // .duration(200)
+                .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:0.75)
+                /*    chordDiagram.selectAll("g")
+                        // .transition()
+                        // .duration(200)
+                        .style("opacity", p=>console.log(p)) */
 
-        d3.select(this)
-            // .transition()
-            // .duration(200)
-            .style("opacity", 0.75)
-        })       
+            d3.select(this)
+                // .transition()
+                // .duration(200)
+                .style("opacity", 0.75)
+            }
+        )
+}
     
-chordDiagram.selectAll("g")
-    .on("mouseout", function (evt, d) {        
-            chordDiagram.selectAll(".path-item")
-            // .transition()
-            // .duration(200)
-            .style("opacity", 0.75);
-        })  
-
-
+function mouseout() {
+    chordDiagram.selectAll("g")
+        .on("mouseout", function (evt, d) {        
+                chordDiagram.selectAll(".path-item")
+                // .transition()
+                // .duration(200)
+                .style("opacity", 0.75);
+            })  
 
     chordDiagram.selectAll(".path-item")
         .on("mousemove", tooltipCountry)
         .on("mouseout", function(){
             return tooltip.style("visibility", "hidden");
         })
+
         
     chordDiagram.selectAll(".group-arc")
         .on("mousemove", tooltipRegion)
@@ -1298,7 +1308,10 @@ chordDiagram.selectAll("g")
             /* d3.select("#tooltip").style("visibility", "hidden") */
             return tooltip.style("visibility", "hidden");
         })
-        
+}
+
+
+    
 
 
     d3.selectAll("#selectYear")
@@ -1318,10 +1331,9 @@ chordDiagram.selectAll("g")
                 data = data
                 // Remove previous
                 d3.selectAll("g")
-                    .transition()
-                    .duration(200)
                     .remove();
-                return draw(data,config)
+
+               return draw(data,config)
             })
 
         })        
@@ -1337,10 +1349,9 @@ chordDiagram.selectAll("g")
                 data = data
                 // Remove previous
                 d3.selectAll("g")
-                    .transition()
-                    .duration(200)
                     .remove();
-                return draw(data,config)
+
+               return draw(data,config)
             })
 
     })    
@@ -1361,10 +1372,9 @@ chordDiagram.selectAll("g")
                 data = data
                 // Remove previous
                 d3.selectAll("g")
-                    .transition()
-                    .duration(200)
                     .remove();
-                return draw(data,config)
+
+               return draw(data,config)
             })
             
     })    
@@ -1383,10 +1393,9 @@ chordDiagram.selectAll("g")
                 data = data
                 // Remove previous
                 d3.selectAll("g")
-                   .transition()
-                   .duration(200)
-                   .remove();
-                return draw(data,config)
+                    .remove();
+
+               return draw(data,config)
             })
 
         // drawSankey(config)
@@ -1410,8 +1419,6 @@ chordDiagram.selectAll("g")
                 data = data
                 // Remove previous
                 d3.selectAll("g")
-                    .transition()
-                    .duration(200)
                     .remove();
 
                return draw(data,config)
