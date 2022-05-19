@@ -342,20 +342,30 @@ getMetaData().then((meta)=>{
     // CREATE SELECTORS
         // YEAR SELECTOR 
         let input_data = raw
-        let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
+        /* let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))] */
 
         let slider = document.getElementById("selectYear");
         let output = document.getElementById("yearRange");
         let value = document.getElementById("value");
         let sliderValue = parseInt(slider.value)+5
-        // output.innerHTML ='<span class="lighten">from </span>'+slider.value+'<p> </p> <span class="lighten"> to </span>'+sliderValue; // Display the default slider value
-        output.innerHTML =slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
-
-        // Update the current slider value (each time you drag the slider handle)
-        slider.oninput = function() {
-            let value = parseInt(this.value)+5
-            output.innerHTML = this.value+'<span class="lighten"> — </span>'+value;
+       
+        if (filename.includes("stock")){
+            output.innerHTML =sliderValue; // Display the default slider value
+            // Update the current slider value (each time you drag the slider handle)
+            slider.oninput = function() {
+                let value = parseInt(this.value)+5
+                output.innerHTML = value;
+            }
         }
+        else if (filename.includes("flow")) {
+             output.innerHTML =slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
+             // Update the current slider value (each time you drag the slider handle)
+             slider.oninput = function() {
+                 let value = parseInt(this.value)+5
+                 output.innerHTML = this.value+'<span class="lighten"> — </span>'+value;
+             }
+         }
+        
         
         // METHOD SELECTOR 
         d3.select("#selectMethod")
