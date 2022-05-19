@@ -3,6 +3,7 @@
 
 body {
 	font-family:  'Jost', sans-serif !important;
+  text-align: center;
 	background-color: #f4f4f4;
 	margin: 0;
 }
@@ -233,13 +234,6 @@ footer {
   padding: 1em;
   margin: 0;
 }
- 
-/* #chart svg {
-	text-align: center;
-	margin-left:auto;
-	margin-right:auto;
-	min-width: 500px;
-} */
 
 .wrap-collabsible input[type='checkbox'] {
 	display: none;
