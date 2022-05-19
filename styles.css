@@ -3,7 +3,7 @@
 
 body {
 	font-family:  'Jost', sans-serif !important;
-  text-align: center;
+  
 	background-color: #f4f4f4;
 	margin: 0;
 }
@@ -20,6 +20,9 @@ p {
    opacity:0.6;
 }
 
+article{
+  text-align: center;
+}
 #main {
    margin: 0;
    padding: 0;
@@ -235,6 +238,9 @@ footer {
   margin: 0;
 }
 
+.wrap-collabsible{
+  position:relative;
+}
 .wrap-collabsible input[type='checkbox'] {
 	display: none;
 }

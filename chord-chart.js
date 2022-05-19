@@ -216,9 +216,9 @@ const chordDiagram = d3.select("#chart")
 //     .sortSubgroups(d3.ascending)
 //     .sortChords(d3.descending);
 var chord = d3.chordDirected()
-    .padAngle(0.035)
-    .sortSubgroups(d3.ascending)
-    .sortChords(d3.ascending);
+    .padAngle(0.05)
+    .sortSubgroups(d3.descending)
+    /* .sortChords(d3.descending); */
 
 var arc = d3.arc() 
     .innerRadius(innerRadius)
@@ -226,11 +226,11 @@ var arc = d3.arc()
 
 var ribbon = d3.ribbonArrow()
     .sourceRadius(innerRadius)
-    // .radius(innerRadius - 5)
+    /* .radius(innerRadius - 5) */
     .targetRadius(innerRadius -10) 
     .headRadius(15)
-    .padAngle(0)
-    .padAngle(1 / innerRadius);
+    
+    /* .padAngle(1 / innerRadius); */
 
 // var ribbon = scope.chord(0.07) // how sharp the pointed edges should be
 // // more the value, more pointed...
@@ -342,7 +342,7 @@ getMetaData().then((meta)=>{
     // CREATE SELECTORS
         // YEAR SELECTOR 
         let input_data = raw
-        /* let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))] */
+        let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
 
         let slider = document.getElementById("selectYear");
         let output = document.getElementById("yearRange");
@@ -460,7 +460,6 @@ function dataPrepare(input, config){
         })
         // List nodes 
         let nodes = matrix 
-        // console.log(nodes)
         // Create object to push links during loop
         let links = []
         let l = 0 // <- iterator        
@@ -482,8 +481,6 @@ function dataPrepare(input, config){
         
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links}       
-             /* console.log(nldata.links.filter(d=>d.source === "North America" && d.target === "Latin America and the Caribbean")) */
-
         let names = nldata.nodes.map(d=> d.name)
 
         // Filter data by minimum value
@@ -585,7 +582,7 @@ function dataPrepare(input, config){
 
     function getMeta(name) {
         // GET FLAG FOR A GIVEN COUNTRY NAME    // ##########################################################v
-        let data = dataSliced
+        /* let data = dataSliced */
         const flag = (name) =>{ 
             let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
             return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
@@ -617,11 +614,7 @@ function dataPrepare(input, config){
     // console.log(mergeFilter())
 
     filteredLayout = mergeFilter()
-    // filteredLayout = mergeFilter()
-    
-
-    // console.log("AAAL",allRegions)
-    // console.log(filteredLayout)
+    // filteredLayout = filteredLayout
 
 
     let names = []
@@ -648,6 +641,7 @@ function dataPrepare(input, config){
         return data
     }
     let result = finalNamesMatrix()
+    console.log(result)
     return {result/* ,metadata */}
 }
 
@@ -728,8 +722,6 @@ function draw(input,config){
         })
         return chords
     }
-    
-
 
     function computedGroups(data)  {
         let groups = chord(data.matrix).groups
@@ -743,8 +735,6 @@ function draw(input,config){
             })
         return groups
     } 
-
-
     
 
     function rememberTheChords() {
@@ -849,9 +839,6 @@ function draw(input,config){
         return c;
       }
     
-   
-    
-
     // Color settings
     // const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
     
@@ -864,7 +851,6 @@ function draw(input,config){
         // console.log("COLORS!"/* ,colors[a] */,b)
         return colors[b]
     }
-
     
     // console.log(colors[0])
     // this gets the html color of the region selected by the user and decreases its opacity
@@ -873,7 +859,6 @@ function draw(input,config){
         /* console.log(getRegionColor("Europe")) */
         return getRegionColor(getMeta(name).region_name)
     }
-    
 
     const container = chordDiagram.append("g")
         .attr("class","container")
@@ -890,19 +875,14 @@ function draw(input,config){
         .data(computedGroups(data),d=>d.id)
         .join("g")
         .attr("class",d=>"group-"+d.id)
-        
     
     arcs.append("path")
         .attr("class","group-arc")
-        .merge(arcs)
+        /* .merge(arcs) */
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity", 0.75)
-        /* .style("stroke", "#598cae")
-        .style("stroke-width", "0.3px") */
-        // .style("stroke-opacity", "1")
-        
         .transition()
         .duration(500)
         .attrTween("d", function(d,j) {
@@ -916,26 +896,57 @@ function draw(input,config){
     //     return `${d.name} outflow ${formatValue(d3.sum(data.matrix[d.index]))} people and inflow ${formatValue(d3.sum(data.matrix, row => row[d.index]))} people`
     // })
     
+    
+
+    const chords = container.append("g")
+        .attr("class", "ribbon")
+        .selectAll("g")
+        .data(computedChords(data))    
+        .join("g")
+        .attr("class", d=>"ribbon-"+d.id)
+
+    chords
+        .append("path")
+        .attr("class", "path-item")
+        
+        .attr("d", ribbon)
+        .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
+        .style("opacity",/* d=> isRegion(d.source.name) && config.region.length > ?  0.1 :  */0.75)
+        /* .style("mix-blend-mode", "multiply") */
+        // .append("title")
+        // .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
+        .transition()
+        .duration(500)
+        .attrTween("d", function (d) {
+            var p  = previous.chords[d.source.id] && previous.chords[d.source.id][d.target.id]
+            p = p || previous.chords[d.source.region] && previous.chords[d.source.region][d.target.region]
+            p = p || meltPreviousChord(d)
+            p = p || config.initialAngle.chord
+            var i = d3.interpolate(p, d)
+            return function (t) {
+                // console.log(i(t))
+                return ribbon(i(t));
+          }
+        })
+
+
+    
     const countryLabels = arcs
         .filter(d=>!isRegion(d.name))
         .append("text")
         .attr("class","country-label")
-        /* .merge(arcs) */
-        .attr("font-size",7.6  )
-        /* .attr("dy", 3 ) */
-        // Hide labels for low values
-        // .style("visibility", d=> d.endAngle-d.startAngle< 0.015 ?"hidden":"")// ? "hidden" : "" ) 
+        .attr("font-size",8.6)
         .attr("transform", d => `
             rotate(${(d.angle * 180 / Math.PI - 90)})
             translate(${outerRadius + 5})
             ${d.angle > Math.PI ? "rotate(180)" : ""}
-            `)
-        
+        `)
         .text(d => d.angle > Math.PI
                 ? d.name+ " "+ getMeta(d.name).flag
                 :  getMeta(d.name).flag+ " "+  d.name
-            )
+                )
         .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
+        
     
     countryLabels
         .transition()
@@ -950,30 +961,17 @@ function draw(input,config){
     
     const regionLabels = arcs
         .filter(d=>isRegion(d.name))
-        // .merge(arcs)
         .append("text")
         .attr("class","region-label")
-        .attr("font-size",10)
-        
-        // .attr("dy",-6)
-        
+        .attr("font-size",11.5)
         .append("textPath")
-        
         .attr("fill", d => getRegionColor(d.name))
         .attr("startOffset", d=> ((d.endAngle+d.startAngle)/2)*outerRadius)
-        
         .attr("text-anchor","middle")
         .attr("xlink:href",d=>"#"+textId)
         .text(d =>d.name)
-        
-        .call(d=>// {
-            // d.nodes().forEach(a=>{
-            //     var length = a.getComputedTextLength()
-            //     if ( length > 75) {
-            //         console.log(a),
-                    wrapText(d,75)
-        //         }
-        // })}
+        .call(d=>
+            wrapText(d,75)
         )
         .selectAll("tspan")
         .transition()
@@ -1006,73 +1004,13 @@ function draw(input,config){
             };
         }) */
        
-
-    /* console.log(data) */
-    const chords = container.append("g")
-        .attr("class", "ribbon")
-        .selectAll("g")
-        .data(computedChords(data))    
-        .join("g")
-        .attr("class", d=>"ribbon-"+d.id)
-        
-
-    chords
-        // .enter()
-        .append("path")
-        .style("opacity", 0.75)
-        .attr("class", "path-item")
-        
-        // .merge(chords)
-        .attr("d", ribbon)
-        .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
-        // .style("mix-blend-mode", "multiply")
-        // .append("title")
-        // .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
-        .transition()
-        .duration(500)
-        .attrTween("d", function (d) {
-            var p  = previous.chords[d.source.id] && previous.chords[d.source.id][d.target.id]
-            p = p || previous.chords[d.source.region] && previous.chords[d.source.region][d.target.region]
-            p = p || meltPreviousChord(d)
-            p = p || config.initialAngle.chord
-            var i = d3.interpolate(p, d)
-            return function (t) {
-                // console.log(i(t))
-                return ribbon(i(t));
-          }
-        })
     
-    // chords.selectAll(".path-item")
-    //     .append("title")
-    //     .text(d => `${data.names[d.source.index]} inflow ${data.names[d.target.index]} ${formatValue(d.source.value)}`)
-   /*  chords.exit()
-        .transition()
-        .duration(500)
-        .attrTween("d", function (d) {
-            var i = d3.interpolate(d, {
-                source: {
-                    startAngle: d.source.endAngle - aLittleBit,
-                    endAngle: d.source.endAngle
-                },
-                target: {
-                    startAngle: d.target.endAngle - aLittleBit,
-                    endAngle: d.target.endAngle
-                }
-            })
-            // console.log(i)
-            return function (t) {
-                return ribbon(i(t))
-            };
-        })
-        .each('end', function () {
-            d3.selectAll(".ribbon").remove()
-        });
-        
-     */
+    
+    
+
 
     function wrapText(text, width) {
         text.each(function (d) {
-            /* console.log(d.name) */
             var textEl = d3.select(this),
                 words = textEl.text().split(/\s+/).reverse(),
                 word,
@@ -1092,236 +1030,174 @@ function draw(input,config){
                 if (tspan.node().getComputedTextLength() > width) {
                     d3.select(this.parentNode).attr("class", "wrapped")
                     line.pop();
-                    tspan.text(line./* reverse(). */join(' '));
+                    tspan.text(line.join(' '));
                     line = [word];
                     tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word);
-                    // console.log(/* line,"$$", */words)
                 }
             }
             d3.selectAll(this.parentNode).filter(d=> d.classed("wrapped",false)).attr("translate",-10)
         });
     }
 
-//     function wrap(text, width) {
-//         text.each(function() {
-//             var text = d3.select(this),
-//                 words = text.text().split(/\s+/).reverse(),
-//                 word,
-//                 line = [],
-//                 lineNumber = 0,
-//                 lineHeight = 1.1, // ems
-//                 y = text.attr("y"),
-//                 dy = parseFloat(text.attr("dy")) || 0,
-//                 tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-//             while (word = words.pop()) {
-//             line.push(word);
-//             tspan.text(line.join(" "));
-//             if (tspan.node().getComputedTextLength() > width) {
-//                 line.pop();
-//                 tspan.text(line.join(" "));
-//                 line = [word];
-//                 tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-//             }
-//             }
-//         });
-//         }
-//     // d3.select("#table").append("table").html(table)
-
-function tooltipCountry(evt,d)  {
-    var source = isRegion(data.names[d.source.index])
-        ? `<span style="color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
-        : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
-    
-    var target = isRegion(data.names[d.target.index] )
-        ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
-        : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.target.name).flag+ " "+  d.target.name}</span>`
-    
-
-    var value = `
-        <div> 
-        <b>${formatValue(d.source.value)}</b> people to
-        →
-        `
-    return tooltip
-        .html(`\
-        <b>${source} </b>
-        ${value} 
-        ${target}
         
-        `)
+    function tooltipCountry(evt,d)  {
+        var source = isRegion(data.names[d.source.index])
+            ? `<span style="color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
+            : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
+        
+        var target = isRegion(data.names[d.target.index] )
+            ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
+            : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.target.name).flag+ " "+  d.target.name}</span>`
+        
+
+        var value = `
+            <div> 
+            <b>${formatValue(d.source.value)}</b> people to
+            →
+            `
+        return tooltip
+            .html(`\
+            <b>${source} </b>
+            ${value} 
+            ${target}
+            
+            `)
+            .style('background-color','#ffffff')
+            .style('padding','1em')
+            .style("top", (evt.pageY-10)+"px")
+            .style("left", (evt.pageX+10)+"px")
+            .style("visibility", "visible")
+            .transition()
+            
+    }
+
+    function tooltipRegion(evt,d) {
+
+        let source = isRegion(d.name)
+            ? `<span style="color:white"> <b>${d.name}</b></span>`
+            : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
+                <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
+
+        if (data.matrix !== undefined) {
+            var outflow = formatValue(d3.sum(data.matrix[d.index])) 
+            var inflow =   formatValue(d3.sum(data.matrix, row => row[d.index]))
+        }
+        
+        // console.log(filename.includes("stock")) ---> false ? then synthax is outflow/inflow instead of emigrants/immigrants
+        if (filename.includes('stock') ){
+            return tooltip
+                .html(`\
+                    ${source} </br>
+                    Total emigrants  →  <b> ${outflow}</b> </br>
+                    Total immigrants  ← <b> ${inflow} </b>
+                `)
+                .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+                .style("top", (evt.pageY-10)+"px")
+                .style("left", (evt.pageX+10)+"px")
+                .style("visibility", "visible")
+        }
+        else {
+            return tooltip
+                .html(`\
+                    ${source} </br>
+                    Total outflow  →  <b> ${outflow}</b> </br>
+                    Total inflow  ← <b> ${inflow} </b>
+                `)
+                .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+                .style("top", (evt.pageY-10)+"px")
+                .style("left", (evt.pageX+10)+"px")
+                .style("visibility", "visible")
+        }
+        
+    }
+
+    const tooltip = d3.select('body').append('g')
+        .attr('id', 'tooltip')
         .style('background-color','#ffffff')
         .style('padding','1em')
-        .style("top", (evt.pageY-10)+"px")
-        .style("left", (evt.pageX+10)+"px")
-        .style("visibility", "visible")
-        .transition()
-        
-}
+        .style('border-radius','4px')
+        .style('position', 'absolute')
+        .style('visibility', 'hidden')
+        .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')      
 
-function tooltipRegion(evt,d) {
 
-    let source = isRegion(d.name)
-        ? `<span style="color:white"> <b>${d.name}</b></span>`
-        : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
-            <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
+    // INTERACTIONS
+    // open regions
+    config.maxRegionsOpen = 2 // config.regions = region || config.regions
 
-    let outflow = /* d.index = */ formatValue(d3.sum(data.matrix[d.index]))
-    let inflow = formatValue(d3.sum(data.matrix, row => row[d.index]))
-    
-    // console.log(filename.includes("stock")) ---> false ? then synthax is outflow/inflow instead of emigrants/immigrants
-    if (filename.includes('stock')){
-        return tooltip
-        .html(`\
-        ${source} </br>
-        Total emigrants  →  <b> ${outflow}</b> </br>
-        Total immigrants  ← <b> ${inflow} </b>
-        
-        
-        `)
-        // .transition()
-        // .duration(50)
-        .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
-        .style("top", (evt.pageY-10)+"px")
-        .style("left", (evt.pageX+10)+"px")
-        .style("visibility", "visible")
-       
-    }
-    else {
-        return tooltip
-        // .transition()
-        // .duration(50)
-        .html(`\
-        ${source} </br>
-        Total outflow  →  <b> ${outflow}</b> </br>
-        Total inflow  ← <b> ${inflow} </b>
-        
-        
-        `)
-        .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
-        .style("top", (evt.pageY-10)+"px")
-        .style("left", (evt.pageX+10)+"px")
-        .style("visibility", "visible")
-        
-
-    }
-    
-}
-
-const tooltip = d3.select('body').append('g')
-    .attr('id', 'tooltip')
-    .style('background-color','#ffffff')
-    // .style('filter', 'blur(10px)') 
-    // .style('-webkit-filter', 'blur(10px)') /* Safari 6.0 - 9.0 */    
-    .style('padding','1em')
-    .style('border-radius','4px')
-    .style('position', 'absolute')
-    .style('visibility', 'hidden')
-    // .text('ege')
-    // .style('box-shadow',' rgba(100, 100, 111, 0.2) 0px 7px 29px 0px')
-    .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')
-    
     
 
-
-// INTERACTIONS
-// open regions
-config.maxRegionsOpen = 2 // config.regions = region || config.regions
-
-arcs.on('click', function(evt, d) {
-        
-        if (config.regions.length + 1 > config.maxRegionsOpen) {
-            config.regions.shift();       
-        }
-        config.regions.push(d.name) // console.log(d.name)
-    })
-
-// close regions
-arcs
-    .filter(function(d) {
-        return d.id !== d.region;
-    })
-    .on('click', function(evt, d) {
-        config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
-    // console.log(config.regions)
-});
-
-chordDiagram.selectAll(".group-arc")
-    .on("click", function (evt, d) {
-                
-        config.previous = data 
-
-        
-        // draw new chart 
-        data = getData(filename).then(data=> {
-            data = data
-
-        // remove current content
-            d3.selectAll("g")
-                .remove()
-            /* console.log("fILE!",data) */
-            /* console.log("previous",data) */
-
-            return draw(data,config)
-        })
-        
-        /* // remove current content
-        d3.selectAll("g")
-            .transition()
-            .duration(200)
-            .remove() */
-
-    })
-
-chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
-
-function mouseover() {
-    chordDiagram.selectAll(".group-arc, .path-item")
-        .on("mouseover", function (evt, d) {
-        // console.log(d.id)
-            chordDiagram
-                .selectAll(".path-item")
-                // .transition()
-                // .duration(200)
-                .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:0.75)
-                /*    chordDiagram.selectAll("g")
-                        // .transition()
-                        // .duration(200)
-                        .style("opacity", p=>console.log(p)) */
-
-            d3.select(this)
-                // .transition()
-                // .duration(200)
-                .style("opacity", 0.75)
+    arcs.on('click', function(evt, d) {
+            
+            if (config.regions.length + 1 > config.maxRegionsOpen) {
+                config.regions.shift();       
             }
-        )
-}
-    
-function mouseout() {
-    chordDiagram.selectAll("g")
-        .on("mouseout", function (evt, d) {        
-                chordDiagram.selectAll(".path-item")
-                // .transition()
-                // .duration(200)
-                .style("opacity", 0.75);
-            })  
-
-    chordDiagram.selectAll(".path-item")
-        .on("mousemove", tooltipCountry)
-        .on("mouseout", function(){
-            return tooltip.style("visibility", "hidden");
+            config.regions.push(d.name) // console.log(d.name)
         })
 
-        
+    // close regions
+    arcs
+        .filter(function(d) {
+            return d.id !== d.region;
+        })
+        .on('click', function(evt, d) {
+            config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
+        // console.log(config.regions)
+    });
+
+    
+
+
     chordDiagram.selectAll(".group-arc")
-        .on("mousemove", tooltipRegion)
-        .on("mouseout", function(){
-            /* d3.select("#tooltip").style("visibility", "hidden") */
-            return tooltip.style("visibility", "hidden");
+        .on("click", function (evt, d) {                    
+            config.previous = data 
+
+            // draw new chart 
+            data = getData(filename).then(data=> {
+                data = data
+                // remove current content
+                d3.selectAll("g")
+                    .remove()        
+                return draw(data,config)
+            })
         })
-}
 
+    chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
 
-    
+    function mouseover() {
+        chordDiagram.selectAll(".group-arc, .path-item")
+            .on("mouseover", function (evt, d) {
+            // console.log(d.id)
+                chordDiagram
+                    .selectAll(".path-item")
+                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:0.75)
+
+                d3.select(this)
+                    .style("opacity", 0.75)
+                }
+            )
+    }
+        
+    function mouseout() {
+        chordDiagram.selectAll("g")
+            .on("mouseout", function (evt, d) {        
+                    chordDiagram.selectAll(".path-item")
+                        .style("opacity", 0.75);
+                })  
+
+        chordDiagram.selectAll(".path-item")
+            .on("mousemove", tooltipCountry)
+            .on("mouseout", function(){
+                return tooltip.style("visibility", "hidden");
+            })
+
+            
+        chordDiagram.selectAll(".group-arc")
+            .on("mousemove", tooltipRegion)
+            .on("mouseout", function(){
+                return tooltip.style("visibility", "hidden");
+            })
+    }
 
 
     d3.selectAll("#selectYear")
@@ -1329,14 +1205,6 @@ function mouseout() {
             config.previous = data 
             config.year = d3.select(this).property("value")
 
-            // data = filterYear(raw,year)
-          /*   
-            // Remove previous
-            d3.selectAll("g")
-                .transition()
-                .duration(200)
-                .remove(); */
-            
             getData(filename).then(data=> {
                 data = data
                 // Remove previous
@@ -1353,7 +1221,7 @@ function mouseout() {
             config.stockflow = d3.select(this).property("value")
 
             filename = fileName(config).json
-            // console.log(filename)
+
             
             getData(filename).then(data=> {
                 data = data
@@ -1371,12 +1239,6 @@ function mouseout() {
             config.method = d3.select(this).property("value")
 
             filename = fileName(config).json
-            console.log(filename)
-
-            // data = filterYear(raw,year)
-            
-            // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
-            // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
                 
             getData(filename).then(data=> {
                 data = data
@@ -1396,8 +1258,7 @@ function mouseout() {
 
             filename = fileName(config).json
             console.log(filename)
-            // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
-            // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
+    
 
             getData(filename).then(data=> {
                 data = data
@@ -1417,13 +1278,6 @@ function mouseout() {
             config.type = d3.select(this).property("value")
 
             filename = fileName(config).json
-            // console.log(filename)
-            
-            // data = getMatrix(names,input_data.filter(d=> d.year === selectedYear))
-            // const dataFiltered = getMatrix(names,input_data.filter(d=> d.year === selectedOption))    
-            
-            
-
 
             getData(filename).then(data=> {
                 data = data
