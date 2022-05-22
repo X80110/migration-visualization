@@ -420,7 +420,6 @@ function dataPrepare(input, config){
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
-        console.log("a", year, index)
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
 
         for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
@@ -445,6 +444,7 @@ function dataPrepare(input, config){
     } 
     
     const countryNames = input.names
+
     function filteredMatrix(input){
         data = input
         // GET SOURCE-TARGET STRUCTURE 
@@ -458,8 +458,8 @@ function dataPrepare(input, config){
                         region: regionName,
                         connections:matrix }
         })
-        // List nodes 
         let nodes = matrix 
+
         // Create object to push links during loop
         let links = []
         let l = 0 // <- iterator        
@@ -472,81 +472,84 @@ function dataPrepare(input, config){
                 let source = matrix[k].name
                 let source_region = matrix[k].region    // <- include region why not
                 let value = matrix[j].connections[k]
-                // if (value!== 0) {
+                // if (value > 0) {
                     links[l] = {source_region,source,target_region,target,value}
                     l = l+1 
                 // }
             }
         }
-        
         // GRAPH STRUCTURE
-        let nldata = {nodes: nodes, links:links}       
+        let nldata = {nodes: nodes, links:links} 
         let names = nldata.nodes.map(d=> d.name)
-
+        
+        
         // Filter data by minimum value
         let filteredData = nldata.links
-            .filter(d=> d.value > threshold )
-
-            // This was used to drop proportional % of countries with lower values in each region
-       /*  // For each region, get its values, try to sort them by values and slice the lowest ones
-        let source_region_names = Array.from(new Set(filteredData.flatMap(d => d.source_region ))); 
-        // Map over each region
-        let setThreshold = source_region_names.map(d=> {
-            // call data for each region and sort each item inside by value
-            let region_data = filteredData.filter(a=> a.source_region === d).sort((a,b)=>b.value -a.value)
-            // the % of the lowest values to slice
-            let sliceRatio = 0.83
-            // compute absolute values to slice for each region and the given ratio
-            let itemsToSlice = (region_data.length*sliceRatio).toFixed()
-            // slice data
-            // console.log(region_data,itemsToSlice)
-            region_data = region_data.slice(0,-itemsToSlice)//.sort((a,b)=> d3.ascending(a.source,b.source))
-            return region_data
-        })
+               .filter(d=> d.value > threshold )
         
-        filteredData = setThreshold.flat() */
+        
+        // let outflows = d3.flatRollup(
+        //     filteredData,
+        //     v => d3.sum(v, d => d.value),
+        //     d => d.source,
+        // )
+        // let inflows = d3.flatRollup(
+        //         filteredData,
+        //         v => d3.sum(v, d => d.value),
+        //         d => d.target,
+        //     )
+
+                
+        // console.log(inflows.map(d=> d[1]))//.filter(d=> d[1] > 0 &&  !isRegion(d[0]) ))
 
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
         function removeNullNames(){
-            let names_source = Array.from(new Set(filteredData.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified  
-            let names_target = Array.from(new Set(filteredData.flatMap(d => d.target ))); 
+            let dataSelect = filteredData.filter(d=> d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
+
+            console.log(dataSelect.filter(d=> d.source.includes("Croa")))// && d.target.includes("Bosnia")))
+            console.log(dataSelect.filter(d=> d.target.includes("Denmark")))// && d.target.includes("Bosnia")))
+            
+            let names_source = Array.from(new Set(dataSelect.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified  
+            let names_target = Array.from(new Set(dataSelect.flatMap(d => d.target ))); 
+
+            /* let values = Array.from(new Set(filteredData.flatMap(d => d.value ))); 
+            console.log(values) */
+            /* let names_in_data = Array.from(new Set(names_source.concat(names_target) )); */
             let bothWayNames = names.filter(d=> names_target.includes(d) && names_source.includes(d))// && names_target.includes(d) ? d:"")//  && names_target.includes(d))
-           /*  console.log(names.length, names_source.length, names_target.length, bothWayNames.length) */
+            
+            
+            console.log(names.length, names_source.length, names_target.length, bothWayNames.length)
             return bothWayNames
         } 
         names = removeNullNames()
-
+        
         // let names = names_source // > names_target ? names_source : names_target
         
         // Filter countries without values in both directions (target <-> source)
         filteredData = filteredData.filter(d=> 
-            names.includes(d.source) && names.includes(d.source)  
-            && names.includes(d.target)
-         /*    && d.source_region != d.target 
-            && d.source != d.target_region  */
-            
+            names.includes(d.source) && names.includes(d.target)
             )
-        /* console.log(filteredData.filter(d=> d.target.includes("Croatia")))
-        console.log(filteredData) */
-      
+            
+
+        /* console.log(filteredData)
+        console.log(names) */
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names,filteredData)
-        // console.log(filteredData)
+        /* console.log(filteredMatrix) */
         
         // Reindex regions
         let regions = []
         names.map((d,i)=> {
-
             if (isRegion(d)){
                 regions.push(i)
             }
         })
-        return{ names: names, matrix: filteredMatrix, regions: regions}
+     
+        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: filteredData}
     }
 
     // EXPAND COUNTRIES IN SELECTED REGION AND OUTPUT NEW MATRIX// ##########################################################
     let nextNameRegionIndex
-    
     function expandRegion(input, region) {
         // here we'll find the region index -> we'll get next region -> finally we define a range between both index and replace the values in region in the selected region place 
         nameRegionIndex = input.names.indexOf(region) // index of selected region in names
@@ -554,15 +557,13 @@ function dataPrepare(input, config){
         nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop() // if equal or higher than last element in regions
                                      ? input.names.length // return last index iin names
                                      : input.regions[regionIndex+1] // return next element in regions        
-                    // console.log(nameRegionIndex,nextNameRegionIndex)
+                                     // console.log(nameRegionIndex,nextNameRegionIndex)
         
         // get range between two values
         const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i); // computes
         let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1) // applies
-        
         let indexList = new Array(input.regions).flat()
-        
-        
+
         // replace selected region on index and append its countries instead
         indexList[regionIndex] = countryRange
 
@@ -571,51 +572,43 @@ function dataPrepare(input, config){
 
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)
+    console.log(dataSliced.nldata)
+    console.log(d3.rollups(dataSliced.nldata, v => d3.sum(v, d => d.value), d => d.source))
     data = dataSliced
-    // let allRegions = new Array(data.regions).flat()
-        
-/*     let metadata = {
-        names: dataSliced.names,
-        regions: dataSliced.regions,
-        id: dataSliced.names.map((d,i)=>i)
-    } */
 
     function getMeta(name) {
-        // GET FLAG FOR A GIVEN COUNTRY NAME    // ##########################################################v
-        /* let data = dataSliced */
+        // get flag for a given country name
         const flag = (name) =>{ 
             let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
             return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
         }
         const region = getRegion(data.names.indexOf(name))
-        
         const region_name = data.names[region]
         const id = data.names.indexOf(name)
         return {flag: flag(name), region,region_name,id}
     }
 
-    // generate data structure to expand countries of a selected region
+    // concatenate and sort all expaned regions and their countries indexes
     // console.log(config.regions)
-    let testFilter = expandRegion(data,config.regions[1]).indexList
-    let filteredLayout = expandRegion(data,config.regions[0]).indexList
-    // console.log("ALL!",allRegions)
+    let last_selected = expandRegion(data,config.regions[1]).indexList
+    let first_selected = expandRegion(data,config.regions[0]).indexList
+
     let mergeFilter = () =>  {
-        let together = testFilter.concat(filteredLayout)
+        let together = last_selected.concat(first_selected)
         let unique = [...new Set(together)]
         let ids = config.regions.map(d=>{return getMeta(d).id})
         let w_id = unique.filter(d=> !ids.includes(d))
         let sort = w_id.sort(function(a, b){return a-b})
-        // let id1 = getMeta(config.regions[0]).id
-        // let id2 = getMeta(config.regions[1]).id
         
         return sort
-    
     } 
-    // console.log(mergeFilter())
-
-    filteredLayout = mergeFilter()
+    
+    let filteredLayout = mergeFilter()
+    console.log(filteredLayout.map(d=>data.names[d]))
+    /* console.log(data)
+    console.log(filteredLayout.map(d=> data.names[d])) */
     // filteredLayout = filteredLayout
-
+    
 
     let names = []
     let unfilteredMatrix = []       // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
@@ -636,12 +629,19 @@ function dataPrepare(input, config){
         })
 
         let regions =filteredLayout.map(d=> data.names[d])
-        data = {names,matrix,regions:regions}
-      
+        outflows = names.map((d,i)=> d3.sum(matrix[i]))
+        inflows = names.map((d,i)=> d3.sum(matrix, row => row[i]))
+        
+        names = names.filter((d,i) => outflows[i] > 0 && inflows[i] > 0)
+        matrix = matrix.filter((d,i) => outflows[i] > 0 && inflows[i] > 0)
+        data = {names,matrix,regions}
+        
         return data
     }
     let result = finalNamesMatrix()
-    console.log(result)
+    console.log("RESULT",result)
+    
+
     return {result/* ,metadata */}
 }
 
@@ -663,7 +663,6 @@ function draw(input,config){
 
     rememberTheChords()
     rememberTheGroups() 
-
 
     var aLittleBit = Math.PI / 100000;
     config.initialAngle =  {};
@@ -703,7 +702,7 @@ function draw(input,config){
         return input.regions.includes(input.names.indexOf(name))
     } 
 
-
+    
     function computedChords(data)  {
         let chords = chord(data.matrix).map(d=> {
             d.source.name = data.names[d.source.index]
@@ -729,8 +728,7 @@ function draw(input,config){
             d.name = data.names[d.index]
             d.id = getMeta(data.names[d.index]).id
             d.region = getMeta(data.names[d.index]).region
-            d.outflow = d3.sum(data.matrix[d.index])
-            d.inflow = d3.sum(data.matrix, row => row[d.index])
+
             d.angle = (d.startAngle + d.endAngle) / 2
             })
         return groups
@@ -756,8 +754,8 @@ function draw(input,config){
         var end = input.regions[input.regions.indexOf(id) + 1];
 
         return {
-        start: id + 1,
-        end: end ? end - 1 : input.names.length - 1
+            start: id + 1,
+            end: end ? end - 1 : input.names.length - 1
         };
     }
 
@@ -767,8 +765,9 @@ function draw(input,config){
 
     function inAnyRange(d, ranges) {
         return !!ranges.filter(function (range) {
-        return inRange(d.source.id, range) || inRange(d.target.id, range);
-        }).length;
+            return inRange(d.source.id, range) || inRange(d.target.id, range);
+        })
+        .length;
     }
 
     function meltPreviousGroupArc(d) {
@@ -793,6 +792,7 @@ function draw(input,config){
             endAngle: end.endAngle
         };
     }
+    
     function meltPreviousChord(d) {
         if (d.source.id !== d.source.region) {
             return;
@@ -835,26 +835,20 @@ function draw(input,config){
         // transition from start
         c.source.endAngle = c.source.startAngle + aLittleBit;
         c.target.endAngle = c.target.startAngle + aLittleBit;
-        // console.log(c.source.endAngle)
         return c;
       }
     
-    // Color settings
-    // const colorRegions = ["#cd3d08", "#ec8f00", "#6dae29", "#683f92", "#b60275", "#2058a5", "#00a592", "#009d3c", "#378974", "#ffca00","#5197ac"]
+    
     
     // this gets the html color by the name of the regions (which is the var used creating the visuals)
     const getRegionColor = (name) => {
         a = input.regions.map((d)=> {
-            return input.names[d]
-        })
+                return input.names[d]
+            })
         b = a.indexOf(name)
-        // console.log("COLORS!"/* ,colors[a] */,b)
         return colors[b]
     }
-    
-    // console.log(colors[0])
-    // this gets the html color of the region selected by the user and decreases its opacity
-    // const colorCountries = [colors[regionIndex]]
+
     const colorCountries = (name) => {
         /* console.log(getRegionColor("Europe")) */
         return getRegionColor(getMeta(name).region_name)
@@ -863,6 +857,7 @@ function draw(input,config){
     const container = chordDiagram.append("g")
         .attr("class","container")
         .attr("id","container")
+        
     const textPath = container.append("path")
         .attr("id", textId)
         .attr("class", "text-path")
@@ -872,8 +867,9 @@ function draw(input,config){
     const arcs = container.append("g")        
         .attr("class","group")
         .selectAll("g")
-        .data(computedGroups(data),d=>d.id)
+        .data(computedGroups(data))
         .join("g")
+        
         .attr("class",d=>"group-"+d.id)
     
     arcs.append("path")
@@ -899,16 +895,14 @@ function draw(input,config){
     
 
     const chords = container.append("g")
-        .attr("class", "ribbon")
         .selectAll("g")
-        .data(computedChords(data))    
+        .attr("class", "ribbon")
+        .data(computedChords(data))   
         .join("g")
-        .attr("class", d=>"ribbon-"+d.id)
-
+    
     chords
         .append("path")
         .attr("class", "path-item")
-        
         .attr("d", ribbon)
         .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
         .style("opacity",/* d=> isRegion(d.source.name) && config.region.length > ?  0.1 :  */0.75)
@@ -928,8 +922,6 @@ function draw(input,config){
                 return ribbon(i(t));
           }
         })
-
-
     
     const countryLabels = arcs
         .filter(d=>!isRegion(d.name))
@@ -944,11 +936,8 @@ function draw(input,config){
         .text(d => d.angle > Math.PI
                 ? d.name+ " "+ getMeta(d.name).flag
                 :  getMeta(d.name).flag+ " "+  d.name
-                )
+            )
         .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
-        
-    
-    countryLabels
         .transition()
         .duration(500)
         .attrTween("transform", function(d) {
@@ -971,13 +960,37 @@ function draw(input,config){
         .attr("xlink:href",d=>"#"+textId)
         .text(d =>d.name)
         .call(d=>
-            wrapText(d,75)
+            wrapText(d,68)
         )
         .selectAll("tspan")
         .transition()
         .duration(500)
 
-   
+//     countryLabels
+//         .selectAll('text')
+//         .transition()
+//         .duration(500)
+//         /* .style('opacity', 0) */
+//         .attrTween("transform", function (d) {
+//         // do not animate region labels
+//             if (d.id === d.region) {
+//                 return;
+//             }
+// /*             var region = computedGroups(data).filter(function (g) {
+//                 return g.id === d.region
+//             });
+//             region = region && region[0];
+//             console.log(region) */
+//             var angle = (d.startAngle + (d.endAngle - d.startAngle) / 2);
+//             angle = angle || 0;
+//             var i = d3.interpolate(d, {
+//                 angle: angle
+//             });
+//             return function (t) {
+//                 var t = labelPosition(i(t).angle);
+//                 return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
+//             }
+//         });
 
     /* countryLabels.selectAll('.country-label').exit()
         .transition()
@@ -1079,6 +1092,7 @@ function draw(input,config){
                 <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
 
         if (data.matrix !== undefined) {
+            
             var outflow = formatValue(d3.sum(data.matrix[d.index])) 
             var inflow =   formatValue(d3.sum(data.matrix, row => row[d.index]))
         }
