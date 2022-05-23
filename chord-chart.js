@@ -501,10 +501,9 @@ function dataPrepare(input, config){
 
                 
         // console.log(inflows.map(d=> d[1]))//.filter(d=> d[1] > 0 &&  !isRegion(d[0]) ))
-
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
+        let dataSelect = filteredData.filter(d=> d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
         function removeNullNames(){
-            let dataSelect = filteredData.filter(d=> d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
 
             console.log(dataSelect.filter(d=> d.source.includes("Croa")))// && d.target.includes("Bosnia")))
             console.log(dataSelect.filter(d=> d.target.includes("Croa")))// && d.target.includes("Bosnia")))
@@ -522,15 +521,16 @@ function dataPrepare(input, config){
             return bothWayNames
         } 
         names = removeNullNames()
-        
+
         // let names = names_source // > names_target ? names_source : names_target
-        
+
         // Filter countries without values in both directions (target <-> source)
-        filteredData = filteredData.filter(d=> 
+        filteredData = dataSelect.filter(d=> 
             names.includes(d.source) && names.includes(d.target)
             )
             
-
+        console.log(filteredData.filter(d=> d.source.includes("Croa")))// && d.target.includes("Bosnia")))
+        console.log(filteredData.filter(d=> d.target.includes("Croa")))// && d.target.includes("Bosnia")))
         /* console.log(filteredData)
         console.log(names) */
         // Generate back the matrix with filtered values
@@ -1186,7 +1186,7 @@ function draw(input,config){
     chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
         
     function mouseover() {
-        chordDiagram.selectAll(".group-arc, .path-item, .country-label")
+        chordDiagram.selectAll(".group-arc, .path-item")
             .on("mouseover", function (evt, d) {
             // console.log(d.id)
                 chordDiagram
