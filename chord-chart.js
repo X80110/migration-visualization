@@ -507,7 +507,7 @@ function dataPrepare(input, config){
             let dataSelect = filteredData.filter(d=> d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
 
             console.log(dataSelect.filter(d=> d.source.includes("Croa")))// && d.target.includes("Bosnia")))
-            console.log(dataSelect.filter(d=> d.target.includes("Denmark")))// && d.target.includes("Bosnia")))
+            console.log(dataSelect.filter(d=> d.target.includes("Croa")))// && d.target.includes("Bosnia")))
             
             let names_source = Array.from(new Set(dataSelect.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified  
             let names_target = Array.from(new Set(dataSelect.flatMap(d => d.target ))); 
@@ -572,8 +572,8 @@ function dataPrepare(input, config){
 
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)
-    console.log(dataSliced.nldata)
-    console.log(d3.rollups(dataSliced.nldata, v => d3.sum(v, d => d.value), d => d.source))
+    /* console.log(dataSliced.nldata)
+    console.log(d3.rollups(dataSliced.nldata, v => d3.sum(v, d => d.value), d => d.source)) */
     data = dataSliced
 
     function getMeta(name) {
@@ -596,15 +596,15 @@ function dataPrepare(input, config){
     let mergeFilter = () =>  {
         let together = last_selected.concat(first_selected)
         let unique = [...new Set(together)]
-        let ids = config.regions.map(d=>{return getMeta(d).id})
-        let w_id = unique.filter(d=> !ids.includes(d))
-        let sort = w_id.sort(function(a, b){return a-b})
+        let ids = config.regions.map(d=>{return getMeta(d).id}) // remove values for regions expaned
+        let unique_id = unique.filter(d=> !ids.includes(d))
+        let sort = unique_id.sort(function(a, b){return a-b}) // 
         
         return sort
     } 
     
     let filteredLayout = mergeFilter()
-    console.log(filteredLayout.map(d=>data.names[d]))
+    /* console.log(filteredLayout.map(d=>data.names[d])) */
     /* console.log(data)
     console.log(filteredLayout.map(d=> data.names[d])) */
     // filteredLayout = filteredLayout
@@ -628,13 +628,13 @@ function dataPrepare(input, config){
             matrix.push(filtered)    
         })
 
-        let regions =filteredLayout.map(d=> data.names[d])
-        outflows = names.map((d,i)=> d3.sum(matrix[i]))
-        inflows = names.map((d,i)=> d3.sum(matrix, row => row[i]))
+        // let regions =filteredLayout.map(d=> data.names[d])
+        // outflows = names.map((d,i)=> d3.sum(matrix[i]))
+        // inflows = names.map((d,i)=> d3.sum(matrix, row => row[i]))
         
-        names = names.filter((d,i) => outflows[i] > 0 && inflows[i] > 0)
-        matrix = matrix.filter((d,i) => outflows[i] > 0 && inflows[i] > 0)
-        data = {names,matrix,regions}
+        // names = names.filter((d,i) => outflows[i] > 0 && inflows[i] > 0)
+        // matrix = matrix.filter((d,i) => outflows[i] > 0 && inflows[i] > 0)
+        data = {names,matrix}
         
         return data
     }
@@ -642,6 +642,7 @@ function dataPrepare(input, config){
     console.log("RESULT",result)
     
 
+    
     return {result/* ,metadata */}
 }
 
@@ -653,12 +654,18 @@ function dataPrepare(input, config){
 function draw(input,config){
     // filteredMatrix    
     let data = dataPrepare(input,config).result
-    
-    // input layout to retrieve metadata (country <-index-> regions)
+    // attempt at 0 values for aggregated inflows
+    /* let outflows =  data.names.map((d,i)=> d3.sum(data.matrix[i]))
+    let inflows = data.names.map((d,i)=> d3.sum(data.matrix, row => row[i]))
+    let included = data.names.map((d,i) => outflows[i] > 0 && inflows[i] > 0)
+    data.matrix = data.matrix.filter((d,i)=> included[i] == true)
+    data.names = data.names.filter((d,i)=> included[i] == true)
+    console.log( data) */
+ 
     input = input.raw_data
     
     // selectedMatrix = data.matrix
-    selectedNames = data.names
+    /* selectedNames = data.names */
     let previous = config.previous || data
 
     rememberTheChords()
@@ -1177,9 +1184,9 @@ function draw(input,config){
         })
 
     chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
-
+        
     function mouseover() {
-        chordDiagram.selectAll(".group-arc, .path-item")
+        chordDiagram.selectAll(".group-arc, .path-item, .country-label")
             .on("mouseover", function (evt, d) {
             // console.log(d.id)
                 chordDiagram
@@ -1199,14 +1206,14 @@ function draw(input,config){
                         .style("opacity", 0.75);
                 })  
 
-        chordDiagram.selectAll(".path-item")
+        chordDiagram.selectAll(".path-item, .country-label")
             .on("mousemove", tooltipCountry)
             .on("mouseout", function(){
                 return tooltip.style("visibility", "hidden");
             })
 
             
-        chordDiagram.selectAll(".group-arc")
+        chordDiagram.selectAll(".group-arc, .country-label")
             .on("mousemove", tooltipRegion)
             .on("mouseout", function(){
                 return tooltip.style("visibility", "hidden");
