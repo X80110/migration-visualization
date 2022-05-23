@@ -504,38 +504,65 @@ function dataPrepare(input, config){
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
         let dataSelect = filteredData.filter(d=> d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
         function removeNullNames(){
+            
 
             console.log(dataSelect.filter(d=> d.source.includes("Croa")))// && d.target.includes("Bosnia")))
             console.log(dataSelect.filter(d=> d.target.includes("Croa")))// && d.target.includes("Bosnia")))
             
             let names_source = Array.from(new Set(dataSelect.flatMap(d => d.source ))); // <- be careful, this broke the country sorting by regions when d.target specified  
             let names_target = Array.from(new Set(dataSelect.flatMap(d => d.target ))); 
+    
+            function common(...arr){
+                return arr.reduce((first,second) => {
+                 return first.filter(el => second.includes(el));
+                })
+              }
 
-            /* let values = Array.from(new Set(filteredData.flatMap(d => d.value ))); 
-            console.log(values) */
-            /* let names_in_data = Array.from(new Set(names_source.concat(names_target) )); */
-            let bothWayNames = names.filter(d=> names_target.includes(d) && names_source.includes(d))// && names_target.includes(d) ? d:"")//  && names_target.includes(d))
+            let innerjoin = common(names_source, names_target)
+            
+            filteredData = dataSelect.filter(d=> 
+                innerjoin.includes(d.source) && innerjoin.includes(d.target)
+            )
+
+            let sources = Array.from(new Set(filteredData.flatMap(d=> d.source)))
+            let targets = Array.from(new Set(filteredData.flatMap(d=> d.target)))
+            /* console.log(sources.length, targets.length) */
+            
+            innerjoin = common(sources,targets)
+            
+            // reindex names
+            let names_indexed = names.filter(d=> innerjoin.includes(d))
+            console.log(innerjoin)
+            console.log(names_indexed)
             
             
-            console.log(names.length, names_source.length, names_target.length, bothWayNames.length)
-            return bothWayNames
+            console.log(names.length, names_source.length, names_target.length, innerjoin.length)
+            return names_indexed
         } 
         names = removeNullNames()
-
+        
+        let finalData = filteredData.filter(d=> 
+            names.includes(d.source) && names.includes(d.target)
+            )
+        
         // let names = names_source // > names_target ? names_source : names_target
 
         // Filter countries without values in both directions (target <-> source)
-        filteredData = dataSelect.filter(d=> 
-            names.includes(d.source) && names.includes(d.target)
-            )
-            
-        console.log(filteredData.filter(d=> d.source.includes("Croa")))// && d.target.includes("Bosnia")))
-        console.log(filteredData.filter(d=> d.target.includes("Croa")))// && d.target.includes("Bosnia")))
+      /*   console.log(finalData.filter(d=> d.source.includes("Uru")))// && d.target.includes("Bosnia")))
+        console.log(finalData.filter(d=> d.target.includes("Uru")))// && d.target.includes("Bosnia")))
+
+        console.log(d3.rollups(finalData, v => d3.sum(v, d => d.value), d => d.target)) */
+        // let sources = Array.from(new Set(finalData.map(d=> d.source)))
+        // let targets = Array.from(new Set(finalData.map(d=> d.target)))
+        // console.log(sources.length, targets.length)
+        // /* console.log(inflows.length, outflows.length) */
+        // console.log(finalData.filter(d=> d.source.includes("Croa")))// && d.target.includes("Bosnia")))
+        // console.log(finalData.filter(d=> d.target.includes("Croa")))// && d.target.includes("Bosnia")))
         /* console.log(filteredData)
         console.log(names) */
         // Generate back the matrix with filtered values
-        let filteredMatrix = getMatrix(names,filteredData)
-        /* console.log(filteredMatrix) */
+        let filteredMatrix = getMatrix(names,finalData)
+
         
         // Reindex regions
         let regions = []
@@ -545,16 +572,16 @@ function dataPrepare(input, config){
             }
         })
      
-        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: filteredData}
+        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData}
     }
 
     // EXPAND COUNTRIES IN SELECTED REGION AND OUTPUT NEW MATRIX// ##########################################################
     let nextNameRegionIndex
     function expandRegion(input, region) {
         // here we'll find the region index -> we'll get next region -> finally we define a range between both index and replace the values in region in the selected region place 
-        nameRegionIndex = input.names.indexOf(region) // index of selected region in names
-        regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
-        nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop() // if equal or higher than last element in regions
+        const nameRegionIndex = input.names.indexOf(region) // index of selected region in names
+        const regionIndex =  input.regions.indexOf(nameRegionIndex) // index of selected region in regions
+        const nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop() // if equal or higher than last element in regions
                                      ? input.names.length // return last index iin names
                                      : input.regions[regionIndex+1] // return next element in regions        
                                      // console.log(nameRegionIndex,nextNameRegionIndex)
@@ -574,6 +601,7 @@ function dataPrepare(input, config){
     let dataSliced = filteredMatrix(data,year)
     /* console.log(dataSliced.nldata)
     console.log(d3.rollups(dataSliced.nldata, v => d3.sum(v, d => d.value), d => d.source)) */
+    
     data = dataSliced
 
     function getMeta(name) {
@@ -604,6 +632,7 @@ function dataPrepare(input, config){
     } 
     
     let filteredLayout = mergeFilter()
+    console.log(filteredLayout)
     /* console.log(filteredLayout.map(d=>data.names[d])) */
     /* console.log(data)
     console.log(filteredLayout.map(d=> data.names[d])) */
@@ -876,7 +905,6 @@ function draw(input,config){
         .selectAll("g")
         .data(computedGroups(data))
         .join("g")
-        
         .attr("class",d=>"group-"+d.id)
     
     arcs.append("path")
