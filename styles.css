@@ -48,7 +48,7 @@ label {
 	font-weight: 400;
 	font-size: 80%;
 }
-
+/* 
 #yearRange{
 	padding: 1em;
 	text-align:center;
@@ -61,36 +61,43 @@ label {
 	font-weight: 200;
 	font-size: 90%;
 }
-
+ */
 .center {
-	margin-left: auto;
-	margin-right: auto;
+	/* margin-left: auto;
+	margin-right: auto; */
 	margin-bottom: 0.5em;
 	margin-top: 0.5em;
 }
 .center td {
 	border-radius: 15px;
-	padding-left:2em;
-	padding-right:2em;
-	background-color: #d5e0e6;
-	border: 1px solid #598cae;
-	font-size:80%;
+	padding-left:1em;
+	padding-right:1em;
+	background-color: #e1ebef;
+	border: 1px solid rgb(30, 116, 178);
+	/* font-size:80%; */
 }
 .grow { 
 	opacity: 0.8;
 	-webkit-transition: .2s;
 	transition:  .2s ease-in-out; 
+  
+}
+.grow a{
+  text-decoration:none;
 }
 .grow:hover {
 		transform: scale(1.15); 
 		opacity: 1;
+    
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 4px;
+    
 	}
 .center th {
 	text-align: left;
 	padding-left: 15px;
 	vertical-align: middle;
 	line-height: 0.7em;
-	font-size: 80%;
+	/* font-size: 80%; */
 	color: #555;
 }
 .center tr { 
@@ -130,6 +137,8 @@ label {
   width: 16%;
   height: 1em;
   background: #598cae70;
+  border-radius: 20px;
+  
   cursor: pointer;
 }
 
@@ -144,6 +153,7 @@ label {
    display: flex;
    width: 350px;
    margin: 0 auto;
+   padding-top: 1em;
    justify-content: space-between; 
  }
  
@@ -155,6 +165,7 @@ label {
    margin: 0 0 10px 0;
    font-size:80%;
    color:#777;
+   transition: resize .2s;
 }
 
 /*------ SLIDER FOR STOCKS (specific to year) -----------------*/
@@ -181,6 +192,7 @@ label {
    height: 1em;
    background: #598cae70;
    cursor: pointer;
+   border-radius: 20px;
  }
  .slider-stock::-moz-range-thumb {
    /* width: 16%; */

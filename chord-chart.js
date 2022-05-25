@@ -542,7 +542,7 @@ config.regions = []
 var chord = chord(true,false)
         .padAngle(0.05)
         .sortSubgroups(d3.descending)
-        .sortChords(d3.ascending)
+        /* .sortChords(d3.ascending) */
 // chord diagram
     // var chord = d3.chord()
     //     .padding(config.arcPadding)
@@ -646,14 +646,16 @@ getMetaData().then((meta)=>{
     getData(filename).then((raw)=>{ 
     // CREATE SELECTORS
         // YEAR SELECTOR 
-        let input_data = raw
-        let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
+        /* let input_data = raw */
+        /* let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))] */
 
+        let ticks = document.getElementById("ticks");
         let slider = document.getElementById("selectYear");
         let output = document.getElementById("yearRange");
-        let value = document.getElementById("value");
         let sliderValue = parseInt(slider.value)+5
-       
+
+        
+
         if (filename.includes("stock")){
             output.innerHTML =sliderValue; // Display the default slider value
             // Update the current slider value (each time you drag the slider handle)
@@ -670,6 +672,7 @@ getMetaData().then((meta)=>{
                  output.innerHTML = this.value+'<span class="lighten"> — </span>'+value;
              }
          }
+        
         
         // METHOD SELECTOR 
         d3.select("#selectMethod")
@@ -1102,6 +1105,7 @@ function draw(input,config){
     const container = chordDiagram.append("g")
         .attr("class","container")
         .attr("id","container")
+        /* .attr("viewBox", "xMinYMax meet) */
         
     const textPath = container.append("path")
         .attr("id", textId)
@@ -1433,7 +1437,7 @@ function draw(input,config){
     }
 
     d3.selectAll("#selectYear")
-        .on("change", function(d) {
+        .on("input", function(d) {
             config.previous = data 
             config.year = d3.select(this).property("value")
 

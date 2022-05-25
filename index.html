@@ -35,6 +35,26 @@
 <body>
    <div id="main">
 	   <article>
+		<div class = "selector">
+			<!-- <div><label> Select year: <span class="yearRange"></span></label></div> -->
+			
+			<div id="yearRange"></div>
+			<div class="sliderticks" id="ticks">
+				<!-- <p>1990</p> -->
+				<p>1995</p>
+				<p>2000</p>
+				<p>2005</p>
+				<p>2010</p>
+				<p>2015</p>
+				<p>2020</p>
+			</div>
+			
+			<input class="slider-stock" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+		</input>
+		
+		<!-- <div id="yearRange"></div>	 -->	
+		<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
+	</div>
 			<div class="wrap-collabsible">
 				<input id="collapsible1" class="toggle" type="checkbox" />
 				<label for="collapsible1" class="lbl-toggle">Select data type</label>
@@ -61,8 +81,7 @@
 						</table>
 					</div>
 				</div>
-			</div>
-			<div class="wrap-collabsible">
+			
 				<input id="collapsible2" class="toggle" type="checkbox" />
 				<label for="collapsible2" class="lbl-toggle">Select visualization tool</label>
 				<div class="collapsible-content">
@@ -81,27 +100,12 @@
 			</div>
 			
 
+
 				
 
 
 			<!-- <div class="slider_range"> -->
-		<div class = "selector">
-			<div><label> Select year: </label></div>
-			<input class="slider-stock" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-			<div class="sliderticks">
-				<!-- <p>1990</p> -->
-				<p>1995</p>
-				<p>2000</p>
-				<p>2005</p>
-				<p>2010</p>
-				<p>2015</p>
-				<p>2020</p>
-			  </div>
-			
-			</input>
-			<div id="yearRange"></div>
-			<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
-		</div>
+		
 		<div id="chart" ></div>
 		<div class="box">
 		 	<div>
