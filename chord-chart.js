@@ -1421,9 +1421,10 @@ function draw(input,config){
         chordDiagram.selectAll("g")
             .on("mouseout", function (evt, d) {        
                 chords.selectAll(".path-item")
-                    .style("opacity",d=> config.regions > 0  ? 0.1: 0.7)
+                    .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1: 0.7)
                 arcs.selectAll(".group-arc")
                     .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
+                
             })  
 
         chordDiagram.selectAll(".path-item, .country-label")
