@@ -1125,7 +1125,7 @@ function draw(input,config){
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        .style("opacity", 0.7)
+        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
         .transition()
         .duration(500)
         .attrTween("d", function(d,j) {
@@ -1146,7 +1146,7 @@ function draw(input,config){
         .attr("class", "path-item")
         .attr("d", ribbon)
         .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
-        .style("opacity",/* d=> config.region.includes(d.source.name) ?  0.1 :  */0.7)
+        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.7)
         .transition()
         .duration(500)
         .attrTween("d", function (d) {
@@ -1401,15 +1401,16 @@ function draw(input,config){
         })
 
     chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
-        
+ 
     function mouseover() {
         chordDiagram.selectAll(".group-arc, .path-item")
             .on("mouseover", function (evt, d) {
             // console.log(d.id)
-                chordDiagram
+                chords
                     .selectAll(".path-item")
                     .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:0.7)
-
+                arcs.selectAll(".group-arc")
+                    .style("opacity",d=> isRegion(d.name) ? 0.1: 0.7)
                 d3.select(this)
                     .style("opacity", 0.7)
                 }
@@ -1419,14 +1420,16 @@ function draw(input,config){
     function mouseout() {
         chordDiagram.selectAll("g")
             .on("mouseout", function (evt, d) {        
-                    chordDiagram.selectAll(".path-item")
-                        .style("opacity", 0.7);
+                chords.selectAll(".path-item")
+                    .style("opacity",d=> config.regions > 0  ? 0.1: 0.7)
+                arcs.selectAll(".group-arc")
+                    .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
             })  
 
         chordDiagram.selectAll(".path-item, .country-label")
             .on("mousemove", tooltipCountry)
             .on("mouseout", function(){
-                return tooltip.style("visibility", "hidden");
+                 tooltip.style("visibility", "hidden");
             })
 
         chordDiagram.selectAll(".group-arc, .country-label")
@@ -1435,7 +1438,6 @@ function draw(input,config){
                 return tooltip.style("visibility", "hidden");
             })
     }
-
     d3.selectAll("#selectYear")
         .on("input", function(d) {
             config.previous = data 
