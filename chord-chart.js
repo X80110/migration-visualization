@@ -657,15 +657,15 @@ getMetaData().then((meta)=>{
         
 
         if (filename.includes("stock")){
-            output.innerHTML =sliderValue; // Display the default slider value
+            output.innerHTML ='<span class="lighten">Year: </span>'+sliderValue; // Display the default slider value
             // Update the current slider value (each time you drag the slider handle)
             slider.oninput = function() {
                 let value = parseInt(this.value)+5
-                output.innerHTML = value;
+                output.innerHTML = '<span class="lighten">Year: </span>'+value;
             }
         }
         else if (filename.includes("flow")) {
-             output.innerHTML =slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
+             output.innerHTML ='<span class="lighten">Period: </span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
              // Update the current slider value (each time you drag the slider handle)
              slider.oninput = function() {
                  let value = parseInt(this.value)+5
@@ -1134,7 +1134,27 @@ function draw(input,config){
                 return arc(i(t))
             }
         })    
+    
+    // const arcs2 = container.append("g")        
+    //     .attr("class","group")
+    //     .selectAll("g")
+    //     .data(computedChords(data))
+    //     .join("g")
 
+    
+    // arcs2.append("path")
+    //     .attr("class","arc2")
+    //     .attr("d", arc.innerRadius(innerRadius-5).outerRadius(outerRadius)) 
+    //     .style("fill",d=> isRegion(d.target.name) ? getRegionColor(d.target.name) :colorCountries(d.target.name))
+    //     /* .style("opacity",d=> isRegion(d.target.name) && config.regions.length > 0 ? 0.1: 0.7) */
+    //     .transition()
+    //     .duration(500)
+    //     .attrTween("d", function(d,j) {
+    //         var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || config.initialAngle.arc, d);
+    //         return function (t) {
+    //             return arc(i(t))
+    //         }
+    //     })    
     const chords = container.append("g")
         .selectAll("g")
         .attr("class", "ribbon")
@@ -1213,7 +1233,7 @@ function draw(input,config){
         .style('visibility', 'hidden')
         .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')      
 
-//     countryLabels
+//     arcs
 //         .selectAll('text')
 //         .transition()
 //         .duration(500)
@@ -1288,7 +1308,7 @@ function draw(input,config){
                     line.pop();
                     tspan.text(line.join(' '));
                     line = [word];
-                    tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word).transition().duration(500);
+                    tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word).attr("z-index",2);
                 }
             }
             /* d3.selectAll(this.parentNode).filter(d=> d.classed("wrapped",false)).attr("translate",-10) */
@@ -1408,7 +1428,7 @@ function draw(input,config){
             // console.log(d.id)
                 chords
                     .selectAll(".path-item")
-                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id? 0.1:0.7)
+                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.7)
                 arcs.selectAll(".group-arc")
                     .style("opacity",d=> isRegion(d.name) ? 0.1: 0.7)
                 d3.select(this)

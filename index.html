@@ -11,35 +11,100 @@
 
   <title>Global international migration</title>
 </head>
-<div class="header">
+<body>
 	<header class="header">
 		<h1><a href="" class="logo">Global migration <br>data explorer</a></h1>
+		
+		
 		<input class="menu-btn" type="checkbox" id="menu-btn" />
 		<label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
 		<ul class="menu">
-			<li>
-				<a  target="_blank" href = "https://github.com/X80110/migration-visualization">
+			<li><a  target="_blank" href = "https://github.com/X80110/migration-visualization">
 					<img src="static/github-icon.svg" alt="github source code"/>
 				</a>
 			</li>
 
-			<li>
-				<a target="_blank" href = "https://twitter.com/share?url=<URL>&text=<TEXT>via=<USERNAME>">
+			<li><a target="_blank" href = "https://twitter.com/share?url=<URL>&text=<TEXT>via=<USERNAME>">
 					<img src="static/share-icon.svg" alt="share on twitter"/>
 				</a>
 			</li>
 		</ul>
 	</header>
-</div>
 
-<body>
-   <div id="main">
-	   <article>
-		<div class = "selector">
-			<!-- <div><label> Select year: <span class="yearRange"></span></label></div> -->
+	<div class="wrap-collabsible fill">
+		<input id="collapsible1" class="toggle" type="checkbox" />
+		<label for="collapsible1" class="lbl-toggle">Select data type</label>
+		<div class="collapsible-content ">
+			<p>
+				<table   class="center" >
+					<tr>
+						<th>STOCKS</th>	
+							<!-- <td><b>all</b>></li> -->
+							<td><b>all</b></a></td>
+							<td class="grow"><a href="stocks_by_sex.html">by sex</a></td>
+							
+									<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
+									<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
+					</tr>
+									
+					<tr>
+						<th >FLOWS</th>
+						<td class="grow"><a href="flows.html">all</a></td>
+						<td class="grow"><a href="flows_by_sex.html">by sex</a></td>
+						<td class="grow"><a href="flows_by_type.html">by type</a></td>
+						
+					</tr>
+				</table>
+			</p>
+		</div>
+	</div>
+
+	<div class="wrap-collabsible fill">
+		<input id="collapsible2" class="toggle" type="checkbox" />
+		<label for="collapsible2" class="lbl-toggle">Select visualization tool</label>
+			<div class="collapsible-content fill">
+				<p>
+					<table   class="center" >
+						<tr>
+							<td class="grow"><svg src="static/chord.svg"></svg></td>
+							<td class="grow"><svg src="static/sankey.svg"></svg></td>
+							<td class="grow"><svg src="static/map.svg"></svg></td>
+									<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
+									<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
+						</tr>							
+					</table>
+				</p>
+			</div>
+		</div>
+	</div>
+	<div class="layout">
+		<fieldset>
+			<legend class="lighten"> Select sex </legend>
+			<input id="selectSex" type="radio" name="selectSex" value="female">
+			<label for="selectSex">Female</label>
+			<input id="selectSex" type="radio" name="selectSex" value="male">
+			<label for="selectSex">Male</label>
+		</fieldset>
+	<!-- 	<div>
+			<label for="selectSex">Select sex:</label>
+			<select value= 'female' id="selectSex"></select>
+		</div>	
+		<div>
+			<label for="selectSex">Select sex:</label>
+			<select value= 'female' id="selectSex"></select>
+		</div>	 -->
+		
+		
+	
+		<!-- <div class="slider_range"> -->
+	
+		<fieldset>
+			<legend><div  id="yearRange"></div></legend>
 			
-			<div id="yearRange"></div>
-			<div class="sliderticks" id="ticks">
+				<!-- <div><label> Select year: </label></div> -->
+			<input class="slider-stock" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+			
+			<div class="sliderticks">
 				<!-- <p>1990</p> -->
 				<p>1995</p>
 				<p>2000</p>
@@ -48,107 +113,54 @@
 				<p>2015</p>
 				<p>2020</p>
 			</div>
+			<label for="range" id="start-value"></label>
+			<label for="range" id="end-value"></label>
 			
-			<input class="slider-stock" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-		</input>
-		
-		<!-- <div id="yearRange"></div>	 -->	
-		<!-- <input type=”range” min=”0" max=”100" value=”10"   oninput=”rangeValue.innerText = this.value”> -->
+		</fieldset>
 	</div>
-			<div class="wrap-collabsible">
-				<input id="collapsible1" class="toggle" type="checkbox" />
-				<label for="collapsible1" class="lbl-toggle">Select data type</label>
-				<div class="collapsible-content">
-					<div class="content-inner">
-						<table   class="center" >
-							<tr>
-								<th>STOCKS</th>	
-								<td><b>all</b> <!-- <a href="index.html">all</a> --></li>
-								<td class="grow"><a href="stocks_by_sex.html">by sex</a></li>
-										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-										<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
-							</tr>
-										
-							<tr>
-								<th >FLOWS</th>
-								<td class="grow"><a href="flows.html">all</a></td>
-								<td class="grow"><a href="flows_by_sex.html">by sex</a></td>
-								<td class="grow"><a href="flows_by_type.html">by type</a></td>
-								
-							</tr>
-		
-							
-						</table>
-					</div>
-				</div>
-			
-				<input id="collapsible2" class="toggle" type="checkbox" />
-				<label for="collapsible2" class="lbl-toggle">Select visualization tool</label>
-				<div class="collapsible-content">
-					<div class="content-inner">
-						<table   class="center" >
-							<tr>
-								<td class="grow"><svg src="static/chord.svg"></svg></li>
-								<td class="grow"><svg src="static/sankey.svg"></svg></li>
-								<td class="grow"><svg src="static/map.svg"></svg></li>
-										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-										<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
-							</tr>							
-						</table>
-					</div>
-				</div>
+
+	
+	<div id="chart" class="center"></div>
+	</div>
+	<div class="box">
+			<div>
+				<h4>About the data</h4>
+				<p>Some text here</p>
 			</div>
-			
+			<div>
+			<h4>Visual tools</h4>
+			<p>Some text here</p>
+			</div>
+			<div>
+			<h4>Other measurements</h4>
+			<p>Some text here</p>
+			</div>
+	</div>
 
-
-				
-
-
-			<!-- <div class="slider_range"> -->
-		
-		<div id="chart" ></div>
-		<div class="box">
-		 	<div>
-				 <h4>About the data</h4>
-				 <p>Some text here</p>
-		 	</div>
-		 	<div>
-				<h4>Visual tools</h4>
-				<p>Some text here</p>
-			 </div>
-			 <div>
-				<h4>Other measurements</h4>
-				<p>Some text here</p>
-			 </div>
-		 </div>
-   
-	   </article>
-   
-   </div>
-   <footer>
-   Footer
-   </footer>
-   
-   <script src="https://d3js.org/d3.v7.min.js"></script>
-   <script src="libs/chord.js"></script>
-
-   
-   <script src="chord-chart.js"></script>
-   <script>
-	   config.stockflow = "stock"
-	   config.sex = "all"
-	   config.type = ""
-	   config.method = ""
-	   const allSexes = ['male', 'female'].reverse()
-	   const allMethods = ""
-	   const allTypes = ""
-
-	   filename = fileName(config).json
-	   // chart(filename).draw(raw,config)
-	   getData(filename).then(raw => {
-		   draw(raw,config)
-	   })
-   </script>
-
+<footer>
+	Footer
+</footer>
 </body>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="libs/chord.js"></script>
+
+
+<script src="chord-chart.js"></script>
+<script>
+	config.stockflow = "stock"
+	config.sex = "all"
+	config.type = ""
+	config.method = ""
+	const allSexes = ['male', 'female'].reverse()
+	const allMethods = ""
+	const allTypes = ""
+
+	filename = fileName(config).json
+	// chart(filename).draw(raw,config)
+	getData(filename).then(raw => {
+		draw(raw,config)
+	})
+</script>
+
+
 </html>
