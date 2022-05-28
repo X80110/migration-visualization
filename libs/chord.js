@@ -52,7 +52,7 @@ function chord(directed, transpose) {
           const subgroupIndex = range(~n + 1, n).filter(j => j < 0 ? matrix[~j * n + i] : matrix[i * n + j]);
           
           // modified to sort descending sources and targets respectiely
-          if (sortSubgroups) subgroupIndex.sort((a, b) => sortSubgroups(a < 0 ? -matrix[~a * n + i] : matrix[i * n + b], a< 0 ? -matrix[~b * n + i] : matrix[i * n + a])).reverse();
+          if (sortSubgroups) subgroupIndex.sort((a, b) => sortSubgroups(b < 0 ? -matrix[~a * n + i] : matrix[i * n + b], a< 0 ? -matrix[~b * n + i] : matrix[i * n + a])).reverse();
           /* if (sortSubgroups) subgroupIndex.sort((a, b) => sortSubgroups(a < 0 ? -matrix[~a * n + i] : matrix[i * n + a], b < 0 ? -matrix[~b * n + i] : matrix[i * n + b])); */
           for (const j of subgroupIndex) {
             
