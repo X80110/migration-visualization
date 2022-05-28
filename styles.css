@@ -15,7 +15,6 @@ legend {
   font-size: small;
   text-align: left;
   padding: 0.5em;
-  
   font-weight: bold;
   color: #5c5c5fab;  
   z-index: 2;
@@ -23,23 +22,17 @@ legend {
 
 label {
   color: #999;
-  /* display: inline-block; */
   vertical-align: middle;
   margin-right: 1em;
-  
-  
 }
 input {
   vertical-align: middle;
-  
-  
   
 }
 body {
 	font-family:  'Jost', sans-serif !important;
 	background-color: #f4f4f4;
   text-align: center;
-  
 }
 .lighten{
   opacity:0.7
@@ -90,8 +83,8 @@ label {
   margin-left: 1em;
   text-align: center;
   /* display: flex; */
-  display: inline-block;
-  position: absolute;
+  /* display: inline-block;
+  position: absolute; */
   
   gap: 16px;
   /* padding: 0.6em; */
@@ -99,8 +92,7 @@ label {
   /* width:100%; */
 }
 .layout:hover {
-  opacity:.9;
-  background-color: #f4f4f4;
+  opacity:1;
   color: #000;
 }
 /* .layout label {
@@ -441,8 +433,6 @@ float:right;
  }
 .box {
   --min: 16ch;
-  /* --gap: 0rem; */
-
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap);
@@ -461,6 +451,11 @@ footer {
 
 /* 48em = 768px */
 @media (min-width: 768px) {
+  .layout{
+    display: inline-flex;
+    position:absolute;
+    /* position: ; */
+  }
   .header li {
     float: left;
   }

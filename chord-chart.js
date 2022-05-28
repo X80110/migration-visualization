@@ -657,19 +657,19 @@ getMetaData().then((meta)=>{
         
 
         if (filename.includes("stock")){
-            output.innerHTML ='<span class="lighten">Year: </span>'+sliderValue; // Display the default slider value
+            output.innerHTML ='<span class="lighten">Selected year: </span>'+sliderValue; // Display the default slider value
             // Update the current slider value (each time you drag the slider handle)
             slider.oninput = function() {
                 let value = parseInt(this.value)+5
-                output.innerHTML = '<span class="lighten">Year: </span>'+value;
+                output.innerHTML = '<span class="lighten">Selected year: </span>'+value;
             }
         }
         else if (filename.includes("flow")) {
-             output.innerHTML ='<span class="lighten">Period: </span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
+             output.innerHTML ='<span class="lighten">Selected period: </span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
              // Update the current slider value (each time you drag the slider handle)
              slider.oninput = function() {
                  let value = parseInt(this.value)+5
-                 output.innerHTML = this.value+'<span class="lighten"> — </span>'+value;
+                 output.innerHTML = '<span class="lighten">Selected period: </span>'+this.value+'<span class="lighten"> — </span>'+value;
              }
          }
         
@@ -683,14 +683,14 @@ getMetaData().then((meta)=>{
             .text(d=>{ return d; })    // text showed in the menu dropdown
             .attr("value",d=> { return d; }) 
         
-        // GENDER SELECTOR 
+        /* // GENDER SELECTOR 
         d3.select("#selectSex")
             .selectAll('myOptions')
             .data(allSexes)
             .enter()
             .append('option')
             .text(d=>{ return d; })    // text showed in the menu dropdown
-            .attr("value",d=> { return d; }) 
+            .attr("value",d=> { return d; })  */
         
         // TYPE SELECTOR 
         d3.select("#selectType")
