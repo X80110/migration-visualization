@@ -3,19 +3,29 @@
 fieldset{
   border: dotted 1px #ccc;
   border-radius: 20px;
-  background-color: #f4f4f4d3;
-  backdrop-filter: blur(5px);
-  -moz-back-filter:blur(5px);
-  -webkit-back-filter:blur(5px);
+  background-color: #ffffffcb;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter:blur(8px);
   padding-top:.5em;
+  
   padding-bottom:1em;
 }
 
-legend {
-  font-size: small;
+  .details {
+    display: block;
+    display: none;
+    width:100%;
+    top:auto;
+    bottom: 0;
+    right: auto;
+    left: auto;
+  }
+
+.legend {
+  /* font-size: small; */
   text-align: left;
   padding: 0.5em;
-  font-weight: bold;
+  /* font-weight: bold; */
   color: #5c5c5fab;  
   z-index: 2;
 }
@@ -35,11 +45,18 @@ body {
   text-align: center;
 }
 .lighten{
-  opacity:0.7
+  opacity:0.8
 }
 #chart {
+  display: inline-block;
+  position: fixed;
+  z-index: -5;
+  top: 1em;
+  right: 0;
+  left: 0;
    margin: 0 auto;
    max-width: 1200px;
+   overflow: auto;
 }
 p {
     margin:1.66em ;
@@ -69,31 +86,32 @@ h1 {
 
 label {
 	color: grey;
-	font-weight: 400;
+	font-weight: 300;
 	font-size: 80%;
 }
 
-#yearRange{
+/* #yearRange{
 	font-weight: bold;
   
-}
+} */
 
 
 .layout {
   margin-left: 1em;
   text-align: center;
   /* display: flex; */
-  /* display: inline-block;
-  position: absolute; */
-  
+  display: inline-flex;
+  position: absolute;
+
   gap: 16px;
   /* padding: 0.6em; */
-  transition:  .2s ease-in-out; 
+  
   /* width:100%; */
 }
-.layout:hover {
-  opacity:1;
+fieldset:hover {
+  background-color: #ffffffe7;
   color: #000;
+  transition:  .2s ease-in-out; 
 }
 /* .layout label {
   display: inline-block;
@@ -113,9 +131,10 @@ article {
 /* header */
 .header{
   display:flow-root;
+  /* background-color: ffffffaf; */
   /* background: #ddd; */
-  border-bottom: solid 1px #ccc;
-  margin-bottom: 2%;
+  /* border-bottom: solid 1px #ccc; */
+
   
 }
 .header .logo {
@@ -225,7 +244,7 @@ float:right;
   /* display: inline-block; */
   margin-right: 1.5em;
 
-  z-index: 2;
+  z-index: -5;
   
 }
 .wrap-collabsible input[type='checkbox'] {
@@ -241,7 +260,7 @@ float:right;
 
 	/* background: #d5e0e6; */
   
-	cursor: pointer;
+	/* cursor: pointer; */
 	transition: all 0.25s ease-out;
 }
 .lbl-toggle:hover {
@@ -393,7 +412,8 @@ float:right;
    justify-content: center;
    text-align: center;
    margin: 0 0 10px 0;
-   font-size:80%;
+   font-weight: 300;
+	font-size: 80%;
    color:#777;
    transition: resize .2s;
 }
@@ -433,7 +453,10 @@ float:right;
  }
 .box {
   --min: 16ch;
-  display: flex;
+  /* --gap: 0rem; */
+
+  display: inline-flex;
+ 
   flex-wrap: wrap;
   gap: var(--gap);
 }
@@ -452,8 +475,10 @@ footer {
 /* 48em = 768px */
 @media (min-width: 768px) {
   .layout{
-    display: inline-flex;
-    position:absolute;
+    display: flex;
+
+    position:fixed;
+    bottom:2em;
     /* position: ; */
   }
   .header li {

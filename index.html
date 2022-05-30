@@ -78,68 +78,60 @@
 		</div>
 	</div>
 	<div class="layout">
-		<fieldset>
-			<legend class="lighten"> Select sex </legend>
-			<input id="selectSex" type="radio" name="selectSex" value="female" checked>
-			<label for="selectSex">Female</label>
-			<input id="selectSex" type="radio" name="selectSex" value="male">
-			<label for="selectSex">Male</label>
-		</fieldset>
-	<!-- 	<div>
-			<label for="selectSex">Select sex:</label>
-			<select value= 'female' id="selectSex"></select>
-		</div>	
-		<div>
-			<label for="selectSex">Select sex:</label>
-			<select value= 'female' id="selectSex"></select>
-		</div>	 -->
-		
-		
-	
-		<!-- <div class="slider_range"> -->
-	
-		<fieldset>
-			<legend><div  id="yearRange"></div></legend>
-			
-				<!-- <div><label> Select year: </label></div> -->
-			<input class="slider-stock" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-			
-			<div class="sliderticks">
-				<!-- <p>1990</p> -->
-				<p>1995</p>
-				<p>2000</p>
-				<p>2005</p>
-				<p>2010</p>
-				<p>2015</p>
-				<p>2020</p>
-			</div>
-			<label for="range" id="start-value"></label>
-			<label for="range" id="end-value"></label>
-			
-		</fieldset>
-	</div>
 
-	
+			<fieldset>
+				<div class="legend lighten"><span class="ligthen"> Select sex </span></div>
+				<input id="selectSex" type="radio" name="selectSex" value="female" checked>
+				<label for="selectSex">Female</label>
+				<input id="selectSex" type="radio" name="selectSex" value="male">
+				<label for="selectSex">Male</label>
+			</fieldset>
+
+
+			<fieldset>
+				<div class="legend" id="yearRange"></div>
+				
+					<!-- <div><label> Select year: </label></div> -->
+				<input class="slider-stock" type="range" list="tickmarks" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+				
+				<div class="sliderticks">
+					<!-- <p>1990</p> -->
+					<p>1995</p>
+					<p>2000</p>
+					<p>2005</p>
+					<p>2010</p>
+					<p>2015</p>
+					<p>2020</p>
+				</div>
+				<label for="range" id="start-value"></label>
+				<label for="range" id="end-value"></label>
+				
+			</fieldset>
+		</div>
+	</div>
 	<div id="chart" class="center"></div>
-	</div>
-	<div class="box">
-			<div>
-				<h4>About the data</h4>
+
+	
+	<div class="details">
+		<div class="box">
+				<div>
+					<h4>About the data</h4>
+					<p>Some text here</p>
+				</div>
+				<div>
+				<h4>Visual tools</h4>
 				<p>Some text here</p>
-			</div>
-			<div>
-			<h4>Visual tools</h4>
-			<p>Some text here</p>
-			</div>
-			<div>
-			<h4>Other measurements</h4>
-			<p>Some text here</p>
-			</div>
+				</div>
+				<div>
+				<h4>Other measurements</h4>
+				<p>Some text here</p>
+				</div>
+		</div>
+	<footer>
+		Footer
+	</footer>
 	</div>
 
-<footer>
-	Footer
-</footer>
 </body>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="libs/chord.js"></script>
