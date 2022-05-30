@@ -40,15 +40,30 @@ var chord = chord(true,false)
     //     .threshold(config.layout.threshold)
     //     /* .data(data)
     //     .year(config.now); */
-    var arc = d3.arc() 
-        .innerRadius(innerRadius)
-        .outerRadius(outerRadius);
+var arc = d3.arc() 
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
 
-    var ribbon = d3.ribbonArrow()
-        .sourceRadius(innerRadius)
-        /* .radius(innerRadius - 5) */
-        .targetRadius(innerRadius -10) 
-        .headRadius(15)
+var ribbon = d3.ribbonArrow()
+    .sourceRadius(innerRadius)
+    /* .radius(innerRadius - 5) */
+    .targetRadius(innerRadius -10) 
+    .headRadius(15)
+
+// arc path generator
+var textPathArc = d3.arc()
+    .innerRadius(config.outerRadius + 10) // position of the upper part of the circle
+    .outerRadius(config.outerRadius + 10);// position of the upper part of the circle
+var textPathArc2 = d3.arc()
+    .innerRadius(config.outerRadius + 18) // position of the lower part of the circle
+    .outerRadius(config.outerRadius + 18);  // position of the lower part of the circle
+
+var textPathArc3 = d3.arc()
+    .innerRadius(config.outerRadius + 35) // position of the upper part of the circle
+    .outerRadius(config.outerRadius + 35);// position of the upper part of the circle
+var textPathArc4 = d3.arc()
+    .innerRadius(config.outerRadius + 28) // position of the lower part of the circle
+    .outerRadius(config.outerRadius + 28);  // position of the lower part of the circle
 
 function formatValue(nStr, seperator) {
     seperator = seperator || ','
@@ -489,7 +504,7 @@ function draw(input,config){
             d.name = data.names[d.index]
             d.id = getMeta(data.names[d.index]).id
             d.region = getMeta(data.names[d.index]).region
-            d.angle = (d.startAngle + d.endAngle) / 2
+            d.angle = (d.startAngle  + (d.endAngle - d.startAngle) / 2)
             })
         return groups
     } 
@@ -598,20 +613,20 @@ function draw(input,config){
         .attr("id","container")
         /* .attr("viewBox", "xMinYMax meet) */
         
-    const textPath = container.append("path")
+    const regionTextPath = container.append("path")
         .attr("id", textId)
         .attr("class", "text-path")
         .attr("fill", "none")
-        .attr("d", d3.arc()({ outerRadius, startAngle: 0, endAngle:   2 * Math.PI  }));
+        .attr("d", d3.arc()({ outerRadius:outerRadius   , startAngle: 0, endAngle:   2 * Math.PI  }));
         
-    const arcs = container.append("g")        
-        .attr("class","group")
+    const groups = container.append("g")        
+        .attr("class","groups")
         .selectAll("g")
         .data(computedGroups(data))
         .join("g")
         .attr("class",d=>"group-"+d.id)
     
-    arcs.append("path")
+    const arcs =  groups.append("path")
         .attr("class","group-arc")
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
@@ -672,7 +687,7 @@ function draw(input,config){
           }
         })
     
-    countryLabels = arcs
+    const countryLabels = groups
         .filter(d=>!isRegion(d.name))
         .append("text")
         .attr("class","country-label")
@@ -696,8 +711,257 @@ function draw(input,config){
                   return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
               };
         });
+//     var groupTextPathPath = groups      
+//         .filter(function(d) {return d.id === d.region})
+//         .selectAll('.group-textpath-arc')
+//         .data(computedGroups(data));
+
+
+//     groupTextPathPath.enter()
+//     .append('path')
+//     .attr("class", "group-textpath-arc")
+//     .attr("id", function(d, i, k) { return "group-textpath-arc" + d.id; });
+
+
+//     groupTextPathPath
+//     .style("fill", 'none')
+//     .transition()
+//     .duration(500)
+//     .attrTween("d", function(d) {
+//         var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || config.initialAngle.arc, d );
+//         if (d.angle > Math.PI/2 && d.angle < Math.PI*3/2) {
+//         return function (t) {
+//             return textPathArc2(i(t));
+//         };
+//         } else {
+//         return function (t) {
+//             return textPathArc(i(t));
+//         };
+//         }
+//     });
+
+//     groupTextPathPath.exit().remove();
+
+//     // Creating a Field for the Textfield
     
-    regionLabels = arcs
+//     var groupTextPathPath2 = groups
+//         .filter(function(d) {return d.id === d.region})
+//         .selectAll('.group-textpath-arc2')
+//         .data(computedGroups(data));
+
+
+//     groupTextPathPath2.enter()
+//         .append('path')
+//         .attr("class", "group-textpath-arc2")
+//         .attr("id", function(d, i, k) { return "group-textpath-arc2" + d.id; });
+
+//     groupTextPathPath2
+//         .style("fill", 'none')
+//         .transition()
+//         .duration(500)
+//         .attrTween("d", function(d) {
+//         var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || config.initialAngle.arc, d );
+//         if (d.angle > Math.PI/2 && d.angle < Math.PI*3/2) {
+//             return function (t) {
+//             return textPathArc3(i(t));
+//             };
+//         } else {
+//             return function (t) {
+//             return textPathArc4(i(t));
+//             };
+//         }
+//         });
+
+//     groupTextPathPath2.exit().remove();
+
+
+//     // text on path
+//     var groupTextPath = groups
+//     .filter(function(d) {return d.id === d.region})
+//     .selectAll('textPath')
+//     .data(computedGroups(data));
+
+//     groupTextPath
+//     .enter()
+//     .append("textPath");
+
+//     groupTextPath
+//         .text(function(d) {
+//         var meanCalc = (d.endAngle + d.startAngle ) / 2 ;
+//         if (nname2[d.id] == ""){
+//             return nname1[d.id] ;
+//         }else if (meanCalc < 1.57 || meanCalc > 4.711 ){
+//             var out = nname2[d.id] ;
+//             //var out = "first" ;
+//         }else {
+//             var out = nname1[d.id] ;
+//             // var out = "second";
+//         }                         //First NAME  !!!!
+//         return  out ; })                  
+//         .attr('startOffset', function(d) {
+//         if (d.angle > Math.PI/2 && d.angle < Math.PI*3/2) {
+//         return '75%';
+//         } else {
+//         return '25%';
+//         }
+//     })
+//     .attr("xlink:href", function(d, i, k) { return "#group-textpath-arc" + d.id; })
+
+// // Added for creating a second layer of TextField for longer names
+
+//     var groupTextPath2 = groups
+//         .filter(function(d) {return d.id === d.region})
+//         .selectAll('.sec')
+//         .data(computedGroups(data));
+
+//     groupTextPath2
+//         .enter()
+//         .append("textPath")
+//         .attr("class", "sec");
+
+//     groupTextPath2
+//         .text(function(d) {
+//         var meanCalc = (d.endAngle + d.startAngle ) / 2 ;
+//         if (nname2[d.id] == ""){
+//             return  ;
+//         }
+//             else if (meanCalc < 1.57 || meanCalc > 4.711 ){
+//             var out = nname1[d.id] ; // var out = "first" ;
+//         }else {
+//             var out = nname2[d.id] ; // var out = "second";
+//         }                         
+//         return out;  })           
+//         .attr('startOffset', function(d) {
+//         if (d.angle > Math.PI/2 && d.angle < Math.PI*3/2) {
+//             return '75%';
+//         } else {
+//             return '25%';
+//         }
+//         })
+//         .attr("xlink:href", function(d, i, k) { return "#group-textpath-arc2" + d.id; })    
+
+
+//     groupTextPath
+//     .filter(function(d, i) {
+//         return this.getComputedTextLength() > (d.endAngle - d.startAngle) * (config.outerRadius + 18);
+//     })
+//     .remove();
+  
+var maxBarHeight = height / 2 - (70);
+// question_label
+    var arcRegionLabel = d3.arc()
+        .startAngle(function(d, i) {
+            return d.startAngle;
+        })
+        .endAngle(function(d, i) {
+        return d.endAngle;
+        })
+        //.innerRadius(maxBarHeight + 2)
+        .outerRadius(maxBarHeight + 2);
+
+    var regionText = container.selectAll("path.question_label_arc")
+        .data(computedGroups(data))
+        .enter().append("path")
+        .filter(d=> isRegion(d.name))
+        .attr("id", function(d, i) {
+        return "region_label_" + i;
+        }) 
+        .attr("fill", "none")
+        .attr("d", arcRegionLabel);
+
+    regionText.each(function(d, i) {
+        var firstArcSection = /(^.+?)L/;
+        var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+        newArc = newArc.replace(/,/g, " ");
+
+        if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
+            var startLoc = /M(.*?)A/, 
+                middleLoc = /A(.*?)0 0 1/, 
+                endLoc = /0 0 1 (.*?)$/; 
+            var newStart = endLoc.exec(newArc)[1];
+            var newEnd = startLoc.exec(newArc)[1];
+            var middleSec = middleLoc.exec(newArc)[1];
+            newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+        }
+        d3.select(this).attr("d", newArc);
+    });
+
+    regionText = container.selectAll(".region-label-text")
+        .data(computedGroups(data))
+        .enter().append("text")
+        .attr("class", "region-label-text")
+        .filter(d=> isRegion(d.name))
+        .append("textPath")
+        .attr("font-size",11.5)
+        .attr("fill", d => getRegionColor(d.name))
+        .attr("xlink:href", function(d, i) {
+        return "#region_label_" + i;
+        })
+        .text(function(d) {
+        return d.name;
+        })
+        
+        .call(wrapTextOnArc, height / 2 - (70));
+
+    // adjust dy (labels vertical start) based on number of lines (i.e. tspans)
+    regionText.each((d,i)=> { 
+        var textPath =d3.selectAll("textPath")["_groups"][0][i]
+        tspanCount = textPath.childNodes.length;
+        /* console.log(textPath) */
+
+        if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
+            d3.select(textPath.childNodes[0]).attr("dy", .6 + (tspanCount - 1) * -0.6 + 'em');
+        } else {
+            d3.select(textPath.childNodes[0]).attr("dy", -.6 + (tspanCount - 1) * -0.6 + 'em');
+        }
+    });
+    function wrapTextOnArc(text, radius) {
+        var temporaryText = d3.select('svg')
+          .append("text")
+          .attr("class", "temporary-text") // used to select later
+          .style("opacity", 0); // hide element
+
+        var getTextLength = function(string) {
+          temporaryText.text(string);
+          return temporaryText.node().getComputedTextLength();
+        };
+
+        text.each(function(d) {
+          var text = d3.select(this),
+            words = text.text().split(/[ \f\n\r\t\v]+/).reverse(),
+            word,
+            wordCount = words.length,
+            line = [],
+            textLength,
+            lineHeight = 1.1, // ems
+            x = 0,
+            y = 0,
+            dy = 0,
+            tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
+            arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
+            paddedArcLength = arcLength - 13;
+        console.log(wordCount)
+          while (word = words.pop()) {
+            line.push(word);
+            tspan.text(line.join(" "));
+            textLength = getTextLength(tspan.text())+5;
+            tspan.attr("x", (arcLength - textLength) / 2);
+            if (textLength > paddedArcLength && line.length > 1) {
+              line.pop();
+              tspan.text(line.join(" "));
+              textLength = getTextLength(tspan.text());
+              tspan.attr("x", (arcLength - textLength) / 2);
+            
+              line = [word];
+              tspan = text.append("tspan").attr("dy", lineHeight + dy + "em").text(word);
+              textLength = getTextLength(tspan.text());
+              tspan.attr("x", (arcLength - textLength) / 2);
+            } 
+          }
+        }).filter(d=>d.name.includes("Sub")).selectAll("tspan").attr("x",0);
+    }
+    /* 
+    const regionLabels = groups
         .filter(d=>isRegion(d.name))
         .append("text")
         .attr("class","region-label")
@@ -713,7 +977,7 @@ function draw(input,config){
         
     regionLabels
         .call(d=> wrapText(d,67))
-        .selectAll("tspan")       
+ */
 
     const tooltip = d3.select('body').append('g')
         .attr('id', 'tooltip')
@@ -821,7 +1085,8 @@ function draw(input,config){
 
         var value = `
             <div> 
-            <b>${formatValue(d.source.value)}</b> people to
+            <b>${formatValue(d.source.value)}</b> 
+            <br>people to
             →
             `
         return tooltip
@@ -875,6 +1140,7 @@ function draw(input,config){
                 .style("top", (evt.pageY-10)+"px")
                 .style("left", (evt.pageX+10)+"px")
                 .style("visibility", "visible")
+         
         }
     }
 
@@ -884,7 +1150,7 @@ function draw(input,config){
     // INTERACTIONS
     // open regions
     config.maxRegionsOpen = 2 // config.regions = region || config.regions
-    arcs.on('click', function(evt, d) {
+    groups.on('click', function(evt, d) {
             
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       
@@ -893,7 +1159,7 @@ function draw(input,config){
         })
 
     // close regions
-    arcs
+    groups
         .filter(function(d) {
             return d.id !== d.region;
         })
@@ -925,23 +1191,26 @@ function draw(input,config){
                 chords
                     .selectAll(".path-item, .group-arc")
                     .transition()
-                    .duration(200)
+                    .duration(80)
                     .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.7)
                 /* arcs.selectAll(".group-arc")
                 .style("opacity",d=> isRegion(d.name) ? 0.1: 0.7) */
                 d3.select(this)
                     .transition()
-                    .duration(200)
+                    .duration(80)
                     .style("opacity", 0.7)
                         
             }
             else{
                 chords
                     .selectAll(".path-item, .group-arc")
+                    /* .transition()
+                    .duration(100) */
                     .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.7)
                 d3.select(this)
-                        .merge(arcs)
-                        .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.7)
+                    /* .transition()
+                    .duration(100) */
+                    .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.7)
                 }
             }
         )
@@ -952,7 +1221,7 @@ function draw(input,config){
             .on("mouseout", function (evt, d) {        
                 chords.selectAll(".path-item")
                     .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1: 0.7)
-                arcs.selectAll(".group-arc")
+                groups.selectAll(".group-arc")
                     .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
                 
             })  
