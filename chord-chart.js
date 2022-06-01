@@ -152,19 +152,19 @@ getMetaData().then((meta)=>{
         slider.setAttribute("max", allYears[allYears.length-1]);
 
         if (filename.includes("stock")){
-            output.innerHTML ='<span class="lighten">Selected year: </span>'+sliderValue; // Display the default slider value
+            output.innerHTML ='<span class="lighten">Selected year: &nbsp;  </span>'+sliderValue; // Display the default slider value
             // Update the current slider value (each time you drag the slider handle)
             slider.oninput = function() {
                 let value = parseInt(this.value)
-                output.innerHTML = '<span class="lighten">Selected year: </span>'+value;
+                output.innerHTML = '<span class="lighten">Selected year: &nbsp;   </span>'+value;
             }
         }
         else if (filename.includes("flow")) {
-             output.innerHTML ='<span class="lighten">Selected period: </span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
+             output.innerHTML ='<span class="lighten">Selected period:  &nbsp;  </span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
              // Update the current slider value (each time you drag the slider handle)
              slider.oninput = function() {
                  let value = parseInt(this.value)
-                 output.innerHTML = '<span class="lighten">Selected period: </span>'+this.value+'<span class="lighten"> — </span>'+value;
+                 output.innerHTML = '<span class="lighten">Selected period:  &nbsp;  </span>'+this.value+'<span class="lighten"> — </span>'+value;
              }
          }
         
@@ -462,7 +462,7 @@ function draw(input,config){
 
     // Utils functions 
     // ----------------------
-console.log(total_flows)
+/* console.log(total_flows) */
     // Get metadata for a given name
     function getMeta(name) {
         const flag = (name) =>{ 
@@ -479,7 +479,7 @@ console.log(total_flows)
         return {flag: flag(name), region,region_name,id,outflow,inflow}
 
     }
-    console.log(getMeta("Austria"))
+    /* console.log(getMeta("Austria")) */
     // Get region index for a given name
     function getRegion(index) {
         var r = 0;
@@ -1048,16 +1048,25 @@ var arcRegionLabel = d3.arc()
             ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
             : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.target.name).flag+ " "+  d.target.name}</span>`
         
-
-        var value = `
+        if(filename.includes('stock')){
+            var value = `
             <div> 
             <b>${formatValue(d.source.value)}</b> 
-            <br>people to
-            →
+            <br>in<br>
             `
+        } else {
+            var value = `
+            <div> 
+            ▾<br>
+            <b>${formatValue(d.source.value)}</b> 
+            <br> 
+            `
+        }
+        
+        
         return tooltip
             .html(`\
-            <b>${source} </b>
+            <b>${source} </b> 
             ${value} 
             ${target}
             
@@ -1087,8 +1096,8 @@ var arcRegionLabel = d3.arc()
             return tooltip
                 .html(`\
                     ${source} </br>
-                    Total emigrants  →  <b> ${outflow}</b> </br>
-                    Total immigrants  ← <b> ${inflow} </b>
+                    Total emigrants: <b> ${outflow}</b> </br>
+                    Total immigrants: <b> ${inflow} </b>
                 `)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
                 .style("top", (evt.pageY-10)+"px")
@@ -1099,8 +1108,8 @@ var arcRegionLabel = d3.arc()
             return tooltip
                 .html(`\
                     ${source} </br>
-                    Total outflow  →  <b> ${outflow}</b> </br>
-                    Total inflow  ← <b> ${inflow} </b>
+                    Total Out: <b> ${outflow}</b> </br>
+                    Total In: <b> ${inflow} </b>
                 `)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
                 .style("top", (evt.pageY-10)+"px")

@@ -9,6 +9,7 @@ fieldset{
   padding-top:.5em;
   filter:  drop-shadow(0px 20px 50px rgba(0, 0, 0, 0.2));
   padding-bottom:1em;
+  z-index: 3;
 }
 
 
@@ -19,6 +20,7 @@ fieldset{
   /* font-weight: bold; */
   color: #5c5c5fab;  
   z-index: 2;
+  
 }
 
 label {
@@ -26,10 +28,10 @@ label {
   vertical-align: middle;
   margin-right: 1em;
 }
-input {
+/* input {
   vertical-align: middle;
   
-}
+} */
 body {
 	font-family:  'Jost', sans-serif !important;
 	background-color: #f4f4f4;
@@ -50,8 +52,9 @@ body {
 }
 .main-chart{
   /* z-index: -5; */
+  display: block;
   position:relative;
-  min-height:max-content;
+  /* min-height:max-content; */
 }
 p {
     margin:1.66em ;
@@ -215,7 +218,7 @@ float:right;
   
 }
 .header .menu-btn:checked ~ .menu {
-  max-height: 240px;
+  max-height: 340px;
 }
 .header .menu-btn:checked ~ .menu-icon .navicon {
   background: transparent;
@@ -236,12 +239,12 @@ float:right;
     
   
   /* float:right; */
-  /* display: block; */
+  display: block;
   /* display: inline; */
-  float: right;
+  float: left;
   margin-right: 1.5em;
 
-  z-index: -5;
+  /* z-index: -5; */
   
 }
 .wrap-collabsible input[type='checkbox'] {
@@ -281,7 +284,7 @@ float:right;
 	max-height: 0px;
 	/* background: #f4f4f4; */
   
-  width: 100%;
+  /* width: 100%; */
 
 	overflow: hidden;
 	transition:  0.25s ease-in-out;
@@ -300,7 +303,7 @@ float:right;
 	border-bottom-right-radius: 7px;
 }
 .collapsible-content p {
-	margin-bottom: 0;
+	margin-top: 0;
 }
 
 .center {
@@ -311,26 +314,26 @@ float:right;
 	margin-top: 0.5em;
 }
 
-.center td {
+.fill td {
 	border-radius: 15px;
 	padding-left:1em;
 	padding-right:1em;
 	background-color: #e1ebef;
 	border: 1px solid rgb(30, 116, 178);
 }
-.center th {
+.fill th {
 	text-align: right;
 	padding-left: 15px;
-	vertical-align: middle;
+	/* vertical-align: middle; */
 	line-height: 0.7em;
 	color: #555;
 }
 
-.center tr { 
+.fill tr { 
 	padding-left: 15em;
 	
 }
-.center a {
+.fill a {
 	font-size:80%;
 	font-weight:300;
 	color: #333;
@@ -352,9 +355,23 @@ float:right;
     
 	}
 .fill {
-  display: inline-block;
+  
+  position:relative;
+  text-align: left;
   width: 100%;
 }
+.submenu {
+  margin-left: 1em;
+  display: block;
+  /* display: inline-flex; */
+  /* z-index: 2; */
+  position: fixed;
+  bottom:0;
+  gap: 16px;
+  padding: 2em;
+  margin-bottom:9em;
+}
+
 
 /*------ SLIDER each 5 years -----------------*/
 .slider {
