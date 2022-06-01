@@ -1,13 +1,14 @@
 // ##########################################################
 //  INITIAL PARAMETERS
 // ##########################################################
-var width = 750;
-var height = width;
+var width = 800;
+var height = width-50;
 const textId = "O-text-1"; 
 
 // Create svg 
 const chordDiagram = d3.select("#chart")
     .append("svg")
+    .attr('preserveAspectRatio', 'xMinYMid none')
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
 let regionIndex = 1        
@@ -49,21 +50,6 @@ var ribbon = d3.ribbonArrow()
     /* .radius(innerRadius - 5) */
     .targetRadius(innerRadius -10) 
     .headRadius(15)
-
-// arc path generator
-var textPathArc = d3.arc()
-    .innerRadius(config.outerRadius + 10) // position of the upper part of the circle
-    .outerRadius(config.outerRadius + 10);// position of the upper part of the circle
-var textPathArc2 = d3.arc()
-    .innerRadius(config.outerRadius + 18) // position of the lower part of the circle
-    .outerRadius(config.outerRadius + 18);  // position of the lower part of the circle
-
-var textPathArc3 = d3.arc()
-    .innerRadius(config.outerRadius + 35) // position of the upper part of the circle
-    .outerRadius(config.outerRadius + 35);// position of the upper part of the circle
-var textPathArc4 = d3.arc()
-    .innerRadius(config.outerRadius + 28) // position of the lower part of the circle
-    .outerRadius(config.outerRadius + 28);  // position of the lower part of the circle
 
 function formatValue(nStr, seperator) {
     seperator = seperator || ','
@@ -152,21 +138,24 @@ getMetaData().then((meta)=>{
     getData(filename).then((raw)=>{ 
     // CREATE SELECTORS
         // YEAR SELECTOR 
-        /* let input_data = raw */
-        /* let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))] */
+        let input_data = raw
+        let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
 
-        let ticks = document.getElementById("ticks");
+        let sliderticks = document.getElementById("sliderticks");
         let slider = document.getElementById("selectYear");
         let output = document.getElementById("yearRange");
-        let sliderValue = parseInt(slider.value)+5
-
+        let sliderValue = parseInt(slider.value)
         
+        let ticks = allYears.map(col => `<p>${col}</p   >`).join("");
+        sliderticks.innerHTML = ticks
+        slider.setAttribute("min", allYears[0]);
+        slider.setAttribute("max", allYears[allYears.length-1]);
 
         if (filename.includes("stock")){
             output.innerHTML ='<span class="lighten">Selected year: </span>'+sliderValue; // Display the default slider value
             // Update the current slider value (each time you drag the slider handle)
             slider.oninput = function() {
-                let value = parseInt(this.value)+5
+                let value = parseInt(this.value)
                 output.innerHTML = '<span class="lighten">Selected year: </span>'+value;
             }
         }
@@ -174,7 +163,7 @@ getMetaData().then((meta)=>{
              output.innerHTML ='<span class="lighten">Selected period: </span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
              // Update the current slider value (each time you drag the slider handle)
              slider.oninput = function() {
-                 let value = parseInt(this.value)+5
+                 let value = parseInt(this.value)
                  output.innerHTML = '<span class="lighten">Selected period: </span>'+this.value+'<span class="lighten"> — </span>'+value;
              }
          }
@@ -225,7 +214,7 @@ function dataPrepare(input, config){
     year = config.year
     sex = config.sex
     
-    let data = filterYear(input,year)   
+    var data = filterYear(input,year)   
 
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
@@ -252,6 +241,8 @@ function dataPrepare(input, config){
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
+    
+    let total_flows 
     
     function filteredMatrix(input){
         data = input
@@ -289,13 +280,20 @@ function dataPrepare(input, config){
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links} 
         let names = nldata.nodes.map(d=> d.name)
+        let excluded_regions = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
+        let outflows = d3.rollups(excluded_regions, v => d3.sum(v, d => d.value), d => d.source) 
+        let inflows = d3.rollups(excluded_regions, v => d3.sum(v, d => d.value), d => d.target) 
+        console.log(config.sex,config.year)
+        console.log(excluded_regions.filter(d=>d.source.includes("Austri")))
+        console.log(outflows.filter(d=>d[0].includes("Austri")))
+        console.log(inflows.filter(d=>d[0].includes("Austri")))
         
-        
+
+
         // Filter data by threshold
         let filteredData = nldata.links
                .filter(d=> d.value > threshold )
         
-    
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
         let dataSelect = filteredData.filter(d=> d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
         function removeNullNames(){      
@@ -418,8 +416,8 @@ function dataPrepare(input, config){
         return data
     }
     let result = finalNamesMatrix()
-    console.log("RESULT",result)
-    return {result}
+
+    return {result,total_flows}
 }
 
 // ##########################################################
@@ -428,6 +426,7 @@ function dataPrepare(input, config){
 
 function draw(input,config){
     let data = dataPrepare(input,config).result
+    /* let totals = dataPrepare(input,config).total_flows */
     input = input.raw_data                  // used for metadata
 
     let previous = config.previous || data  // used to interpolate between layouts
@@ -458,9 +457,11 @@ function draw(input,config){
         
         const region_name = input.names[region]
         const id = input.names.indexOf(name)
+
+        
         return {flag: flag(name), region,region_name,id}
     }
-
+    
     // Get region index for a given name
     function getRegion(index) {
         var r = 0;
@@ -477,6 +478,7 @@ function draw(input,config){
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
+    
     
     // Extend chord() function values
     function computedChords(data)  {
@@ -848,18 +850,16 @@ function draw(input,config){
 //     .remove();
   
 var maxBarHeight = height / 2 - (70);
-// question_label
-    var arcRegionLabel = d3.arc()
-        .startAngle(function(d, i) {
-            return d.startAngle;
-        })
-        .endAngle(function(d, i) {
-        return d.endAngle;
-        })
-        //.innerRadius(maxBarHeight + 2)
-        .outerRadius(maxBarHeight + 2);
+var arcRegionLabel = d3.arc()
+    .innerRadius(maxBarHeight)
+    .outerRadius(maxBarHeight + 2)
 
-    var regionText = container.selectAll("path.question_label_arc")
+    // .startAngle(d=> d.startAngle)
+    // .endAngle(d=> d.endAngle)
+    
+    // /* .innerRadius(maxBarHeight + 2) */
+
+    var regionText = container.selectAll("path.region_label_arc")
         .data(computedGroups(data))
         .enter().append("path")
         .filter(d=> isRegion(d.name))
@@ -868,6 +868,7 @@ var maxBarHeight = height / 2 - (70);
         }) 
         .attr("fill", "none")
         .attr("d", arcRegionLabel);
+
 
     regionText.each(function(d, i) {
         var firstArcSection = /(^.+?)L/;
@@ -910,9 +911,9 @@ var maxBarHeight = height / 2 - (70);
         /* console.log(textPath) */
 
         if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
-            d3.select(textPath.childNodes[0]).attr("dy", .6 + (tspanCount - 1) * -0.6 + 'em');
+            d3.select(textPath.childNodes[0]).attr("dy", .3 + (tspanCount - 1) * -0.6 + 'em');
         } else {
-            d3.select(textPath.childNodes[0]).attr("dy", -.6 + (tspanCount - 1) * -0.6 + 'em');
+            d3.select(textPath.childNodes[0]).attr("dy", -.3 + (tspanCount - 1) * -0.6 + 'em');
         }
     });
     function wrapTextOnArc(text, radius) {
@@ -939,12 +940,12 @@ var maxBarHeight = height / 2 - (70);
             dy = 0,
             tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
             arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
-            paddedArcLength = arcLength - 13;
-        console.log(wordCount)
+            paddedArcLength = arcLength - 12;
+        /* console.log(wordCount) */
           while (word = words.pop()) {
             line.push(word);
             tspan.text(line.join(" "));
-            textLength = getTextLength(tspan.text())+5;
+            textLength = getTextLength(tspan.text());
             tspan.attr("x", (arcLength - textLength) / 2);
             if (textLength > paddedArcLength && line.length > 1) {
               line.pop();
@@ -958,7 +959,7 @@ var maxBarHeight = height / 2 - (70);
               tspan.attr("x", (arcLength - textLength) / 2);
             } 
           }
-        }).filter(d=>d.name.includes("Sub")).selectAll("tspan").attr("x",0);
+        }).filter(d=>d.name.includes("Sub") ||d.name.includes("South")).selectAll("tspan").attr("x",0);
     }
     /* 
     const regionLabels = groups
@@ -990,87 +991,34 @@ var maxBarHeight = height / 2 - (70);
         .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')    
 
 
-//     arcs
-//         .selectAll('text')
-//         .transition()
-//         .duration(500)
-//         /* .style('opacity', 0) */
-//         .attrTween("transform", function (d) {
-//         // do not animate region labels
-//             if (d.id === d.region) {
-//                 return;
-//             }
-// /*             var region = computedGroups(data).filter(function (g) {
-//                 return g.id === d.region
-//             });
-//             region = region && region[0];
-//             console.log(region) */
-//             var angle = (d.startAngle + (d.endAngle - d.startAngle) / 2);
-//             angle = angle || 0;
-//             var i = d3.interpolate(d, {
-//                 angle: angle
-//             });
-//             return function (t) {
-//                 var t = labelPosition(i(t).angle);
-//                 return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
-//             }
-//         });
+    // function wrapText(text, width) {
+    //     text.each(function (d) {
+    //         var textEl = d3.select(this),
+    //             words = textEl.text().split(/\s+/).reverse(),
+    //             word,
+    //             line = [],
+    //             linenumber = -2,
+    //             lineHeight =-1.2, // ems
+    //             y = textEl.attr('y'),
+    //             dx = parseFloat(textEl.attr('dx') || 0), 
+    //             dy = parseFloat(textEl.attr('dy') || -2.4),
+    //             tspan = textEl.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy +'em')//.attr("class",'yay');
 
-    /* countryLabels.selectAll('.country-label').exit()
-        .transition()
-        .duration(87000)
-        .style('opacity', 0)
-        .attrTween("transform", function (d) {
-        // do not animate region labels
-            if (d.id === d.region) {
-                return;
-            }
-
-            var region = computedGroups(data).filter(function (g) {
-                return g.id === d.region
-            });
-            region = region && region[0];
-            var angle = region && (region.startAngle + (region.endAngle - region.startAngle) / 2);
-            angle = angle || 0;
-            var i = d3.interpolate(d, {
-                angle: angle
-            });
-            return function (t) {
-                var t = labelPosition(i(t).angle);
-                return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
-            };
-        }) */
-       
-
-
-    function wrapText(text, width) {
-        text.each(function (d) {
-            var textEl = d3.select(this),
-                words = textEl.text().split(/\s+/).reverse(),
-                word,
-                line = [],
-                linenumber = -2,
-                lineHeight =-1.2, // ems
-                y = textEl.attr('y'),
-                dx = parseFloat(textEl.attr('dx') || 0), 
-                dy = parseFloat(textEl.attr('dy') || -2.4),
-                tspan = textEl.text(null).append('tspan').attr('x', 0).attr('y', y).attr('dy', dy +'em')//.attr("class",'yay');
-
-            while (word = words/* .reverse() */.pop()) {
-                line.push(word);
-                tspan.text(line.join(' '));
+    //         while (word = words/* .reverse() */.pop()) {
+    //             line.push(word);
+    //             tspan.text(line.join(' '));
             
-                if (tspan.node().getComputedTextLength() > width) {
-                    d3.select(this.parentNode).attr("class", "wrapped")
-                    line.pop();
-                    tspan.text(line.join(' '));
-                    line = [word];
-                    tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word).attr("z-index",2);
-                }
-            }
-            /* d3.selectAll(this.parentNode).filter(d=> d.classed("wrapped",false)).attr("translate",-10) */
-        });
-    }
+    //             if (tspan.node().getComputedTextLength() > width) {
+    //                 d3.select(this.parentNode).attr("class", "wrapped")
+    //                 line.pop();
+    //                 tspan.text(line.join(' '));
+    //                 line = [word];
+    //                 tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word).attr("z-index",2);
+    //             }
+    //         }
+    //         /* d3.selectAll(this.parentNode).filter(d=> d.classed("wrapped",false)).attr("translate",-10) */
+    //     });
+    // }
 
         
     function tooltipCountry(evt,d)  {

@@ -31,6 +31,33 @@
 		</ul>
 	</header>
 
+	
+	<div class="main-chart">
+		<div class="layout">
+			<fieldset>
+				<div class="legend lighten"><span class="ligthen"> Select sex </span></div>
+				<input id="selectSex" type="radio" name="selectSex" value="female" checked>
+				<label for="selectSex">Female</label>
+				<input id="selectSex" type="radio" name="selectSex" value="male">
+				<label for="selectSex">Male</label>
+			</fieldset>
+
+
+			<fieldset>
+				<div class="legend" id="yearRange"></div>
+				
+					<!-- <div><label> Select year: </label></div> -->
+				<input class="slider-stock" type="range" list="tickmarks" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+				<div class="sliderticks" id="sliderticks"></div>
+				<label for="range" id="start-value"></label>
+				<label for="range" id="end-value"></label>
+				
+			</fieldset>
+		</div>
+
+		<div id="chart" class="center"></div>
+	</div>
+	
 	<div class="wrap-collabsible fill">
 		<input id="collapsible1" class="toggle" type="checkbox" />
 		<label for="collapsible1" class="lbl-toggle">Select data type</label>
@@ -39,14 +66,9 @@
 				<table   class="center" >
 					<tr>
 						<th>STOCKS</th>	
-							<!-- <td><b>all</b>></li> -->
 							<td><b>all</b></a></td>
 							<td class="grow"><a href="stocks_by_sex.html">by sex</a></td>
-							
-									<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-									<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
 					</tr>
-									
 					<tr>
 						<th >FLOWS</th>
 						<td class="grow"><a href="flows.html">all</a></td>
@@ -62,76 +84,38 @@
 	<div class="wrap-collabsible fill">
 		<input id="collapsible2" class="toggle" type="checkbox" />
 		<label for="collapsible2" class="lbl-toggle">Select visualization tool</label>
-			<div class="collapsible-content fill">
-				<p>
-					<table   class="center" >
-						<tr>
-							<td class="grow"><svg src="static/chord.svg"></svg></td>
-							<td class="grow"><svg src="static/sankey.svg"></svg></td>
-							<td class="grow"><svg src="static/map.svg"></svg></td>
-									<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-									<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
-						</tr>							
-					</table>
-				</p>
-			</div>
+		<div class="collapsible-content fill">
+			<p>
+				<table   class="center" >
+					<tr>
+						<td class="grow"><svg src="static/chord.svg"></svg></td>
+						<td class="grow"><svg src="static/sankey.svg"></svg></td>
+						<td class="grow"><svg src="static/map.svg"></svg></td>
+					</tr>							
+				</table>
+			</p>
 		</div>
 	</div>
-	<div class="layout">
-
-			<fieldset>
-				<div class="legend lighten"><span class="ligthen"> Select sex </span></div>
-				<input id="selectSex" type="radio" name="selectSex" value="female" checked>
-				<label for="selectSex">Female</label>
-				<input id="selectSex" type="radio" name="selectSex" value="male">
-				<label for="selectSex">Male</label>
-			</fieldset>
-
-
-			<fieldset>
-				<div class="legend" id="yearRange"></div>
-				
-					<!-- <div><label> Select year: </label></div> -->
-				<input class="slider-stock" type="range" list="tickmarks" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-				
-				<div class="sliderticks">
-					<!-- <p>1990</p> -->
-					<p>1995</p>
-					<p>2000</p>
-					<p>2005</p>
-					<p>2010</p>
-					<p>2015</p>
-					<p>2020</p>
-				</div>
-				<label for="range" id="start-value"></label>
-				<label for="range" id="end-value"></label>
-				
-			</fieldset>
-		</div>
-	</div>
-	<div id="chart" class="center"></div>
-
-	
 	<div class="details">
 		<div class="box">
-				<div>
-					<h4>About the data</h4>
-					<p>Some text here</p>
-				</div>
-				<div>
-				<h4>Visual tools</h4>
+			<div>
+				<h4>About the data</h4>
 				<p>Some text here</p>
-				</div>
-				<div>
-				<h4>Other measurements</h4>
-				<p>Some text here</p>
-				</div>
-		</div>
-	<footer>
-		Footer
-	</footer>
+			</div>
+			<div>
+			<h4>Visual tools</h4>
+			<p>Some text here</p>
+			</div>
+			<div>
+			<h4>Other measurements</h4>
+			<p>Some text here</p>
+			</div>
+	</div>
 	</div>
 
+<footer>
+	Footer
+</footer>
 </body>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="libs/chord.js"></script>
@@ -152,6 +136,7 @@
 	getData(filename).then(raw => {
 		draw(raw,config)
 	})
+	
 </script>
 
 

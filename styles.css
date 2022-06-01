@@ -7,19 +7,10 @@ fieldset{
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter:blur(8px);
   padding-top:.5em;
-  
+  filter:  drop-shadow(0px 20px 50px rgba(0, 0, 0, 0.2));
   padding-bottom:1em;
 }
 
-  .details {
-    display: block;
-    display: none;
-    width:100%;
-    top:auto;
-    bottom: 0;
-    right: auto;
-    left: auto;
-  }
 
 .legend {
   /* font-size: small; */
@@ -48,15 +39,19 @@ body {
   opacity:0.8
 }
 #chart {
-  display: inline-block;
-  position: fixed;
-  z-index: -5;
-  top: 1em;
-  right: 0;
-  left: 0;
-   margin: 0 auto;
+  display: block;
+  margin-top:-4em;
+  margin-right:auto;
+  margin-left:auto;
+  
+  
    max-width: 1200px;
-   overflow: auto;
+   /* overflow: visible; */
+}
+.main-chart{
+  /* z-index: -5; */
+  position:relative;
+  min-height:max-content;
 }
 p {
     margin:1.66em ;
@@ -99,12 +94,13 @@ label {
 .layout {
   margin-left: 1em;
   text-align: center;
-  /* display: flex; */
-  display: inline-flex;
-  position: absolute;
-
+  display: flex;
+  /* display: inline-flex; */
+  z-index: 2;
+  position: fixed;
+  bottom:0;
   gap: 16px;
-  /* padding: 0.6em; */
+  padding: 2em;
   
   /* width:100%; */
 }
@@ -239,10 +235,10 @@ float:right;
 .wrap-collabsible{
     
   
-  float:right;
+  /* float:right; */
   /* display: block; */
   /* display: inline; */
-  /* display: inline-block; */
+  float: right;
   margin-right: 1.5em;
 
   z-index: -5;
@@ -253,9 +249,9 @@ float:right;
 }
 .lbl-toggle {
 	/* font-weight: bold; */
-  /* display:block; */
-  float: right;
-	text-align: right;
+  display:inline-block;
+  /* float: right;
+	text-align: right; */
 
 	padding: 0.6em;
 
@@ -399,7 +395,7 @@ float:right;
 }
 .sliderticks {
    display: flex;
-   width: 300px;
+   width: 350px;
    margin: 0 auto;
    /* padding-top: 1em; */
    justify-content: space-between; 
@@ -422,7 +418,7 @@ float:right;
 /*------ SLIDER FOR STOCKS (specific to year) -----------------*/
 .slider-stock {
    -webkit-appearance: none;
-   width: 300px;
+   width: 350px;
    height: 0.1em;
    border: 1px solid #598cae90;
    outline: none;
@@ -455,9 +451,9 @@ float:right;
 .box {
   --min: 16ch;
   /* --gap: 0rem; */
-
+  
   display: inline-flex;
- 
+  align-items: baseline;
   flex-wrap: wrap;
   gap: var(--gap);
 }
@@ -468,6 +464,10 @@ float:right;
 footer {
   background: #d5e0e6;
   padding: 1em;
+  width: 100%;
+  z-index: -2;
+  
+  margin-top:auto;
   
   
 }
@@ -475,13 +475,7 @@ footer {
 
 /* 48em = 768px */
 @media (min-width: 768px) {
-  .layout{
-    display: flex;
-
-    position:fixed;
-    bottom:2em;
-    /* position: ; */
-  }
+  
   .header li {
     float: left;
   }
