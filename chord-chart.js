@@ -242,7 +242,6 @@ function dataPrepare(input, config){
         return input.regions.includes(input.names.indexOf(name))
     } 
     
-    let total_flows 
     
     function filteredMatrix(input){
         data = input
@@ -280,14 +279,27 @@ function dataPrepare(input, config){
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links} 
         let names = nldata.nodes.map(d=> d.name)
-        let excluded_regions = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
-        let outflows = d3.rollups(excluded_regions, v => d3.sum(v, d => d.value), d => d.source) 
-        let inflows = d3.rollups(excluded_regions, v => d3.sum(v, d => d.value), d => d.target) 
-        console.log(config.sex,config.year)
-        console.log(excluded_regions.filter(d=>d.source.includes("Austri")))
-        console.log(outflows.filter(d=>d[0].includes("Austri")))
-        console.log(inflows.filter(d=>d[0].includes("Austri")))
+        let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
+        let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
+        let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
         
+        let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
+        let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source) 
+        let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target) 
+
+        let outflows = region_outflows.concat(country_outflows)
+        let inflows = region_inflows.concat(country_inflows)
+        let total_flows = names.map(name=> {
+            let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
+            let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
+            {return {name, outflow,inflow}}
+        })
+       /*  console.log(total_flows)
+        console.log(config.sex,config.year)
+        console.log(country_totals.filter(d=>d.source.includes("Austri")))
+        console.log(outflows.filter(d=>d[0].includes("Austri")))
+        console.log(inflows.filter(d=>d[0].includes("Austri"))) */
+
 
 
         // Filter data by threshold
@@ -342,8 +354,10 @@ function dataPrepare(input, config){
                 regions.push(i)
             }
         })
-     
-        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData}
+
+        //
+        
+        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData, total_flows: total_flows}
     }
 
     // Expand countries under selected regions
@@ -369,6 +383,7 @@ function dataPrepare(input, config){
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)    
     data = dataSliced
+    total_flows = dataSliced.total_flows
 
     function getMeta(name) {
         // get flag for a given country name
@@ -415,6 +430,7 @@ function dataPrepare(input, config){
         data = {names,matrix}        
         return data
     }
+    
     let result = finalNamesMatrix()
 
     return {result,total_flows}
@@ -426,7 +442,7 @@ function dataPrepare(input, config){
 
 function draw(input,config){
     let data = dataPrepare(input,config).result
-    /* let totals = dataPrepare(input,config).total_flows */
+    let total_flows = dataPrepare(input,config).total_flows
     input = input.raw_data                  // used for metadata
 
     let previous = config.previous || data  // used to interpolate between layouts
@@ -446,7 +462,7 @@ function draw(input,config){
 
     // Utils functions 
     // ----------------------
-
+console.log(total_flows)
     // Get metadata for a given name
     function getMeta(name) {
         const flag = (name) =>{ 
@@ -457,11 +473,13 @@ function draw(input,config){
         
         const region_name = input.names[region]
         const id = input.names.indexOf(name)
-
+        const outflow = total_flows.filter(d=>d.name.includes(name))[0].outflow
+        const inflow = total_flows.filter(d=>d.name.includes(name))[0].inflow
         
-        return {flag: flag(name), region,region_name,id}
+        return {flag: flag(name), region,region_name,id,outflow,inflow}
+
     }
-    
+    console.log(getMeta("Austria"))
     // Get region index for a given name
     function getRegion(index) {
         var r = 0;
@@ -959,7 +977,7 @@ var arcRegionLabel = d3.arc()
               tspan.attr("x", (arcLength - textLength) / 2);
             } 
           }
-        }).filter(d=>d.name.includes("Sub") ||d.name.includes("South")).selectAll("tspan").attr("x",0);
+        }).filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0);
     }
     /* 
     const regionLabels = groups
@@ -1061,8 +1079,8 @@ var arcRegionLabel = d3.arc()
             : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
                 <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
         if (data.matrix !== undefined) {
-            var outflow = formatValue(d3.sum(data.matrix[d.index])) 
-            var inflow =   formatValue(d3.sum(data.matrix, row => row[d.index]))
+            var outflow = formatValue(getMeta(d.name).outflow) 
+            var inflow = formatValue(getMeta(d.name).inflow)
         }
         // console.log(filename.includes("stock")) ---> false ? then synthax is outflow/inflow instead of emigrants/immigrants
         if (filename.includes('stock') ){
