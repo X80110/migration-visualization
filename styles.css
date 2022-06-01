@@ -7,7 +7,7 @@ fieldset{
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter:blur(8px);
   padding-top:.5em;
-  filter:  drop-shadow(0px 20px 50px rgba(0, 0, 0, 0.2));
+  filter:  drop-shadow(0px 20px 20px rgba(0, 0, 0, 0.4));
   padding-bottom:1em;
   z-index: 3;
 }
@@ -291,7 +291,7 @@ float:right;
 	
 }
 .toggle:checked + .lbl-toggle + .collapsible-content {
-	max-height: 350px;
+	max-height: 150px;
 }
 .toggle:checked + .lbl-toggle {
   
