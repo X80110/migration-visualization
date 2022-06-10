@@ -1,13 +1,20 @@
+body {
+  font-family:  'Jost', sans-serif !important;
+  background-color: #f4f4f4;
+  text-align: center;
+}
 @import url(//fonts.googleapis.com/css?family=Jost:400,600,700,300);
 /* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
 fieldset{
-  border: dotted 1px #ccc;
+  display:inline-block;
+  border: none;
   border-radius: 20px;
-  background-color: #ffffffcb;
+  
+
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter:blur(8px);
+  /* filter:  drop-shadow(0px 20px 20px rgba(0, 0, 0, 0.4)); */
   padding-top:.5em;
-  filter:  drop-shadow(0px 20px 20px rgba(0, 0, 0, 0.4));
   padding-bottom:1em;
   z-index: 3;
 }
@@ -32,21 +39,15 @@ label {
   vertical-align: middle;
   
 } */
-body {
-	font-family:  'Jost', sans-serif !important;
-	background-color: #f4f4f4;
-  text-align: center;
-}
 .lighten{
   opacity:0.8
 }
 #chart {
   display: block;
-  margin-top:-4em;
+  /* margin-top:-6em; */
   margin-right:auto;
   margin-left:auto;
-  
-  
+
    max-width: 1200px;
    /* overflow: visible; */
 }
@@ -100,7 +101,7 @@ label {
   display: flex;
   /* display: inline-flex; */
   z-index: 2;
-  position: fixed;
+  position: inline;
   bottom:0;
   gap: 16px;
   padding: 2em;
@@ -236,11 +237,9 @@ float:right;
   top: 0;
 }
 .wrap-collabsible{
-    
   
-  /* float:right; */
   display: block;
-  /* display: inline; */
+  
   float: left;
   margin-right: 1.5em;
 
@@ -469,7 +468,7 @@ float:right;
   --min: 16ch;
   /* --gap: 0rem; */
   
-  display: inline-flex;
+  display: flex;
   align-items: baseline;
   flex-wrap: wrap;
   gap: var(--gap);
