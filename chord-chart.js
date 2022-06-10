@@ -1071,11 +1071,10 @@ var arcRegionLabel = d3.arc()
     //             tspan.text(line.join(' '));
             
     //             if (tspan.node().getComputedTextLength() > width) {
-    //                 d3.select(this.parentNode).attr("class", "wrapped")
+    //                 d3.select(this.parentNode).attr("class", "wrapped")º
     //                 line.pop();
     //                 tspan.text(line.join(' '));
-    //                 line = [word];
-    //                 tspan = textEl.append('tspan').attr('x', 0).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word).attr("z-index",2);
+    //                 line = [word];z).attr('y', y).attr('dx', dx).attr('dy', /* linenumber * lineHeight + dy + */1+ 'em').text(word).attr("z-index",2);
     //             }
     //         }
     //         /* d3.selectAll(this.parentNode).filter(d=> d.classed("wrapped",false)).attr("translate",-10) */
