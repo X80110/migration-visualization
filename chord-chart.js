@@ -8,7 +8,7 @@ const textId = "O-text-1";
 // Create svg 
 const chordDiagram = d3.select("#chart")
     .append("svg")
-    .attr('preserveAspectRatio', 'xMinYMid none')
+    .attr('preserveAspectRatio', 'xMinYMid')
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
 let regionIndex = 1        
@@ -146,25 +146,63 @@ getMetaData().then((meta)=>{
         let output = document.getElementById("yearRange");
         let sliderValue = parseInt(slider.value)
         
-        let ticks = allYears.map(col => `<p>${col}</p   >`).join("");
-        sliderticks.innerHTML = ticks
+        function getTicks (year){
+            console.log(year)
+            let ticks = allYears.map(col =>
+                 +col === +year 
+                 ? `<p><b>${col}</b></p   >`
+                 : `<p>${col}</p   >`
+                ).join("");
+
+            sliderticks.innerHTML = ticks
+        }
+
+        
+
         slider.setAttribute("min", allYears[0]);
         slider.setAttribute("max", allYears[allYears.length-1]);
 
+
+
+
         if (filename.includes("stock")){
-            output.innerHTML ='<span class="lighten">Selected year: &nbsp;  </span>'+sliderValue; // Display the default slider value
+            function getTicks (year){
+                console.log(year)
+                let ticks = allYears.map(col =>
+                     +col === +year 
+                     ? `<p style="color:black"><b>${col}</b></p   >`
+                     : `<p style="color:black">${col}</p   >`
+                    ).join("");
+    
+                sliderticks.innerHTML = ticks
+            }
+            getTicks(sliderValue)
+            /* output.innerHTML ='<span class="lighten"><b>Selected year: &nbsp; </b> </span>'+sliderValue; // Display the default slider value */
             // Update the current slider value (each time you drag the slider handle)
             slider.oninput = function() {
                 let value = parseInt(this.value)
-                output.innerHTML = '<span class="lighten">Selected year: &nbsp;   </span>'+value;
+                getTicks(value)
+                /* output.innerHTML = '<span class="lighten"><b>Selected year: &nbsp;  </b> </span>'+value; */
             }
         }
         else if (filename.includes("flow")) {
-             output.innerHTML ='<span class="lighten">Selected period:  &nbsp;  </span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value
+            function getTicks (year){
+                console.log(year)
+                let ticks = allYears.map(col =>
+                     +col === +year  || +col === +year +5
+                     ? `<p><b>${col}</b></p   >`
+                     : `<p>${col}</p   >`
+                    ).join("");
+    
+                sliderticks.innerHTML = ticks
+            }
+            
+             /* output.innerHTML ='<span class="lighten"><b>Selected period:  &nbsp;  </b></span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value */
              // Update the current slider value (each time you drag the slider handle)
              slider.oninput = function() {
                  let value = parseInt(this.value)
-                 output.innerHTML = '<span class="lighten">Selected period:  &nbsp;  </span>'+this.value+'<span class="lighten"> — </span>'+value;
+                 getTicks(value)
+                 /* output.innerHTML = '<span class="lighten"><b>Selected period:  &nbsp; </b> </span>'+this.value+'<span class="lighten"> — </span>'+value; */
              }
          }
         
@@ -479,7 +517,7 @@ function draw(input,config){
         return {flag: flag(name), region,region_name,id,outflow,inflow}
 
     }
-    /* console.log(getMeta("Austria")) */
+    console.log(getMeta("Austria"))
     // Get region index for a given name
     function getRegion(index) {
         var r = 0;
@@ -623,9 +661,14 @@ function draw(input,config){
         b = a.indexOf(name)
         return colors[b]
     }
-
+    
+    
     const colorCountries = (name) => {
-        return getRegionColor(getMeta(name).region_name)
+        let color_country = getRegionColor(getMeta(name).region_name)
+        let hsl = d3.hsl(color_country)
+        let d =  getMeta(name)
+        r = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)]
+        return r[(d.id-d.region)%5]
     }
 
     const container = chordDiagram.append("g")
@@ -651,7 +694,7 @@ function draw(input,config){
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
+        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
         .transition()
         .duration(500)
         .attrTween("d", function(d,j) {
@@ -672,7 +715,7 @@ function draw(input,config){
     //     .attr("class","arc2")
     //     .attr("d", arc.innerRadius(innerRadius-5).outerRadius(outerRadius)) 
     //     .style("fill",d=> isRegion(d.target.name) ? getRegionColor(d.target.name) :colorCountries(d.target.name))
-    //     /* .style("opacity",d=> isRegion(d.target.name) && config.regions.length > 0 ? 0.1: 0.7) */
+    //     /* .style("opacity",d=> isRegion(d.target.name) && config.regions.length > 0 ? 0.03: 0.80) */
     //     .transition()
     //     .duration(500)
     //     .attrTween("d", function(d,j) {
@@ -692,7 +735,8 @@ function draw(input,config){
         .attr("class", "path-item")
         .attr("d", ribbon)
         .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
-        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.7)
+        // .style("mix-blend-mode", "multiply")
+        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.03: 0.80)
         .transition()
         .duration(500)
         .attrTween("d", function (d) {
@@ -1000,11 +1044,11 @@ var arcRegionLabel = d3.arc()
 
     const tooltip = d3.select('body').append('g')
         .attr('id', 'tooltip')
-        
         .style('background-color','#ffffff')
         .style('padding','1em')
         .style('border-radius','4px')
         .style('position', 'absolute')
+        .style('text-align', 'center')
         .style('visibility', 'hidden')
         .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')    
 
@@ -1167,13 +1211,13 @@ var arcRegionLabel = d3.arc()
                     .selectAll(".path-item, .group-arc")
                     .transition()
                     .duration(80)
-                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.7)
+                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
                 /* arcs.selectAll(".group-arc")
-                .style("opacity",d=> isRegion(d.name) ? 0.1: 0.7) */
+                .style("opacity",d=> isRegion(d.name) ? 0.03: 0.80) */
                 d3.select(this)
                     .transition()
                     .duration(80)
-                    .style("opacity", 0.7)
+                    .style("opacity", 0.80)
                         
             }
             else{
@@ -1181,11 +1225,11 @@ var arcRegionLabel = d3.arc()
                     .selectAll(".path-item, .group-arc")
                     /* .transition()
                     .duration(100) */
-                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.7)
+                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
                 d3.select(this)
                     /* .transition()
                     .duration(100) */
-                    .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.7)
+                    .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
                 }
             }
         )
@@ -1195,9 +1239,9 @@ var arcRegionLabel = d3.arc()
         chordDiagram.selectAll("g")
             .on("mouseout", function (evt, d) {        
                 chords.selectAll(".path-item")
-                    .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1: 0.7)
+                    .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.03: 0.80)
                 groups.selectAll(".group-arc")
-                    .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
+                    .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
                 
             })  
 
