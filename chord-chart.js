@@ -1305,7 +1305,7 @@ var arcRegionLabel = d3.arc()
             
     })    
         
-    d3.selectAll("#selectSex")
+    d3.selectAll(".selectSex")
         .on("change", function(d) {
             config.previous = data 
             config.sex = d3.select(this).property("value")

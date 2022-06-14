@@ -21,6 +21,7 @@
             <a href="http://www.guyabel.com">Guy J. Abel</a> &amp; 
             <a href="http://X80110.github.com/about-me">Xavier Bolló</a>             
         </div>  -->
+		<h2>Population <div><b>stocks</b></div><!--  by <div><b>sex</b></div> --></h2><br>
   </div>
   
   <input class="menu-btn" type="checkbox" id="menu-btn" />
@@ -81,19 +82,19 @@
          Datasets <!-- <i class='down'></i> -->
         <div class='dropdown'>
           <p><b>Stocks</b></p>
-          <a class='drop-link' href='#'>all</a>
-          <a class='drop-link' href='#'>by sex</a>
+          <a class='drop-link' href='index.html'>all</a>
+          <a class='drop-link' href='stocks_by_sex.html'>by sex</a>
           <p><b>Flows</b></p>
-          <a class='drop-link' href='#'>all</a>
-          <a class='drop-link' href='#'>by sex</a>
-          <a class='drop-link' href='#'>by type</a>
+          <a class='drop-link' href='flows.html'>all</a>
+          <a class='drop-link' href='flows_by_sex.html'>by sex</a>
+          <a class='drop-link' href='flows_by_type.html'>by type</a>
         </div>
       </li>
       <li>
         Tools <!-- <i class='down'></i> -->
        <div class='dropdown'>
         <p><b>Visualization</b></p>
-         <a class='drop-link' href='#'>Chord diagram</a>
+         <a class='drop-link' href=''>Chord diagram</a>
          <a class='drop-link' href='#'>Sankey</a>
          <a class='drop-link' href='#'>Map</a>
 
@@ -130,38 +131,32 @@
         <div>List Item 3</div>
     </div>
 </div>. Loads of other text to fill the page. Loads of other text to fill the page. Loads of other text to fill the page. Loads of other text to fill the page. Loads of other text to fill the page. Loads of other text to fill the page. Loads of other text to fill the page. Loads of other text to fill the page. -->
-<div class="wrap">
+<!-- <div class="wrap">
     <h2>Population <div><b>stocks</b></div> by <div><b>sex</b></div></h2><br>
-      <!-- <span>
+      <span>
         <p>Explore new estimates of population stocks between and within regions for a specific year between <span id="yearMin"></span> and <span id="yearMax"></span>. </p>
         <p>Click on a region to discover flows country-by-country.</p>
-      </span> -->
+      </span>
     <br>
-</div>
+</div> -->
   <article>
   <div id="main">
         <div class="selectors">
           <div class="form">
               <div ><span>Select sex</span></div>
               <div class="field collection">
-                <input id="option-a" name="test" type="radio" value="a" />
-                <label for="option-a">
+                <input checked="" class="selectSex" id="female" name="selectSex" type="radio" value="female" />
+                <label for="female">
                   <div class="text">
                     Female
                   </div>
                 </label>
-                <input checked="" id="option-b" name="test" type="radio" value="b" />
-                <label for="option-b">
+                <input  id="male" class="selectSex" name="selectSex" type="radio" value="male" />
+                <label for="male">
                   <div class="text">
                     Male
                   </div>
                 </label>
-               <!--  <input id="option-c" name="test" type="radio" value="b" />ç
-                <label for="option-c">
-                  <div class="text">
-                    Bilby
-                  </div>
-                </label> -->
               </div>
             </div>
 <!-- 
@@ -185,13 +180,11 @@
             <div class="sliderticks" id="sliderticks"></div>
             
           </div>
-          <div class="method">
+  <!--         <div class="method">
             <div ><span>Estimation method</span></div>
             <select value="da_pb_open" id="selectMethod">
-              <option value="da_pb_closed" id="selectMethod">da_pb_closed</option>
-              <option value="da_pb_open" id="selectMethod">da_pb_open</option>
             </select>
-          </div>
+          </div> -->
         </div>
           <!-- <div class="data-type">
             <div ><span> Select sex: </span></div>
