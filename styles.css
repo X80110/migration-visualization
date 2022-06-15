@@ -1,28 +1,24 @@
 @import url(//fonts.googleapis.com/css?family=Jost:400,600,700,300);
 /* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
-option *{
-    z-index: 200;    
-}
+
 * {
     box-sizing: border-box; 
     border-radius: 5px;
     font-family:  'Jost', sans-serif !important;
 }
 body {
-    background:#cacaca;
-    margin: .5em  auto;
+    background:#e7e7e7;
+    margin: .6em  auto;
     text-align: center;
-    /* min-width: 580px; */
     max-width: 1200px;    
-    -moz-box-shadow: 0 0 15px #bebebe;
-    -webkit-box-shadow: 0 0 15px #bebebe;
-    box-shadow: 0 0 15px #bebebe;
     line-height:1.3em;
 
-    /* overflow: hidden; */
 }
-
-header, footer, article, nav, aside {
+a, .header a  {
+  text-decoration: none;
+  color: #4b7fb3;
+}
+header, footer, article{
     padding: 1em;
 }
 header, footer {
@@ -30,6 +26,32 @@ header, footer {
     display:inline-block;
 
     /* margin: 10px 10px 10px 10px; */
+}
+article {
+  background-color:#f4f4f4;
+  -moz-box-shadow: 0 0 25px #bebebe;
+  -webkit-box-shadow: 0 0 25px #bebebe;
+  box-shadow: 0 0 25px #bebebe;
+  padding-bottom:4rem;
+}
+footer {
+  /* background-color: #e6e6e6; */
+  margin-top:1em;
+  margin-bottom:3em;
+  font-size:small;
+  color: #6c6c6c;
+}
+h1 {
+  display: block;
+  font-size: 2em;
+  margin-bottom:0.2px;
+  font-weight: bold;
+}
+
+h2{
+  font-size:130%;
+  color: #474747;
+  font-weight: 400;
 }
 
 /* header */    
@@ -50,12 +72,31 @@ ul.menu li{
 }
 
 .header .menu {
-    text-decoration: none;
-    clear: both;
     max-height: 0;
     transition:  .2s ease-out;
     vertical-align: middle;
 }
+
+.logo{
+    color: #000;
+    font-size:medium;
+    line-height: 2.2em;
+    text-align: left;
+    float:left;
+    padding-bottom:0;
+}
+.subtitle{
+  
+}
+.credits  {
+    text-decoration: none;
+    line-height: 1.6em;
+    margin-top:0.5em;
+    color: #6D6B6B;
+    margin-left:0.2em;
+}
+
+
 /* menu icon*/
 .header .menu-icon {
   cursor: pointer;
@@ -112,46 +153,29 @@ ul.menu li{
   top: 0;
 }
 
-.wrap {
-    vertical-align:top;
-    line-height: 1.2em;
-    /* text-align: left; */
-    max-width:35%;
-    /* margin-right:2em; */
-    margin-left:5em;
-    display:none;
-}
 
-.logo{
-    color: #000;
-    font-size:medium;
-    line-height: 2.2em;
-    text-align: left;
-    float:left;
-}
-.credits * {
-    text-decoration: none;
-    line-height: 1.6em;
-    color: #6D6B6B;
-}
 
-h2, h2 div {
-    display:inline-block;
-    color:#6D6B6B;
-    text-align: left;
-    line-height: 1.3em;
-    font-weight: 200;
-    
-}
 #main {
-    min-height: calc(100vh - 70vh);
-    text-align: center;
-    
-} 
-#container {
-    background-color:#f4f4f4;
-    padding: 2vw;
+  min-height: calc(100vh - 70vh);
+  text-align: center;
 }
+
+.logos hr {
+  border: .6px solid #ccc;
+  width:30%;
+  margin-top:4em;
+  margin-bottom:3em;
+}
+
+.logos a{
+  display:inline;
+  margin:15px
+}
+
+.version{
+  opacity:0.7;
+}
+
 .selectors{  
     -ms-box-orient: horizontal;
     display: -webkit-box;
@@ -206,13 +230,6 @@ h2, h2 div {
     text-align: left;
     
 } */
-.data-type span{
-    color: #000;
-    display: flex;
-    margin-bottom: 1em;
-    
-  /*   text-transform:uppercase; */
-} 
 
 
 
@@ -366,24 +383,50 @@ h2, h2 div {
     cursor: pointer;
 }
 .box {
+  margin-right: 3em;
+  margin-left: 3em;
   --min: 16ch;
-  --gap: 0rem;
-
+  --gap: 2rem;
+  text-align: left;
+  justify-content: center;
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap);
 }
-.box > * {
+
+.box p  {
+  line-height: 1.6em;
+  color: #656565;
+  font-size: 85%;
+}
+ 
+
+.box > .about {
   flex: 1 1 var(--min);
   
 }
+.options {
+  justify-content: center;
+  margin-left:2em;
 
+}
+
+.box  .drop-link {
+  filter:  drop-shadow(0px 0px 0px rgba(0, 0, 0, 0));
+  border: 1px solid #c9c9c9;
+}
 
 /* 48em = 768px */
 @media (max-width: 768px) {
     #chart{
         transform: scale(1.15);
     }
+    ul.menu li{
+      top:0;
+      padding:1em;
+      display:block;
+      max-width: 60%;
+  }
 }
 @media (min-width: 768px) {
   /* .header li {
@@ -489,8 +532,6 @@ li:hover{
   .form {
     flex: 1 0px;
     max-width: 250px;
-        
-    
   }
   .form .collection {
     position: relative;

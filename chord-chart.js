@@ -1106,13 +1106,11 @@ var arcRegionLabel = d3.arc()
             `
         }
         
-        
         return tooltip
             .html(`\
             <b>${source} </b> 
             ${value} 
             ${target}
-            
             `)
             .transition()
             .duration(50)
@@ -1120,9 +1118,7 @@ var arcRegionLabel = d3.arc()
             .style('padding','1em')
             .style("top", (evt.pageY-10)+"px")
             .style("left", (evt.pageX+10)+"px")
-            .style("visibility", "visible")
-            
-            
+            .style("visibility", "visible")       
     }
 
     function tooltipRegion(evt,d) {
