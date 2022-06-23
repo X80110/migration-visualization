@@ -23,31 +23,24 @@ let regionColors = []
 // ##########################################################
 // Functions and initial config
 // ##########################################################
-let config = {}
+/* let config = {} */
 config.year = 1990 || ""
-config.stockflow = "stock"
-config.sex = "all" || ""
-config.type = "" || "outward"
+config.stockflow 
+config.sex 
+config.type 
 config.method = "da_pb_closed" || ""
 config.regions = []
 
 var chord = chord(true,false)
         .padAngle(0.05)
         .sortSubgroups(d3.descending)
-        /* .sortChords(d3.ascending) */
-// chord diagram
-    // var chord = d3.chord()
-    //     .padding(config.arcPadding)
-    //     .threshold(config.layout.threshold)
-    //     /* .data(data)
-    //     .year(config.now); */
+      
 var arc = d3.arc() 
     .innerRadius(innerRadius)
     .outerRadius(outerRadius);
 
 var ribbon = d3.ribbonArrow()
     .sourceRadius(innerRadius)
-    /* .radius(innerRadius - 5) */
     .targetRadius(innerRadius -10) 
     .headRadius(15)
 
@@ -77,12 +70,9 @@ function labelPosition(angle) {
       };
     }
 
-const getMetaData = async () => {
-    const metadata = await d3.csv("data/country-metadata-flags.csv");
-    return  metadata
-}
 
 function filterYear(input,year){ 
+
     year = year || 1990
     nodes = input
     const selectedMatrix  = nodes.matrix[year]
@@ -99,14 +89,14 @@ let fileName = (config) => {
     sex = config.sex === "all" || ""  
         ? ""
         : "_"+config.sex
-    type = config.type
+    type = config.type+"_"
     method = stockflow === "stock" 
         ? ""
         : "_"+config.method || "_da_pb_closed"
-    let json = 'json/'+stockflow+sex+type+method+'.json'
+    let json = 'json/'+stockflow+'_'+sex+type+method+'.json'
     
     // clean non-lineal irregularities
-    json = json.replace("__","_").replace("_.",".")
+    json = json.replace("__","_").replace("_.",".").replace("__","_").replace("__","_")
     // console.log( config.method, config.stockflow)
     return {
          json:json,
@@ -116,149 +106,51 @@ let fileName = (config) => {
 }
 
 let filename = fileName(config).json
-console.log(filename)
 
-// gets the data from files
+
+/* const getMetaData = async () => {
+    const metadata = await d3.csv("data/country-metadata-flags.csv");
+    return  metadata
+} */
+
+/* // gets the data from files
 async function getData(filename) {
     // console.log(filename)
     try {
+        let datasets =  [];			// promises
+        files.forEach(url => datasets.push(d3.json(url)));
         const data = d3.json(filename) 
         const metadata = d3.csv("data/country-metadata-flags.csv")
-        return  {raw_data:await data, metadata: await metadata}
+        return  {raw_data:await Promise.all(datasets), metadata: await metadata}
     }
     catch (err) {
         console.log(err)
         throw Error("Failed to load data")
     }
-  
-}
-
-// RUN SELECTORS  (1st load the metadata into the environment)
-getMetaData().then((meta)=>{ 
-    getData(filename).then((raw)=>{ 
-    // CREATE SELECTORS
-        // YEAR SELECTOR 
-        let input_data = raw
-        let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
-
-        let sliderticks = document.getElementById("sliderticks");
-        let slider = document.getElementById("selectYear");
-        let output = document.getElementById("yearRange");
-        let sliderValue = parseInt(slider.value)
-        
-        function getTicks (year){
-            console.log(year)
-            let ticks = allYears.map(col =>
-                 +col === +year 
-                 ? `<p><b>${col}</b></p   >`
-                 : `<p>${col}</p   >`
-                ).join("");
-
-            sliderticks.innerHTML = ticks
-        }
-
-        
-
-        slider.setAttribute("min", allYears[0]);
-        slider.setAttribute("max", allYears[allYears.length-1]);
-
-
-
-
-        if (filename.includes("stock")){
-            function getTicks (year){
-                console.log(year)
-                let ticks = allYears.map(col =>
-                     +col === +year 
-                     ? `<p style="color:black"><b>${col}</b></p   >`
-                     : `<p style="color:black">${col}</p   >`
-                    ).join("");
-    
-                sliderticks.innerHTML = ticks
-            }
-            getTicks(sliderValue)
-            /* output.innerHTML ='<span class="lighten"><b>Selected year: &nbsp; </b> </span>'+sliderValue; // Display the default slider value */
-            // Update the current slider value (each time you drag the slider handle)
-            slider.oninput = function() {
-                let value = parseInt(this.value)
-                getTicks(value)
-                /* output.innerHTML = '<span class="lighten"><b>Selected year: &nbsp;  </b> </span>'+value; */
-            }
-        }
-        else if (filename.includes("flow")) {
-            function getTicks (year){
-                console.log(year)
-                let ticks = allYears.map(col =>
-                     +col === +year  || +col === +year +5
-                     ? `<p><b>${col}</b></p   >`
-                     : `<p>${col}</p   >`
-                    ).join("");
-    
-                sliderticks.innerHTML = ticks
-            }
-            
-             /* output.innerHTML ='<span class="lighten"><b>Selected period:  &nbsp;  </b></span>'+slider.value+'<span class="lighten"> — </span>'+sliderValue; // Display the default slider value */
-             // Update the current slider value (each time you drag the slider handle)
-             slider.oninput = function() {
-                 let value = parseInt(this.value)
-                 getTicks(value)
-                 /* output.innerHTML = '<span class="lighten"><b>Selected period:  &nbsp; </b> </span>'+this.value+'<span class="lighten"> — </span>'+value; */
-             }
-         }
-        
-        
-        // METHOD SELECTOR 
-        d3.select("#selectMethod")
-            .selectAll('myOptions')
-            .data(allMethods)
-            .enter()
-            .append('option')
-            .text(d=>{ return d; })    // text showed in the menu dropdown
-            .attr("value",d=> { return d; }) 
-        
-        /* // GENDER SELECTOR 
-        d3.select("#selectSex")
-            .selectAll('myOptions')
-            .data(allSexes)
-            .enter()
-            .append('option')
-            .text(d=>{ return d; })    // text showed in the menu dropdown
-            .attr("value",d=> { return d; })  */
-        
-        // TYPE SELECTOR 
-        d3.select("#selectType")
-            .selectAll('myOptions')
-            .data(allTypes)
-            .enter()
-            .append('option')
-            .text(d=>{ return d; })    // text showed in the menu dropdown
-            .attr("value",d=> { return d; }) 
-    });    
-})
-
+} */
 
 
 // ##########################################################
 //  DATA PREPARE
 // ##########################################################
-
 function dataPrepare(input, config){
     meta = input.metadata 
     threshold = input.raw_data.threshold
     colors = input.raw_data.colours
     flags = meta.map(d=>{return { [d.origin_name]:d.origin_flag }})
     input = input.raw_data    
-    
+
     year = config.year
     sex = config.sex
-    
-    var data = filterYear(input,year)   
 
+    var data = filterYear(input,year)   
+    console.log(data)
+    
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
-
+        console.log(index,names)
         for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
             return matrix;
     }
@@ -279,7 +171,6 @@ function dataPrepare(input, config){
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
-    
     
     function filteredMatrix(input){
         data = input
@@ -338,12 +229,9 @@ function dataPrepare(input, config){
         console.log(outflows.filter(d=>d[0].includes("Austri")))
         console.log(inflows.filter(d=>d[0].includes("Austri"))) */
 
-
-
         // Filter data by threshold
         let filteredData = nldata.links
-               .filter(d=> d.value > threshold )
-        
+               .filter(d=> d.value > threshold )   
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
         let dataSelect = filteredData.filter(d=> d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
         function removeNullNames(){      
@@ -376,7 +264,7 @@ function dataPrepare(input, config){
 
             return names_indexed
         } 
-        names = removeNullNames()
+        names = Array.from(new Set(removeNullNames())) 
         
         let finalData = filteredData.filter(d=> 
             names.includes(d.source) && names.includes(d.target)
@@ -393,8 +281,6 @@ function dataPrepare(input, config){
             }
         })
 
-        //
-        
         return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData, total_flows: total_flows}
     }
 
@@ -468,7 +354,6 @@ function dataPrepare(input, config){
         data = {names,matrix}        
         return data
     }
-    
     let result = finalNamesMatrix()
 
     return {result,total_flows}
@@ -477,8 +362,80 @@ function dataPrepare(input, config){
 // ##########################################################
 //  DRAW
 // ##########################################################
+d3.select("#selectMethod")
+                .selectAll('myOptions')
+                .data(allMethods)
+                .enter()
+                .append('option')
+                .text(d=>{ return d; })    // text showed in the menu dropdown
+                .attr("value",d=> { return d; }) 
+function draw(raw,config){
+    // GET SELECTED DATASET   
+    filename = fileName(config).json
+    let file_index = files.indexOf(filename)
+    let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
+    console.log(input)
 
-function draw(input,config){
+    // CREATE SELECTORS
+    function setSelectors() {
+            // YEAR SELECTOR 
+            let input_data = input
+            let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
+    
+            let sliderticks = document.getElementById("sliderticks");
+            let slider = document.getElementById("selectYear");
+            let output = document.getElementById("yearRange");
+            let sliderValue = parseInt(slider.value)
+            
+            function getTicks (year){
+                console.log(year)
+                let ticks = allYears.map(col =>
+                     +col === +year 
+                     ? `<p><b>${col}</b></p   >`
+                     : `<p>${col}</p   >`
+                    ).join("");
+                sliderticks.innerHTML = ticks
+            }
+            slider.setAttribute("min", allYears[0]);
+            slider.setAttribute("max", allYears[allYears.length-1]);
+    
+            if (filename.includes("stock")){
+                function getTicks (year){
+                    console.log(year)
+                    let ticks = allYears.map(col =>
+                         +col === +year 
+                         ? `<p style="color:black"><b>${col}</b></p   >`
+                         : `<p style="color:black">${col}</p   >`
+                        ).join("");
+                    sliderticks.innerHTML = ticks
+                }
+                getTicks(sliderValue)
+                // Update the current slider value (each time you drag the slider handle)
+                slider.oninput = function() {
+                    let value = parseInt(this.value)
+                    getTicks(value)
+                }
+            }
+            else if (filename.includes("flow")) {
+                function getTicks (year){
+                    console.log(year)
+                    let ticks = allYears.map(col =>
+                         +col === +year  || +col === +year +5
+                         ? `<p><b>${col}</b></p   >`
+                         : `<p>${col}</p   >`
+                        ).join("");
+                    sliderticks.innerHTML = ticks
+                }
+                getTicks(sliderValue)
+                 // Update the current slider value (each time you drag the slider handle)
+                 slider.oninput = function() {
+                     let value = parseInt(this.value)
+                     getTicks(value)
+                 }
+             }            
+        }
+    setSelectors()
+
     let data = dataPrepare(input,config).result
     let total_flows = dataPrepare(input,config).total_flows
     input = input.raw_data                  // used for metadata
@@ -1158,9 +1115,6 @@ var arcRegionLabel = d3.arc()
         }
     }
 
-    
-
-
     // INTERACTIONS
     // open regions
     config.maxRegionsOpen = 2 // config.regions = region || config.regions
@@ -1184,22 +1138,24 @@ var arcRegionLabel = d3.arc()
     chordDiagram.selectAll(".group-arc")
         .on("click", function (evt, d) {                    
             config.previous = data 
-
+            d3.selectAll("g")
+                .remove()    
+            draw(raw,config)
             // draw new chart 
-            data = getData(filename).then(data=> {
-                data = data
-                // remove current content
-                d3.selectAll("g")
-                    .remove()        
-                return draw(data,config)
-            })
+            /* getData(filename).then(data=> {
+                    data = data
+                    // remove current content
+                    d3.selectAll("g")
+                        .remove()        
+                    return draw(data,config)
+                }) */
         })
 
-    chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
+    chordDiagram.on("mouseover",mouseover).on("mouseo ut", mouseout)
  
     function mouseover() {
         chordDiagram.selectAll(".group-arc, .path-item")
-            .on("mouseover", function (evt, d) {
+             .on("mouseover", function (evt, d) {
             // console.log(d.id)
             if (config.regions < 1){
                 chords
@@ -1256,22 +1212,26 @@ var arcRegionLabel = d3.arc()
         .on("input", function(d) {
             config.previous = data 
             config.year = d3.select(this).property("value")
-
-            getData(filename).then(data=> {
+            d3.selectAll("g")
+                .remove()    
+            draw(raw,config)
+            /* getData(filename).then(data=> {
                 data = data
                 // Remove previous
                 d3.selectAll("g")
                     .remove();
                return draw(data,config)
-            })
+            }) */
 
         })        
     d3.selectAll("#stockFlow")
         .on("change", function(d) {
             config.previous = data 
             config.stockflow = d3.select(this).property("value")
-
-            filename = fileName(config).json
+            d3.selectAll("g")
+                .remove()    
+            draw(raw,config)
+            /*filename = fileName(config).json
 
             getData(filename).then(data=> {
                 data = data
@@ -1280,15 +1240,17 @@ var arcRegionLabel = d3.arc()
                     .remove();
 
                return draw(data,config)
-            })
+            }) */
 
     })    
     d3.selectAll("#selectMethod")
         .on("change", function(d) {
             config.previous = data 
             config.method = d3.select(this).property("value")
-
-            filename = fileName(config).json
+            d3.selectAll("g")
+                .remove()    
+            draw(raw,config)
+            /* filename = fileName(config).json
                 
             getData(filename).then(data=> {
                 data = data
@@ -1297,7 +1259,7 @@ var arcRegionLabel = d3.arc()
                     .remove();
 
                return draw(data,config)
-            })
+            }) */
             
     })    
         
@@ -1305,8 +1267,11 @@ var arcRegionLabel = d3.arc()
         .on("change", function(d) {
             config.previous = data 
             config.sex = d3.select(this).property("value")
-
-            filename = fileName(config).json
+            console.log(config.sex)
+            d3.selectAll("g")
+                .remove()    
+            draw(raw,config)
+            /* filename = fileName(config).json
             console.log(filename)
 
             getData(filename).then(data=> {
@@ -1316,17 +1281,19 @@ var arcRegionLabel = d3.arc()
                     .remove();
 
                return draw(data,config)
-            })
+            }) */
 
         // drawSankey(config)
     })
     
-    d3.selectAll("#selectType")
+    d3.selectAll(".selectType")
         .on("change", function(d) {
             config.previous = data 
             config.type = d3.select(this).property("value")
-
-            filename = fileName(config).json
+            d3.selectAll("g")
+                .remove()    
+            draw(raw,config)
+            /* filename = fileName(config).json
 
             getData(filename).then(data=> {
                 data = data
@@ -1335,7 +1302,7 @@ var arcRegionLabel = d3.arc()
                     .remove();
 
                return draw(data,config)
-            })
+            }) */
             
       
     })

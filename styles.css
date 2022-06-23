@@ -29,7 +29,7 @@ header, footer {
 }
 article {
   background-color:#f4f4f4;
-  -moz-box-shadow: 0 0 25px #bebebe;
+  /* -moz-box-shadow: 0 0 25px #bebebe; */
   -webkit-box-shadow: 0 0 25px #bebebe;
   box-shadow: 0 0 25px #bebebe;
   padding-bottom:4rem;
@@ -84,6 +84,19 @@ ul.menu li{
     text-align: left;
     float:left;
     padding-bottom:0;
+    vertical-align: middle;
+}
+
+ img {
+  filter: gray; /* IE6-9 */
+  -webkit-filter: grayscale(.8); /* Google Chrome, Safari 6+ & Opera 15+ */
+  filter: grayscale(.8); /* Microsoft Edge and Firefox 35+ */
+}
+
+/* Disable grayscale on hover */
+img:hover {
+  -webkit-filter: grayscale(0);
+  filter: none;
 }
 
 .credits  {
@@ -214,11 +227,9 @@ ul.menu li{
     transition:  .2s ease-in-out; 
 
 }
-.range  {
-    
+/* .range  {
     display:content;   
-    /* text-transform:uppercase; */
-}
+} */
 #yearRange {
     margin-bottom:1.2em;
     color: #000;
@@ -421,10 +432,12 @@ ul.menu li{
     }
     ul.menu li{
       top:0;
-      padding:1em;
+      padding:0.1em;
+      
       display:block;
       max-width: 60%;
   }
+  
 }
 @media (min-width: 768px) {
   /* .header li {
@@ -435,7 +448,6 @@ ul.menu li{
     padding: 10px 20px;
   } */
   .header .menu {
-    clear: none;
     float: right;
     max-height: none;
   }
@@ -597,10 +609,10 @@ select {
     background: rgba(255, 255, 255, 0.9);
     border: 0;
     z-index: 0;
-}
+}/* 
 select::-ms-expand {
   display: none;
-}
+} */
 
 .select select, .select::after {
   grid-area: select;

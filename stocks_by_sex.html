@@ -1,164 +1,217 @@
-
 <!doctype html>
 <html>
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="icon" type="image/x-icon" href="http://127.0.0.1:5501/favicon.ico">
-	<link href="styles.css" rel="stylesheet" media="all">
+<meta charset="utf-8">	
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="http://127.0.0.1:5501/favicon.ico">
+<link href="styles.css" rel="stylesheet" media="all">
   	<title>Global international migration</title>
 </head>
+<article>
+  <header class="header">
+   
+  	<div class="logo">
+        <h1>Global migration <br>data explorer</a></h1>
+        <div class="credits">
+            by
+            <a href="http://www.guyabel.com">Guy J. Abel</a> 
+			&amp; 
+            <a href="http://X80110.github.io/about-me">Xavier Bolló</a>             
+        </div> 
+		<h2>Population <b>stocks</b> by sex<!--  by <div><b>sex</b></div> --></h2>
+	</div>
 
-<body>
+
+  <div>
+	<input class="menu-btn" type="checkbox" id="menu-btn" />
+	<label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
 	
-	<div class="header">
-		<header class="header">
-			<h1><a href="" class="logo">Global migration <br>data explorer</a></h1>
-			<input class="menu-btn" type="checkbox" id="menu-btn" />
-			<label class="menu-icon" for="menu-btn"><span class="navicon"></span></label>
-			<ul class="menu">
-			<li><a  target="_blank" href = "https://github.com/X80110/migration-visualization">
-					<img src="static/github-icon.svg" alt="github source code"/>
-				</a>
-			</li>
-
-			<li><a target="_blank" href = "https://twitter.com/share?url=<URL>&text=<TEXT>via=<USERNAME>">
+	<ul class="menu">
+		<ul>
+		<li>
+			Datasets 
+			<div class='dropdown'>
+			<p>Stocks</p>
+			<a class='drop-link' href='index.html'>all</a>
+			<a class='drop-link' href='stocks_by_sex.html'>by sex</a>
+			<p>Flows</p>
+			<a class='drop-link' href='flows.html'>all</a>
+			<a class='drop-link' href='flows_by_sex.html'>by sex</a>
+			<a class='drop-link' href='flows_by_type.html'>by type</a>
+			</div>
+		</li>
+		<li>
+			Tools <!-- <i class='down'></i> -->
+		<div class='dropdown'>
+			<p>Visualization</p>         
+				<a class='drop-link' href=''><svg width="30px" fill="#9C9C9C"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M973.2 365.1c-.7.2-1.3.3-2 .5C983.4 408.3 990 453.4 990 500c0 270.6-219.4 490-490 490-132.3 0-252.3-52.6-340.5-137.8-.1.2-.3.5-.3.5l-1-1.8C66.8 761.9 10 637.6 10 500 10 229.4 229.4 10 500 10c149.6 0 283.4 67.1 373.3 172.8h9.8s5.4 12 13.5 29.7C929 257 954 307.2 970 361.3c1.3 2 2.5 3.4 3.2 3.8zm-31.9 8.4c-104.7 27.6-198.6 45.7-282.6 56.5 10.3 17 21.1 32.7 32.1 47.1 131.4-97 250.3-66.2 250.3-66.2s4.9 3.2 10.9 7.5c-2.8-15.3-6.5-30.2-10.7-44.9zM959.4 500c0-21.5-2-42.5-4.8-63.3-109.3-10.8-185.3 19.9-237.7 71.4 97.9 106.7 206.9 125 222.2 127.1 13.1-42.7 20.3-88.1 20.3-135.2zM849.2 797.7c9.4-11.1 18.5-22.5 26.9-34.4C791.2 702 727 630.1 678 555.8c-28.8 44.1-47 95.7-58.2 147.1 113.8 30.1 195.9 74.5 229.4 94.8z M605.9 946.6c69.8-16.6 133.5-48.8 186.9-93.2-67.3-39.9-128.3-68.1-183.5-87.6-10 81.2-5.8 152.7-3.4 180.8zM524.4 683c39.8-76 82.9-131.6 125.9-172-14.4-25.2-27-50.5-38.3-75.6-57.2 5.8-109.5 8.2-157 7.9-58.3 118.2-132.4 193-198.9 240 97.6-15.8 188.1-12.7 268.3-.3zm-99.2 269.8c21.4-84.3 46.3-155.6 73.3-216.1-183-30.3-281.5 48.5-320 91 66 64.7 151.5 109.3 246.7 125.1zM71.4 664.4c173.4-25.2 263.1-117.3 307.4-224-175.3-12.5-272.7-61.8-313.5-88.4-15.8 46.5-24.7 96.2-24.7 148 0 58 11.2 113.3 30.8 164.4zM401.1 51.6C323 68.7 252.4 105.8 194.7 157.1c63.8 92.7 139.9 138.5 217.4 155.1 14.5-109.8-1.6-213.8-11-260.6zm103 267.7c21-.9 41.8-3.4 62.1-7.1-13.6-45.7-23.1-89-29.4-127.1-8.7 48.8-19.8 93.3-32.7 134.2zm52.6-274.8c4.6 103.9 21 189.5 44.6 260.2C714 276.1 807.6 215.2 840.4 192c-72-79.5-171.6-133.6-283.7-147.5z"/></svg><br> Chord diagram</a>
+				<a class='drop-link' href='#'><svg width="30px"  viewBox="0 0 1000 1000" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M533.504 529.92c31.744 33.792 62.464 67.584 94.208 99.328 11.776-5.632 23.552-11.264 35.84-16.384-38.912-29.696-74.752-64.512-111.104-99.84-6.656 5.632-12.8 11.264-18.944 16.896zM481.792 579.584C380.416 678.4 284.672 773.12 143.36 773.12v71.68c200.704 0 294.4-101.376 422.912-181.248-27.648-28.16-55.296-56.832-84.48-83.968zM771.072 580.096c38.912-7.68 81.408-11.776 130.048-11.776V358.4c-119.808 0-210.944 44.544-289.28 104.448 50.176 47.616 101.376 90.624 159.232 117.248zM143.36 604.16v87.04c142.848 0 231.424-61.44 316.416-131.584-24.064-20.992-49.152-40.448-76.288-57.344C313.856 560.64 239.104 604.16 143.36 604.16zM516.608 512c6.144-5.12 12.288-10.24 18.944-15.36-23.552-22.528-48.128-45.568-73.728-66.56-5.12 4.608-10.24 9.728-14.848 14.336 24.064 21.504 47.104 44.544 69.632 67.584z" fill="#9C9C9C" /><path d="M519.68 374.272c26.624 25.088 52.736 51.2 78.336 75.776C675.328 398.336 767.488 358.4 901.12 358.4V189.44c-169.472 0-281.088 89.088-381.44 184.832z" fill="#9C9C9C" /><path d="M143.36 194.56v117.248c142.848 0 238.08 52.224 318.464 118.272 18.944-18.432 38.4-37.376 57.856-55.808C420.352 280.576 309.76 194.56 143.36 194.56zM901.12 696.32v-87.04c-47.616 0-90.624-10.752-130.048-29.184-39.936 7.68-75.264 18.944-108.032 32.256 64.512 49.152 138.24 83.968 238.08 83.968zM551.936 513.024c18.944-17.408 38.912-34.304 59.392-49.664-4.608-4.096-9.216-8.704-13.824-12.8-22.016 14.848-42.496 30.72-62.464 46.592 6.144 5.12 11.776 10.24 16.896 15.872z" fill="#9C9C9C" /><path d="M551.936 513.024c36.352 35.328 72.192 70.144 111.104 99.84 32.256-13.312 68.096-24.576 108.032-32.256-57.856-26.624-109.056-69.632-159.744-117.248-19.968 15.36-39.936 32.256-59.392 49.664zM598.016 450.048c-26.112-25.088-51.712-50.688-78.336-75.776-19.456 18.432-38.912 37.376-57.856 55.808 25.6 20.992 50.176 44.032 73.728 66.56 19.968-15.872 40.448-31.744 62.464-46.592z" fill="#7F7C7C" /><path d="M901.12 844.8v-71.68c-110.592 0-193.536-64-273.408-144.384-21.504 10.752-41.984 22.528-61.952 34.816 91.648 93.696 182.272 181.248 335.36 181.248zM516.608 512l-56.832 47.616c7.68 6.656 14.848 13.312 22.016 19.968 16.896-16.384 34.304-33.28 51.712-49.664-5.632-6.144-11.264-11.776-16.896-17.92zM143.36 317.44v117.248c99.328 0 175.616 27.136 240.128 67.072 21.504-17.92 42.496-37.376 63.488-57.344C365.056 372.736 270.336 317.44 143.36 317.44z" fill="#D1D1D1" /><path d="M481.792 579.584c29.184 27.136 56.832 55.808 83.968 83.968 19.456-12.288 39.936-24.064 61.952-34.816-31.232-31.744-61.952-65.536-94.208-99.328l-51.712 50.176zM446.976 444.416c-20.992 19.968-41.984 39.424-63.488 57.344 27.648 16.896 52.736 36.352 76.288 57.344 18.944-15.36 37.888-31.744 56.832-47.616-22.528-22.528-45.568-45.568-69.632-67.072z" fill="#9C9C9C" /></svg> <br>Sankey</a>
+				<a class='drop-link' href='#'><svg width="30px" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"><path d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z" fill="#9C9C9C" /><path d="M476.16 460.8L358.4 358.4l-163.84-5.12 15.36 204.8 87.04 51.2 66.56 215.04 225.28-240.64 5.12-122.88z" fill="#9C9C9C" /><path d="M803.84 296.96l-143.36-97.28-51.2 51.2 20.48 87.04 97.28 35.84 56.32 56.32 61.44 46.08-46.08 56.32-87.04 261.12 138.24-138.24 20.48-184.32z" fill="#9C9C9C" /><path d="M509.44 174.08c184.832 0 335.36 150.528 335.36 335.36S694.272 844.8 509.44 844.8 174.08 694.272 174.08 509.44 324.608 174.08 509.44 174.08m0-61.44C290.304 112.64 112.64 290.304 112.64 509.44S290.304 906.24 509.44 906.24 906.24 728.576 906.24 509.44 728.576 112.64 509.44 112.64z" fill="#9C9C9C"/></svg> <br>Map</a>
+		</div>
+		</li>
+		
+		<li>
+			<a  target="_blank" href = "https://github.com/X80110/migration-visualization">
+				<img src="static/github-icon.svg" alt="github source code"/>
+			</a>
+		</li>
+	
+		<li>
+			<a target="_blank" href = "https://twitter.com/share?url=<URL>&text=<TEXT>via=<USERNAME>">
 				<img src="static/share-icon.svg" alt="share on twitter"/>
 			</a>
 		</li>
 		</ul>
-		  </header>
+	</ul>
 	</div>
-<!-- 	<div class="header">
-		<header>
-			<h1>🌐 Global migration data explorer</h1>
-	   </header>
-	</div> -->
-   
-   <!-- <hr> -->
-   
-	   <!-- <nav>nav</nav> -->
-	   <!-- <aside>aside</aside> -->
-	   
-	   <article>			
-			<div class="wrap-collabsible">
-				<input id="collapsible1" class="toggle" type="checkbox" />
-				<label for="collapsible1" class="lbl-toggle">Select data type</label>
-				<div class="collapsible-content">
-					<div class="content-inner">
-						<table   class="center" >
-							<tr>
-								<th>STOCKS</th>	
-								<!-- <td><b>all</b>></li> -->
-								<td class="grow"><a href="index.html">all</a></li>
-								<td><b>by sex</b></li>
-								
-										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-										<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
-							</tr>
-										
-							<tr class="inactive">
-								<th >FLOWS</th>
-								<td class="grow"><a href="flows.html">all</a></td>
-								<td class="grow"><a href="flows_by_sex.html">by sex</a></td>
-								<td class="grow"><a href="flows_by_type.html">by type</a></td>
-								
-							</tr>
+</header>
+<body>
+
+  
+  <div id="main">
+        <div class="selectors">
+          <div class="form">
+              <div ><span>Select sex</span></div>
+              <div class="field collection">
+                <input checked="" class="selectSex" id="female" name="selectSex" type="radio" value="female" />
+                <label for="female">
+                  <div class="text">
+                    Female
+                  </div>
+                </label>
+                <input  id="male" class="selectSex" name="selectSex" type="radio" value="male" />
+                <label for="male">
+                  <div class="text">
+                    Male
+                  </div>
+                </label>
+              </div>
+            </div>
+
+          <div class="range">
+            <div ><span>Select year</span></div>
+            <!-- <br> -->
+            <label for="range" id="start-value"></label>
+            <label for="range" id="end-value"></label>
+            <input class="slider-stock" type="range" list="tickmarks" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
+            <div class="sliderticks" id="sliderticks"></div>
+            
+          </div>
+         <!--  <div class="method">
+            <div ><span>Estimation method</span></div>
+            <select value="da_pb_open" id="selectMethod">
+            </select>
+          </div> -->
+
+        </div>
+		<div class="selectors" style="opacity:65%; margin-top:1em">
+			<p> Click the outer arc of a region to explore it at a country level</p>
+	  	</div>
+            
+<!-- 		<div class="reset">
+			<input name="updateButton" 
+				   type="button" 
+				   value="Update" 
+				   onclick="updateData()" />
+		</div> -->
 		
-							
-						</table>
+		<div id="chart" ></div>
+		<div class="box"> 
+				<div class="about">
+					<h2>About the Data</h2>
+					<p> The bilateral flows between 196 countries are estimated from sequential stock tables. They are comparable across countries and capture the number of people who changed their country of residence over five-year periods. The estimates reflect migration transitions and thus cannot be compared to annual movements flow data published by United Nations and Eurostat. </p>
+					<div class="center">
+					  <a href="Data%20on%20the%20global%20flow%20of%20people_Version%20March2014.csv" class="button">
+						Download the data
+					  </a>
 					</div>
 				</div>
-			</div>
-			<div class="wrap-collabsible">
-				<input id="collapsible2" class="toggle" type="checkbox" />
-				<label for="collapsible2" class="lbl-toggle">Select visualization tool</label>
-				<div class="collapsible-content">
-					<div class="content-inner">
-						<table   class="center" >
-							<tr>
-								<td class="grow"><svg src="static/chord.svg"></svg></li>
-								<td class="grow"><svg src="static/sankey.svg"></svg></li>
-								<td class="grow"><svg src="static/map.svg"></svg></li>
-										<!-- <td class="sub">→ <a href="index.html">all</a></td> -->
-										<!-- <td class="sub"><a href="stocks_by_sex.html">by sex</a></td> -->
-							</tr>							
-						</table>
-					</div>
+		
+				<div class="options">
+					<h2>View another measure</h2>
+					<hr>
+						<p>Population Stocks Datasets</p>
+						<a class='drop-link' href='index.html'>all</a>
+						<a class='drop-link' href='stocks_by_sex.html'>by sex</a>
+						<p>Migration Flows Datasets</p>
+						<a class='drop-link' href='flows.html'>all</a>
+						<a class='drop-link' href='flows_by_sex.html'>by sex</a>
+						<a class='drop-link' href='flows_by_type.html'>by type</a>
 				</div>
-			</div>
-			
+				<div class="options">
+					<h2>Change visualization tool</h2>
+					<hr>
+						<a class='drop-link' href=''><svg width="60px" fill="#9C9C9C"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><path d="M973.2 365.1c-.7.2-1.3.3-2 .5C983.4 408.3 990 453.4 990 500c0 270.6-219.4 490-490 490-132.3 0-252.3-52.6-340.5-137.8-.1.2-.3.5-.3.5l-1-1.8C66.8 761.9 10 637.6 10 500 10 229.4 229.4 10 500 10c149.6 0 283.4 67.1 373.3 172.8h9.8s5.4 12 13.5 29.7C929 257 954 307.2 970 361.3c1.3 2 2.5 3.4 3.2 3.8zm-31.9 8.4c-104.7 27.6-198.6 45.7-282.6 56.5 10.3 17 21.1 32.7 32.1 47.1 131.4-97 250.3-66.2 250.3-66.2s4.9 3.2 10.9 7.5c-2.8-15.3-6.5-30.2-10.7-44.9zM959.4 500c0-21.5-2-42.5-4.8-63.3-109.3-10.8-185.3 19.9-237.7 71.4 97.9 106.7 206.9 125 222.2 127.1 13.1-42.7 20.3-88.1 20.3-135.2zM849.2 797.7c9.4-11.1 18.5-22.5 26.9-34.4C791.2 702 727 630.1 678 555.8c-28.8 44.1-47 95.7-58.2 147.1 113.8 30.1 195.9 74.5 229.4 94.8zM605.9 946.6c69.8-16.6 133.5-48.8 186.9-93.2-67.3-39.9-128.3-68.1-183.5-87.6-10 81.2-5.8 152.7-3.4 180.8zM524.4 683c39.8-76 82.9-131.6 125.9-172-14.4-25.2-27-50.5-38.3-75.6-57.2 5.8-109.5 8.2-157 7.9-58.3 118.2-132.4 193-198.9 240 97.6-15.8 188.1-12.7 268.3-.3zm-99.2 269.8c21.4-84.3 46.3-155.6 73.3-216.1-183-30.3-281.5 48.5-320 91 66 64.7 151.5 109.3 246.7 125.1zM71.4 664.4c173.4-25.2 263.1-117.3 307.4-224-175.3-12.5-272.7-61.8-313.5-88.4-15.8 46.5-24.7 96.2-24.7 148 0 58 11.2 113.3 30.8 164.4zM401.1 51.6C323 68.7 252.4 105.8 194.7 157.1c63.8 92.7 139.9 138.5 217.4 155.1 14.5-109.8-1.6-213.8-11-260.6zm103 267.7c21-.9 41.8-3.4 62.1-7.1-13.6-45.7-23.1-89-29.4-127.1-8.7 48.8-19.8 93.3-32.7 134.2zm52.6-274.8c4.6 103.9 21 189.5 44.6 260.2C714 276.1 807.6 215.2 840.4 192c-72-79.5-171.6-133.6-283.7-147.5z"/></svg><br> Chord diagram</a>
+						<a class='drop-link' href='#'><svg width="60px"  viewBox="0 0 1000 1000" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M533.504 529.92c31.744 33.792 62.464 67.584 94.208 99.328 11.776-5.632 23.552-11.264 35.84-16.384-38.912-29.696-74.752-64.512-111.104-99.84-6.656 5.632-12.8 11.264-18.944 16.896zM481.792 579.584C380.416 678.4 284.672 773.12 143.36 773.12v71.68c200.704 0 294.4-101.376 422.912-181.248-27.648-28.16-55.296-56.832-84.48-83.968zM771.072 580.096c38.912-7.68 81.408-11.776 130.048-11.776V358.4c-119.808 0-210.944 44.544-289.28 104.448 50.176 47.616 101.376 90.624 159.232 117.248zM143.36 604.16v87.04c142.848 0 231.424-61.44 316.416-131.584-24.064-20.992-49.152-40.448-76.288-57.344C313.856 560.64 239.104 604.16 143.36 604.16zM516.608 512c6.144-5.12 12.288-10.24 18.944-15.36-23.552-22.528-48.128-45.568-73.728-66.56-5.12 4.608-10.24 9.728-14.848 14.336 24.064 21.504 47.104 44.544 69.632 67.584z" fill="#9C9C9C" /><path d="M519.68 374.272c26.624 25.088 52.736 51.2 78.336 75.776C675.328 398.336 767.488 358.4 901.12 358.4V189.44c-169.472 0-281.088 89.088-381.44 184.832z" fill="#9C9C9C" /><path d="M143.36 194.56v117.248c142.848 0 238.08 52.224 318.464 118.272 18.944-18.432 38.4-37.376 57.856-55.808C420.352 280.576 309.76 194.56 143.36 194.56zM901.12 696.32v-87.04c-47.616 0-90.624-10.752-130.048-29.184-39.936 7.68-75.264 18.944-108.032 32.256 64.512 49.152 138.24 83.968 238.08 83.968zM551.936 513.024c18.944-17.408 38.912-34.304 59.392-49.664-4.608-4.096-9.216-8.704-13.824-12.8-22.016 14.848-42.496 30.72-62.464 46.592 6.144 5.12 11.776 10.24 16.896 15.872z" fill="#9C9C9C" /><path d="M551.936 513.024c36.352 35.328 72.192 70.144 111.104 99.84 32.256-13.312 68.096-24.576 108.032-32.256-57.856-26.624-109.056-69.632-159.744-117.248-19.968 15.36-39.936 32.256-59.392 49.664zM598.016 450.048c-26.112-25.088-51.712-50.688-78.336-75.776-19.456 18.432-38.912 37.376-57.856 55.808 25.6 20.992 50.176 44.032 73.728 66.56 19.968-15.872 40.448-31.744 62.464-46.592z" fill="#7F7C7C" /><path d="M901.12 844.8v-71.68c-110.592 0-193.536-64-273.408-144.384-21.504 10.752-41.984 22.528-61.952 34.816 91.648 93.696 182.272 181.248 335.36 181.248zM516.608 512l-56.832 47.616c7.68 6.656 14.848 13.312 22.016 19.968 16.896-16.384 34.304-33.28 51.712-49.664-5.632-6.144-11.264-11.776-16.896-17.92zM143.36 317.44v117.248c99.328 0 175.616 27.136 240.128 67.072 21.504-17.92 42.496-37.376 63.488-57.344C365.056 372.736 270.336 317.44 143.36 317.44z" fill="#D1D1D1" /><path d="M481.792 579.584c29.184 27.136 56.832 55.808 83.968 83.968 19.456-12.288 39.936-24.064 61.952-34.816-31.232-31.744-61.952-65.536-94.208-99.328l-51.712 50.176zM446.976 444.416c-20.992 19.968-41.984 39.424-63.488 57.344 27.648 16.896 52.736 36.352 76.288 57.344 18.944-15.36 37.888-31.744 56.832-47.616-22.528-22.528-45.568-45.568-69.632-67.072z" fill="#9C9C9C" /></svg> <br>Sankey</a>
+						<a class='drop-link' href='#'><svg width="60px" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"><path d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z" fill="#9C9C9C" /><path d="M476.16 460.8L358.4 358.4l-163.84-5.12 15.36 204.8 87.04 51.2 66.56 215.04 225.28-240.64 5.12-122.88z" fill="#9C9C9C" /><path d="M803.84 296.96l-143.36-97.28-51.2 51.2 20.48 87.04 97.28 35.84 56.32 56.32 61.44 46.08-46.08 56.32-87.04 261.12 138.24-138.24 20.48-184.32z" fill="#9C9C9C" /><path d="M509.44 174.08c184.832 0 335.36 150.528 335.36 335.36S694.272 844.8 509.44 844.8 174.08 694.272 174.08 509.44 324.608 174.08 509.44 174.08m0-61.44C290.304 112.64 112.64 290.304 112.64 509.44S290.304 906.24 509.44 906.24 906.24 728.576 906.24 509.44 728.576 112.64 509.44 112.64z" fill="#9C9C9C"/></svg> <br>Map</a>
+				</div>
+		
 
-			<div id="main">
-
-
-			<!-- <div class="slider_range"> -->
-			<div style="margin-top: 1em ;">
-				<div><label> Select year: </label></div>
-			<input class="slider-stock" type="range" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
-			<div class="sliderticks" id="sliderticks">
-				<!-- <p>1990</p> -->
-				<p>1995</p>
-				<p>2000</p>
-				<p>2005</p>
-				<p>2010</p>
-				<p>2015</p>
-				<p>2020</p>
-			</div>
-			
-				<label for="range" id="start-value"></label>
-				<label for="range" id="end-value"></label>
-				</input>
-				<div id="yearRange"></div>
-			</div>
-			
-	
-		<div class="subgroups">
-						<label for="selectSex">Select sex:</label>
-						<select value= 'female' id="selectSex"></select>
+		
+		 </div>
+		 <div class="logos">
+			<hr>
+			<a href="">LOGO 1</a>
+			<a href="">LOGO 2</a>
+			<a href="">LOGO 3</a>
 		</div>
-		<div id="chart" class="center"></div>
-		<div class="box">
-		 	<div>
-				 <h4>About the data</h4>
-				 <p>Some text here</p>
-		 	</div>
-		 	<div>
-				<h4>Visual tools</h4>
-				<p>Some text here</p>
-			 </div>
-			 <div>
-				<h4>Other measurements</h4>
-				<p>Some text here</p>
-			 </div>
-		</div>
-   
-	   </article>
-   
-   </div>
+	</article>
    <footer>
-   Footer
-   </footer>
-   
+	   This work is licensed under a <a href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-NonCommercial 3.0 Unported License.</a>
+	   <a  href="http://creativecommons.org/licenses/by-nc/3.0/"><!-- <img vertical-align="middle"width="60px" src="static/by-nc.png"> --></a>
+	   <br>
+	   <span class="version"> Version 1.0.0 (June 2022). </span>
+
+    </footer>
    <script src="https://d3js.org/d3.v7.min.js"></script>
    <script src="libs/chord.js"></script>
 
-   
-   <script src="chord-chart.js"></script>
+	<!-- SETTINGS -->
    <script>
-		// filename = "stocks"
-		config.stockflow = "stock"
-		config.sex = "female"
-		config.type = ""
-		config.method = ""
-		
-		const allSexes = ['male', 'female'].reverse()
-		const allMethods = ""
-		const allTypes = ""
-		filename = fileName(config).json
-		getData(filename).then(raw => {
-			draw(raw,config)
-		})
+		let config = {}
+	   config.stockflow = "stock"
+	   config.sex = "female"
+	   config.type = ""
+	   config.method = ""
+	   const allSexes = ['male', 'female'].reverse()
+	   const allTypes = ""
+	   const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
+	
+	   /* console.log(filename) */
+	   let files = [
+        "json/stock.json",
+        "json/stock_female.json",
+        "json/stock_male.json",
+		]
+	</script>
+
+	<!-- CHART -->
+	<script src="chord-chart.js"></script>
+	
+	<!-- RUN DATA AND DRAW CHART	 -->
+	<script>
+			filename = fileName(config).json
+			let datasets =  [];			// promises
+			files.forEach(url => datasets.push(d3.json(url)));
+
+			let file_index = files.indexOf(filename)
+			async function getDataNDraw() {      
+				let raw  = []
+				for (let dataset of datasets) {
+					raw.push(dataset)
+				}
+				const metadata = d3.csv("data/country-metadata-flags.csv")
+				return {raw_data:await Promise.all(raw), metadata: await metadata}
+			};
+			getDataNDraw().then(raw=> {
+				return draw(raw,config)
+			})
+/* 	   // chart(filename).draw(raw,config)
+	   getData(filename).then(raw => {
+			console.log(raw)
+		   draw(raw,config)
+	   })    */
+   
    </script>
 
 </body>

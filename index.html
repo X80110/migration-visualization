@@ -70,7 +70,7 @@
   
   <div id="main">
         <div class="selectors">
-          <div class="form">
+          <!-- <div class="form">
               <div ><span>Select sex</span></div>
               <div class="field collection">
                 <input checked="" class="selectSex" id="female" name="selectSex" type="radio" value="female" />
@@ -86,7 +86,7 @@
                   </div>
                 </label>
               </div>
-            </div>
+            </div> -->
 
           <div class="range">
             <div ><span>Select year</span></div>
@@ -97,7 +97,7 @@
             <div class="sliderticks" id="sliderticks"></div>
             
           </div>
-  <!--         <div class="method">
+          <!-- <div class="method">
             <div ><span>Estimation method</span></div>
             <select value="da_pb_open" id="selectMethod">
             </select>
@@ -130,10 +130,10 @@
 				<div class="options">
 					<h2>View another measure</h2>
 					<hr>
-						<p>Population Stocks</p>
+						<p>Population Stocks Datasets</p>
 						<a class='drop-link' href='index.html'>all</a>
 						<a class='drop-link' href='stocks_by_sex.html'>by sex</a>
-						<p>Migration Flows</p>
+						<p>Migration Flows Datasets</p>
 						<a class='drop-link' href='flows.html'>all</a>
 						<a class='drop-link' href='flows_by_sex.html'>by sex</a>
 						<a class='drop-link' href='flows_by_type.html'>by type</a>
@@ -166,22 +166,51 @@
    <script src="https://d3js.org/d3.v7.min.js"></script>
    <script src="libs/chord.js"></script>
 
-   
-   <script src="chord-chart.js"></script>
+	<!-- SETTINGS -->
    <script>
+		let config = {}
 	   config.stockflow = "stock"
 	   config.sex = "all"
 	   config.type = ""
 	   config.method = ""
 	   const allSexes = ['male', 'female'].reverse()
-	   const allMethods = ""
 	   const allTypes = ""
+	   const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
+	
+	   /* console.log(filename) */
+	   let files = [
+        "json/stock.json"/* ,
+        "json/stock_female.json",
+        "json/stock_male.json", */
+		]
+	</script>
 
-	   filename = fileName(config).json
-	   // chart(filename).draw(raw,config)
+	<!-- CHART -->
+	<script src="chord-chart.js"></script>
+	
+	<!-- RUN DATA AND DRAW CHART	 -->
+	<script>
+			filename = fileName(config).json
+			let datasets =  [];			// promises
+			files.forEach(url => datasets.push(d3.json(url)));
+
+			let file_index = files.indexOf(filename)
+			async function getDataNDraw() {      
+				let raw  = []
+				for (let dataset of datasets) {
+					raw.push(dataset)
+				}
+				const metadata = d3.csv("data/country-metadata-flags.csv")
+				return {raw_data:await Promise.all(raw), metadata: await metadata}
+			};
+			getDataNDraw().then(raw=> {
+				return draw(raw,config)
+			})
+/* 	   // chart(filename).draw(raw,config)
 	   getData(filename).then(raw => {
+			console.log(raw)
 		   draw(raw,config)
-	   })
+	   })    */
    
    </script>
 
