@@ -73,7 +73,7 @@ function labelPosition(angle) {
 
 function filterYear(input,year){ 
 
-    year = year || 1990
+    year = +year || 1990
     nodes = input
     const selectedMatrix  = nodes.matrix[year]
     let names = nodes.names
@@ -140,7 +140,7 @@ function dataPrepare(input, config){
     flags = meta.map(d=>{return { [d.origin_name]:d.origin_flag }})
     input = input.raw_data    
 
-    year = config.year
+    year = +config.year
     sex = config.sex
 
     var data = filterYear(input,year)   
@@ -380,7 +380,11 @@ function draw(raw,config){
     function setSelectors() {
             // YEAR SELECTOR 
             let input_data = input
-            let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
+            const allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
+            const lastYearPlusFive = (+allYears[allYears.length-1]+5).toString()
+            console.log(lastYearPlusFive)
+            let allRangeYears = allYears.concat(lastYearPlusFive)
+            /* console.log(allRangeYears) */
     
             let sliderticks = document.getElementById("sliderticks");
             let slider = document.getElementById("selectYear");
@@ -419,7 +423,7 @@ function draw(raw,config){
             else if (filename.includes("flow")) {
                 function getTicks (year){
                     console.log(year)
-                    let ticks = allYears.map(col =>
+                    let ticks = allRangeYears.map(col =>
                          +col === +year  || +col === +year +5
                          ? `<p><b>${col}</b></p   >`
                          : `<p>${col}</p   >`
@@ -1211,10 +1215,11 @@ var arcRegionLabel = d3.arc()
     d3.selectAll("#selectYear")
         .on("input", function(d) {
             config.previous = data 
-            config.year = d3.select(this).property("value")
+            config.year = +d3.select(this).property("value")
             d3.selectAll("g")
-                .remove()    
+            .remove()    
             draw(raw,config)
+
             /* getData(filename).then(data=> {
                 data = data
                 // Remove previous
