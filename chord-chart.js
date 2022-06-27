@@ -142,15 +142,16 @@ function dataPrepare(input, config){
 
     year = +config.year
     sex = config.sex
+    
 
     var data = filterYear(input,year)   
-    console.log(data)
+    console.log("RAW FILTERED YEAR INPUT ---", data)
     
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
-        console.log(index,names)
+
         for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
             return matrix;
     }
@@ -229,9 +230,11 @@ function dataPrepare(input, config){
         console.log(outflows.filter(d=>d[0].includes("Austri")))
         console.log(inflows.filter(d=>d[0].includes("Austri"))) */
 
-        // Filter data by threshold
+        // FILTER BY THRESHOLD
         let filteredData = nldata.links
-               .filter(d=> d.value > threshold )   
+        .filter(d=> d.value > threshold )   
+
+        // EXCLUDE NON-RECIPROCAL COUNTRIES
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
         let dataSelect = filteredData.filter(d=> d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
         function removeNullNames(){      
@@ -245,13 +248,12 @@ function dataPrepare(input, config){
               }
 
             let innerjoin = common(names_source, names_target)
-            
             // Repeat filtering
             // --- beware that i.e: countryA targeted countryB and countryC targeted countryA, after deleting countryB, countryA now shows no outflow, but it is still accounted
             filteredData = dataSelect.filter(d=> 
                 innerjoin.includes(d.source) && innerjoin.includes(d.target)
             )
-
+            
             let sources = Array.from(new Set(filteredData.flatMap(d=> d.source)))
             let targets = Array.from(new Set(filteredData.flatMap(d=> d.target)))
             /* console.log(sources.length, targets.length) */
@@ -264,8 +266,10 @@ function dataPrepare(input, config){
 
             return names_indexed
         } 
+
         names = Array.from(new Set(removeNullNames())) 
         
+        // SET OUTPUT DATA
         let finalData = filteredData.filter(d=> 
             names.includes(d.source) && names.includes(d.target)
             )
@@ -284,6 +288,7 @@ function dataPrepare(input, config){
         return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData, total_flows: total_flows}
     }
 
+    // DEFINE LAYOUT FOR SELECTED REGIONS
     // Expand countries under selected regions
     let nextNameRegionIndex
     function expandRegion(input, region) {
@@ -322,6 +327,7 @@ function dataPrepare(input, config){
     }
     
     // Produce layout by concatenating and sort all expaned regions and their countries indexes
+
     let last_selected = expandRegion(data,config.regions[1]).indexList
     let first_selected = expandRegion(data,config.regions[0]).indexList
 
@@ -362,6 +368,7 @@ function dataPrepare(input, config){
 // ##########################################################
 //  DRAW
 // ##########################################################
+// We set this outside the draw() function to avoid appending a new array to the selector on each run. 
 d3.select("#selectMethod")
                 .selectAll('myOptions')
                 .data(allMethods)
@@ -369,6 +376,8 @@ d3.select("#selectMethod")
                 .append('option')
                 .text(d=>{ return d; })    // text showed in the menu dropdown
                 .attr("value",d=> { return d; }) 
+
+
 function draw(raw,config){
     // GET SELECTED DATASET   
     filename = fileName(config).json
@@ -382,7 +391,7 @@ function draw(raw,config){
             let input_data = input
             const allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
             const lastYearPlusFive = (+allYears[allYears.length-1]+5).toString()
-            console.log(lastYearPlusFive)
+            /* console.log(lastYearPlusFive) */
             let allRangeYears = allYears.concat(lastYearPlusFive)
             /* console.log(allRangeYears) */
     
@@ -422,7 +431,7 @@ function draw(raw,config){
             }
             else if (filename.includes("flow")) {
                 function getTicks (year){
-                    console.log(year)
+
                     let ticks = allRangeYears.map(col =>
                          +col === +year  || +col === +year +5
                          ? `<p><b>${col}</b></p   >`
@@ -440,10 +449,12 @@ function draw(raw,config){
         }
     setSelectors()
 
-    let data = dataPrepare(input,config).result
-    let total_flows = dataPrepare(input,config).total_flows
+    /* let data = dataPrepare(input,config).result
+    let total_flows = dataPrepare(input,config).total_flows */
+    let preparedData =  dataPrepare(input,config)
+    let data = preparedData.result
+    let total_flows = preparedData.total_flows
     input = input.raw_data                  // used for metadata
-
     let previous = config.previous || data  // used to interpolate between layouts
 
     
@@ -461,7 +472,7 @@ function draw(raw,config){
 
     // Utils functions 
     // ----------------------
-/* console.log(total_flows) */
+    /* console.log(total_flows) */
     // Get metadata for a given name
     function getMeta(name) {
         const flag = (name) =>{ 
@@ -632,16 +643,11 @@ function draw(raw,config){
         return r[(d.id-d.region)%5]
     }
 
+    // START CREATING SVG ELEMENTS
     const container = chordDiagram.append("g")
         .attr("class","container")
         .attr("id","container")
-        /* .attr("viewBox", "xMinYMax meet) */
-        
-    const regionTextPath = container.append("path")
-        .attr("id", textId)
-        .attr("class", "text-path")
-        .attr("fill", "none")
-        .attr("d", d3.arc()({ outerRadius:outerRadius   , startAngle: 0, endAngle:   2 * Math.PI  }));
+        /* .attr("viewBox", "xMinYMax meet) */    
         
     const groups = container.append("g")        
         .attr("class","groups")
@@ -649,8 +655,8 @@ function draw(raw,config){
         .data(computedGroups(data))
         .join("g")
         .attr("class",d=>"group-"+d.id)
-    
-    const arcs =  groups.append("path")
+
+    groups.append("path")
         .attr("class","group-arc")
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
@@ -664,6 +670,13 @@ function draw(raw,config){
                 return arc(i(t))
             }
         })    
+
+
+    groups.append("path")
+        .attr("id", textId)
+        .attr("class", "text-path")
+        .attr("fill", "none")
+        .attr("d", d3.arc()({ outerRadius:outerRadius   , startAngle: 0, endAngle:   2 * Math.PI  }));
     
     // const arcs2 = container.append("g")        
     //     .attr("class","group")
@@ -712,7 +725,7 @@ function draw(raw,config){
           }
         })
     
-    const countryLabels = groups
+    countryLabels = groups
         .filter(d=>!isRegion(d.name))
         .append("text")
         .attr("class","country-label")
@@ -882,108 +895,105 @@ var arcRegionLabel = d3.arc()
     
     // /* .innerRadius(maxBarHeight + 2) */
 
-    var regionText = container.selectAll("path.region_label_arc")
-        .data(computedGroups(data))
-        .enter().append("path")
-        .filter(d=> isRegion(d.name))
-        .attr("id", function(d, i) {
-        return "region_label_" + i;
-        }) 
-        .attr("fill", "none")
-        .attr("d", arcRegionLabel);
+var regionText = container.selectAll("path.region_label_arc")
+    .data(computedGroups(data))
+    .enter().append("path")
+    .filter(d=> isRegion(d.name))
+    .attr("id", function(d, i) {
+    return "region_label_" + i;
+    }) 
+    .attr("fill", "none")
+    .attr("d", arcRegionLabel);
 
 
-    regionText.each(function(d, i) {
-        var firstArcSection = /(^.+?)L/;
-        var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
-        newArc = newArc.replace(/,/g, " ");
+regionText.each(function(d, i) {
+    var firstArcSection = /(^.+?)L/;
+    var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+    newArc = newArc.replace(/,/g, " ");
 
-        if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
-            var startLoc = /M(.*?)A/, 
-                middleLoc = /A(.*?)0 0 1/, 
-                endLoc = /0 0 1 (.*?)$/; 
-            var newStart = endLoc.exec(newArc)[1];
-            var newEnd = startLoc.exec(newArc)[1];
-            var middleSec = middleLoc.exec(newArc)[1];
-            newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
-        }
-        d3.select(this).attr("d", newArc);
-    });
+    if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
+        var startLoc = /M(.*?)A/, 
+            middleLoc = /A(.*?)0 0 1/, 
+            endLoc = /0 0 1 (.*?)$/; 
+        var newStart = endLoc.exec(newArc)[1];
+        var newEnd = startLoc.exec(newArc)[1];
+        var middleSec = middleLoc.exec(newArc)[1];
+        newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+    }
+    d3.select(this).attr("d", newArc);
+});
 
-    regionText = container.selectAll(".region-label-text")
-        .data(computedGroups(data))
-        .enter().append("text")
-        .attr("class", "region-label-text")
-        .filter(d=> isRegion(d.name))
-        .append("textPath")
-        .attr("font-size",11.5)
-        .attr("fill", d => getRegionColor(d.name))
-        .attr("xlink:href", function(d, i) {
+container.selectAll(".region-label-text")
+    .data(computedGroups(data))
+    .enter().append("text")
+    .attr("class", "region-label-text")
+    .filter(d=> isRegion(d.name))
+    .append("textPath")
+    .attr("font-size",11.5)
+    .attr("fill", d => getRegionColor(d.name))
+    .attr("xlink:href", function(d, i) {
         return "#region_label_" + i;
-        })
-        .text(function(d) {
-        return d.name;
-        })
-        
-        .call(wrapTextOnArc, height / 2 - (70));
+    })
+    .text(d=> d.name)
+    .call(wrapTextOnArc, height / 2 - (70));
 
-    // adjust dy (labels vertical start) based on number of lines (i.e. tspans)
-    regionText.each((d,i)=> { 
-        var textPath =d3.selectAll("textPath")["_groups"][0][i]
-        tspanCount = textPath.childNodes.length;
-        /* console.log(textPath) */
+// adjust dy (labels vertical start) based on number of lines (i.e. tspans)
+regionText.each((d,i)=> { 
+    var textPath =d3.selectAll("textPath")["_groups"][0][i]
+    tspanCount = textPath.childNodes.length;
+    /* console.log(textPath) */
 
-        if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
-            d3.select(textPath.childNodes[0]).attr("dy", .3 + (tspanCount - 1) * -0.6 + 'em');
-        } else {
-            d3.select(textPath.childNodes[0]).attr("dy", -.3 + (tspanCount - 1) * -0.6 + 'em');
-        }
-    });
-    function wrapTextOnArc(text, radius) {
-        var temporaryText = d3.select('svg')
-          .append("text")
-          .attr("class", "temporary-text") // used to select later
-          .style("opacity", 0); // hide element
+    if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
+        d3.select(textPath.childNodes[0]).attr("dy", .3 + (tspanCount - 1) * -0.6 + 'em');
+    } else {
+        d3.select(textPath.childNodes[0]).attr("dy", -.3 + (tspanCount - 1) * -0.6 + 'em');
+    }
+});
+function wrapTextOnArc(text, radius) {
+    var temporaryText = d3.select('svg')
+        .append("text")
+        .attr("class", "temporary-text") // used to select later
+        .style("opacity", 0); // hide element
 
-        var getTextLength = function(string) {
-          temporaryText.text(string);
-          return temporaryText.node().getComputedTextLength();
-        };
+    var getTextLength = function(string) {
+        temporaryText.text(string);
+        return temporaryText.node().getComputedTextLength();
+    };
 
-        text.each(function(d) {
-          var text = d3.select(this),
-            words = text.text().split(/[ \f\n\r\t\v]+/).reverse(),
-            word,
-            wordCount = words.length,
-            line = [],
-            textLength,
-            lineHeight = 1.1, // ems
-            x = 0,
-            y = 0,
-            dy = 0,
-            tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
-            arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
-            paddedArcLength = arcLength - 12;
-        /* console.log(wordCount) */
-          while (word = words.pop()) {
-            line.push(word);
+    text.each(function(d) {
+        var text = d3.select(this),
+        words = text.text().split(/[ \f\n\r\t\v]+/).reverse(),
+        word,
+        wordCount = words.length,
+        line = [],
+        textLength,
+        lineHeight = 1.1, // ems
+        x = 0,
+        y = 0,
+        dy = 0,
+        tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
+        arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
+        paddedArcLength = arcLength - 12;
+    /* console.log(wordCount) */
+        while (word = words.pop()) {
+        line.push(word);
+        tspan.text(line.join(" "));
+        textLength = getTextLength(tspan.text());
+        tspan.attr("x", (arcLength - textLength) / 2);
+        if (textLength > paddedArcLength && line.length > 1) {
+            line.pop();
             tspan.text(line.join(" "));
             textLength = getTextLength(tspan.text());
             tspan.attr("x", (arcLength - textLength) / 2);
-            if (textLength > paddedArcLength && line.length > 1) {
-              line.pop();
-              tspan.text(line.join(" "));
-              textLength = getTextLength(tspan.text());
-              tspan.attr("x", (arcLength - textLength) / 2);
-            
-              line = [word];
-              tspan = text.append("tspan").attr("dy", lineHeight + dy + "em").text(word);
-              textLength = getTextLength(tspan.text());
-              tspan.attr("x", (arcLength - textLength) / 2);
-            } 
-          }
-        }).filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0);
-    }
+        
+            line = [word];
+            tspan = text.append("tspan").attr("dy", lineHeight + dy + "em").text(word);
+            textLength = getTextLength(tspan.text());
+            tspan.attr("x", (arcLength - textLength) / 2);
+        } 
+        }
+    }).filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0);
+}
     /* 
     const regionLabels = groups
         .filter(d=>isRegion(d.name))
@@ -1122,12 +1132,17 @@ var arcRegionLabel = d3.arc()
     // INTERACTIONS
     // open regions
     config.maxRegionsOpen = 2 // config.regions = region || config.regions
+    
     groups.on('click', function(evt, d) {
             
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       
             }
+            console.log(d.name)
             config.regions.push(d.name) // console.log(d.name)
+            d3.selectAll("g")
+                .remove()    
+            draw(raw,config)
         })
 
     // close regions
@@ -1137,6 +1152,9 @@ var arcRegionLabel = d3.arc()
         })
         .on('click', function(evt, d) {
             config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
+            d3.selectAll("g")
+                .remove()    
+            draw(raw,config)
         });
 
     chordDiagram.selectAll(".group-arc")
@@ -1155,7 +1173,7 @@ var arcRegionLabel = d3.arc()
                 }) */
         })
 
-    chordDiagram.on("mouseover",mouseover).on("mouseo ut", mouseout)
+    chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
  
     function mouseover() {
         chordDiagram.selectAll(".group-arc, .path-item")
