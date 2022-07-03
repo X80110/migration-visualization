@@ -617,19 +617,7 @@ select::-ms-expand {
 .select select, .select::after {
   grid-area: select;
 }
-
-.sankeyTooltip {
-  position: absolute;
-  text-align: center;
-  padding: 8px;
-  background: #777;
-  color: #fff;
-  border-radius: 8px;
-  pointer-events: none;
-  font-family: 'Barlow', sans-serif;
-  font-size: 0.6em;
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  // opacity: 0.7;
+#sankey{
+  padding:10%;
 }
+#sankey text{font-weight:800;}

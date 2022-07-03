@@ -166,8 +166,8 @@
     </footer>
    <script src="https://d3js.org/d3.v7.min.js"></script>
    <script src="libs/chord.js"></script>
+   <!-- <script src="libs/d3-sankey.js"></script> -->
    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
-   <script src="libs/d3-sankey.js"></script>
 
 	<!-- SETTINGS -->
    <script>
@@ -210,8 +210,7 @@
 			};
 
 			getDataNDraw().then(raw=> {
-				draw(raw,config)
-				drawSankey(raw,config)
+				update(raw,config)
 			})
 /* 	   // chart(filename).draw(raw,config)
 	   getData(filename).then(raw => {

@@ -364,7 +364,6 @@ function dataPrepare(input, config){
         return data
     }
     let result = finalNamesMatrix()
-    // let nldata = {links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target)), nodes:names}
     let nldata = {links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target)), nodes:names}
     return {result,total_flows, nldata}
 }
@@ -1333,6 +1332,10 @@ function wrapTextOnArc(text, radius) {
             
       
     })
+}
+function update(input,config){
+    draw(input,config)
+    drawSankey(input,config)
 }
 
 

@@ -139,8 +139,7 @@ const {nodes, links} = sankey({
       .join("rect")
         .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .attr("opacity", "0.5")
-        
-        .attr("x", d => d.x0)
+        .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
         .attr("y", d => d.y0)
         .attr("height", d => d.y1 - d.y0)
         .attr("width", d => d.x1 - d.x0)
@@ -172,7 +171,8 @@ const {nodes, links} = sankey({
         .on("mouseover", function (e, i) {
             d3.select(this).transition()
               .duration("50")
-              .attr("opacity", "0.7");
+              .style("mix-blend-mode", "multiply")
+              .attr("opacity", "0.85");
             div.html(d => i.names.join(" → ") + "<br>" + Math.round(i.value/total*100) + "% (" + i.value.toLocaleString() + " <span style='text-transform: lowercase'></span>)")
                .style("display", "block");
         })
@@ -183,6 +183,7 @@ const {nodes, links} = sankey({
         .on('mouseout', function () {
             d3.select(this).transition()
                .duration('50')
+               .style("mix-blend-mode", "no")
                .attr('opacity', '0.5');
             div.style("display", "none");
         })
@@ -195,15 +196,15 @@ const {nodes, links} = sankey({
       .join("text")
         .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
         .attr("y", d => (d.y1 + d.y0) / 2 - 6)
-        .attr("font-size", "60%")
-        .attr("dy", "0.35em")
+        .attr("font-size", "80%")
+        .attr("dy", "0.6em")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
-        .text(d => Math.round(d.value/total*100) + `% ` + d.name)
+        .text(d => /* Math.round(d.value/total*100) + `% ` + */ d.name)
       .append("tspan")
-        .attr("fill-opacity", 0.7)
+        .attr("fill-opacity", 0.6)
         .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
-        .attr("y", d => (d.y1 + d.y0) / 2 + 12)
-        .attr("font-size", "60%")
+        .attr("y", d => (d.y1 + d.y0) / 2 + 11)
+        .attr("font-size", "50%")
         .text(d => `${d.value.toLocaleString()}`)
 
 //     .selectAll("rect")

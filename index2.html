@@ -135,9 +135,9 @@
 	const allTypes = ""
 
 	filename = fileName(config).json
-	// chart(filename).draw(raw,config)
+	// chart(filename).update(raw,config)
 	getData(filename).then(raw => {
-		draw(raw,config)
+		update(raw,config)
 	})
 	
 </script>

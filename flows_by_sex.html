@@ -220,12 +220,12 @@
 				return {raw_data:await Promise.all(raw), metadata: await metadata}
 			};
 			getDataNDraw().then(raw=> {
-				return draw(raw,config)
+				return update(raw,config)
 			})
-/* 	   // chart(filename).draw(raw,config)
+/* 	   // chart(filename).update(raw,config)
 	   getData(filename).then(raw => {
 			console.log(raw)
-		   draw(raw,config)
+		   update(raw,config)
 	   })    */
    
    </script>
