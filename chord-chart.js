@@ -145,10 +145,11 @@ function dataPrepare(input, config){
     
 
     var data = filterYear(input,year)   
-    console.log("RAW FILTERED YEAR INPUT ---", data)
+    /* console.log("RAW FILTERED YEAR INPUT ---", data) */
     
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
+
         const index = new Map(names.map((name, i) => [name, i]));
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
 
@@ -175,6 +176,7 @@ function dataPrepare(input, config){
     
     function filteredMatrix(input){
         data = input
+
         const countryNames = data.names
         // GET SOURCE-TARGET STRUCTURE 
         // Create array of name & connections objects
@@ -188,7 +190,7 @@ function dataPrepare(input, config){
                         connections:matrix }
         })
         let nodes = matrix 
-
+        /* console.log(nodes) */
         // Create object to push links during loop
         let links = []
         let l = 0 // <- iterator         
@@ -209,6 +211,7 @@ function dataPrepare(input, config){
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links} 
         let names = nldata.nodes.map(d=> d.name)
+        
         let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
         let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
         let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
@@ -271,9 +274,8 @@ function dataPrepare(input, config){
         
         // SET OUTPUT DATA
         let finalData = filteredData.filter(d=> 
-            names.includes(d.source) && names.includes(d.target)
+            names.includes(d.source)  && names.includes(d.target)
             )
-        
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names,finalData)
         
@@ -341,6 +343,7 @@ function dataPrepare(input, config){
     } 
     
     let filteredLayout = mergeFilter()    
+    console.log(filteredLayout)
     let names = []
     let unfilteredMatrix = []               // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
     let matrix = []                         // yeah, this is the final matrix 
@@ -361,8 +364,9 @@ function dataPrepare(input, config){
         return data
     }
     let result = finalNamesMatrix()
-
-    return {result,total_flows}
+    // let nldata = {links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target)), nodes:names}
+    let nldata = {links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target)), nodes:names}
+    return {result,total_flows, nldata}
 }
 
 // ##########################################################
@@ -383,7 +387,7 @@ function draw(raw,config){
     filename = fileName(config).json
     let file_index = files.indexOf(filename)
     let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
-    console.log(input)
+    /* console.log(input) */
 
     // CREATE SELECTORS
     function setSelectors() {
@@ -1141,7 +1145,7 @@ function wrapTextOnArc(text, radius) {
             console.log(d.name)
             config.regions.push(d.name) // console.log(d.name)
             d3.selectAll("g")
-                .remove()    
+            .remove()    
             draw(raw,config)
         })
 
@@ -1330,3 +1334,6 @@ function wrapTextOnArc(text, radius) {
       
     })
 }
+
+
+

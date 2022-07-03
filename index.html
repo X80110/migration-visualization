@@ -115,10 +115,11 @@
 				   onclick="updateData()" />
 		</div> -->
 		
+		<div id="sankey" ></div><div>Sankey</div>
 		<div id="chart" ></div>
 		<div class="box"> 
 				<div class="about">
-					<h2>About the Data</h2>
+					<h2><b>About the Data</b></h2>
 					<p> The bilateral flows between 196 countries are estimated from sequential stock tables. They are comparable across countries and capture the number of people who changed their country of residence over five-year periods. The estimates reflect migration transitions and thus cannot be compared to annual movements flow data published by United Nations and Eurostat. </p>
 					<div class="center">
 					  <a href="Data%20on%20the%20global%20flow%20of%20people_Version%20March2014.csv" class="button">
@@ -165,9 +166,12 @@
     </footer>
    <script src="https://d3js.org/d3.v7.min.js"></script>
    <script src="libs/chord.js"></script>
+   <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+   <script src="libs/d3-sankey.js"></script>
 
 	<!-- SETTINGS -->
    <script>
+	
 		let config = {}
 	   config.stockflow = "stock"
 	   config.sex = "all"
@@ -187,6 +191,7 @@
 
 	<!-- CHART -->
 	<script src="chord-chart.js"></script>
+	<script src="sankey-chart.js"></script>
 	
 	<!-- RUN DATA AND DRAW CHART	 -->
 	<script>
@@ -203,15 +208,16 @@
 				const metadata = d3.csv("data/country-metadata-flags.csv")
 				return {raw_data:await Promise.all(raw), metadata: await metadata}
 			};
+
 			getDataNDraw().then(raw=> {
-				return draw(raw,config)
+				draw(raw,config)
+				drawSankey(raw,config)
 			})
 /* 	   // chart(filename).draw(raw,config)
 	   getData(filename).then(raw => {
 			console.log(raw)
 		   draw(raw,config)
 	   })    */
-   
    </script>
 
 </body>
