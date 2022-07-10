@@ -114,9 +114,13 @@
 				   value="Update" 
 				   onclick="updateData()" />
 		</div> -->
+		<div id="visualization">
+
+					<div id="sankey" ></div><div>Sankey</div>T
+			<div id="chart" ></div>
+		</div>
 		
-		<div id="sankey" ></div><div>Sankey</div>
-		<div id="chart" ></div>
+
 		<div class="box"> 
 				<div class="about">
 					<h2><b>About the Data</b></h2>
@@ -164,10 +168,11 @@
 	   <span class="version"> Version 1.0.0 (June 2022). </span>
 
     </footer>
-   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
    <script src="libs/chord.js"></script>
-   <!-- <script src="libs/d3-sankey.js"></script> -->
    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+   <!-- <script src="libs/d3-sankey.js"></script> -->
 
 	<!-- SETTINGS -->
    <script>
@@ -190,8 +195,8 @@
 	</script>
 
 	<!-- CHART -->
-	<script src="chord-chart.js"></script>
-	<script src="sankey-chart.js"></script>
+	
+	<script src="sankey-chart.js"></script><script src="chord-chart.js"></script>
 	
 	<!-- RUN DATA AND DRAW CHART	 -->
 	<script>

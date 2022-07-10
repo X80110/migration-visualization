@@ -1,10 +1,18 @@
+function update(raw,config){
+    d3.selectAll("#chart g")
+           .remove()    
+    draw(raw,config)
 
+    d3.selectAll("#sankey svg")
+           .remove()
+    drawSankey(raw,config)
+}
 
-function drawSankey(input, config){
-    
+function drawSankey(raw, config){
     let file_index = files.indexOf(filename)
     filename = fileName(config).json
-    
+    let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
+    // Not optimal I guess, but copying functions to run the graph 
     // Get region index for a given name
     function getRegion(index) {
         var r = 0;
@@ -21,7 +29,6 @@ function drawSankey(input, config){
     function isRegion(name) {
         return input.raw_data.regions.includes(input.raw_data.names.indexOf(name))
     } 
-    
     
     function getMeta(name) {
         const flag = (name) =>{ 
@@ -51,7 +58,7 @@ function drawSankey(input, config){
         r = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)]
         return r[(d.id-d.region)%5]
     }
-    input = {raw_data: input.raw_data[file_index], metadata: input.metadata}
+    
 
 
     // create graph structure for sankey
@@ -100,66 +107,97 @@ function drawSankey(input, config){
         }
 
     graph = graph(dataPrepare(input,config).nldata.links)
+    /* console.log(graph.links) */
     const color = d3.scaleOrdinal(input.raw_data.names, colors)
-    
-  // Create svg 
-  
-  const svg = d3.select("#sankey")
+
+    // Create svg 
+    const svg = d3.select("#sankey")
     .append("svg")
     .attr("viewBox", [0 , 0, width, height])
     
-
+    const t = svg.transition()
+        .duration(500);
 
     /* console.log( gNodes) */
-sankey = d3.sankey()
-    .nodeSort(null)
-    .linkSort(null)
-    .nodeWidth(25)
-    .nodePadding(12)
-    .extent([[0, 5], [width, height - 5]])
-    
+    sankey = d3.sankey()
+        /* .nodeSort(d=> d) */
+        // .nodeSort(/* d=> d.index,  */d=> console.log(d))
+        .linkSort(d=> d.index)
+    /*     .nodeWidth(25)
+        .nodePadding(12) */
+        .extent([[0, 5], [width, height - 5]])
     
 
-const {nodes, links} = sankey({
-      nodes: graph.nodes.map(d => Object.assign({}, d)),
-      links: graph.links.map(d => Object.assign({}, d))
-    });
+    const {nodes, links} = sankey({
+        nodes: graph.nodes.map(d => Object.assign({}, d)),
+        links: graph.links.map(d => Object.assign({}, d))
+        });
 
     const total = d3.sum(graph.links, d => d.value);
   
     let div = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("display", "none")
-        .style('z-index', '10')
+        .style('z-index', 100)
         .text("new tooltip");
   
-    svg.append("g")
+    let renderNodes = svg.append("g")
       .selectAll("rect")
       .data(nodes)
-      .join("rect")
-        .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        .attr("opacity", "0.5")
-        .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
-        .attr("y", d => d.y0)
-        .attr("height", d => d.y1 - d.y0)
-        .attr("width", d => d.x1 - d.x0)
-        .on("mouseover", function (e, i) {
-            div.html(d => i.name + "<br>" + Math.round(i.value/total*100) + "% (" + i.value.toLocaleString() + " <span style='text-transform: lowercase'></span>)")
-               .style("display", "block");
-        })
-        .on("mousemove", function (i, e) {
-            div.style("top", e.pageY - 48 + "px")
-               .style("left", e.pageX + "px");
-        })
-        .on('mouseout', function () {
-            div.style("display", "none");
-        })
-      .append("title")
-        .text(d => d.name + "\n" + Math.round(d.value/total*100) + "% (" + d.value.toLocaleString() + "");
-    
-    svg.append("g")
+      .join(
+          (enter) => { enter.append("rect")
+            .attr("class","node")
+            .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
+            .attr("opacity", "0.5")
+            .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
+            .attr("y", d => d.y0)
+            .attr("height", d => d.y1 - d.y0)
+            .attr("width", d => d.x1 - d.x0)
+            .on("mouseover", function (e, i) {
+                div.html(d => i.name + "<br>" + Math.round(i.value/total*100) + "% (" + i.value.toLocaleString() + " <span style='text-transform: lowercase'></span>)")
+                .style("display", "block");
+                })
+            .on("mousemove", function (i, e) {
+                div.style("top", e.pageY - 48 + "px")
+                .style("left", e.pageX + "px");
+                })
+            .on('mouseout', function () {
+                div.style("display", "none");
+                })
+            .on('click', function(evt, d) {
+                if (config.regions.length + 1 > config.maxRegionsOpen) {
+                    config.regions.shift();       
+                }
+                console.log(config.regions)
+                config.regions.push(d.name) // console.log(d.name)
+                console.log(config.regions)
+                
+                update(raw,config)
+            })
+            .append("title")
+            .text(d => d.name + "\n" + Math.round(d.value/total*100) + "% (" + d.value.toLocaleString() + "")
+            .call(enter => enter.transition(t)
+                .attr("y", 0)
+                )
+
+            
+        },
+        (update) => { update
+            .call(update => update.transition(t))
+            .attr("x", (d, i) => i * 16)
+        },
+        (exit) => {exit
+            .attr("fill", "brown")
+            .call(exit => exit.transition(t)
+                .attr("y", 30)
+                .remove()
+                )
+            }
+        )
+
+
+    let renderLinks = svg.append("g")
         .attr("fill", "none")
-        
       .selectAll("g")
       .data(links)
       .join("path")
@@ -169,7 +207,8 @@ const {nodes, links} = sankey({
         .attr("stroke-width", d => d.width)
         /* .style("mix-blend-mode", "multiply") */
         .on("mouseover", function (e, i) {
-            d3.select(this).transition()
+            d3.select(this)
+              .transition()
               .duration("50")
               .style("mix-blend-mode", "multiply")
               .attr("opacity", "0.85");
@@ -187,16 +226,18 @@ const {nodes, links} = sankey({
                .attr('opacity', '0.5');
             div.style("display", "none");
         })
-      .append("title")
-        .text(d => d.names.join(" → ") + "\n" + Math.round(d.value/total*100) + "% (" + d.value.toLocaleString() );    
+ 
+        .append("title")
+        .text(d => d.names.join(" → ") + "\n" + Math.round(d.value/total*100) + "% (" + d.value.toLocaleString() )
   
-    svg.append("g")
+    let renderLabels = svg.append("g")
       .selectAll("text")
       .data(nodes)
       .join("text")
         .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
         .attr("y", d => (d.y1 + d.y0) / 2 - 6)
-        .attr("font-size", "80%")
+        .attr("font-size", d=> isRegion(d.name) ? "80%": "65%")
+        .attr("font-weight", d=> isRegion(d.name) ? "600": "400")
         .attr("dy", "0.6em")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
         .text(d => /* Math.round(d.value/total*100) + `% ` + */ d.name)
@@ -207,44 +248,17 @@ const {nodes, links} = sankey({
         .attr("font-size", "50%")
         .text(d => `${d.value.toLocaleString()}`)
 
-//     .selectAll("rect")
-//     .data(nodes)
-//     .join("rect")
-//       .attr("x", d => d.x0)
-//       .attr("y", d => d.y0)
-//       .attr("height", d => d.y1 - d.y0)
-//       .attr("width", d => d.x1 - d.x0)
-//       .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-//       .attr("opacity", 0.5)
-//     .append("title")
-//       .text(d => `${d.name}\n${d.value.toLocaleString()}`);
-
-//   svg.append("g")
-//       .attr("fill", "none")
-//     .selectAll("g")
-//     .data(links)
-//     .join("path")
-//       .attr("d", d3.sankeyLinkHorizontal())
-//       .attr("stroke", d=> isRegion(d.names[0]) ? getRegionColor(d.names[0]) :colorCountries(d.names[0]))
-//       .attr("stroke-width", d => d.width)
-//       .attr("opacity", 0.5)
-//       /* .style("mix-blend-mode", "multiply") */
-//     .append("title")
-//       .text(d => `${d.names.join(" → ")}\n${d.value.toLocaleString()}`);
-
-//   svg.append("g")
-//       .style("font", "10px sans-serif")
-//     .selectAll("text")
-//     .data(nodes)
-//     .join("text")
-//       .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
-//       .attr("y", d => (d.y1 + d.y0) / 2)
-//       .attr("dy", "0.35em")
-//       .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
-//       .text(d => d.name)
-//     .append("tspan")
-//       .attr("fill-opacity", 0.7)
-//       .text(d => ` ${d.value.toLocaleString()}`);
+    labelPositioner = (d) => {
+            const startLabel = (d) => d.depth === 0;
+            const strikeLabel = (d) => d.depth === 2;
+            // (d) => d.x0 < leftMargin;
+            // const endLabel = (d) => d.x0 > width - 100;
+          
+            //  ? d.x0 - (d.x1 - d.x0) / 2
+            return `translate(${
+              startLabel(d) ? d.x0 - leftMargin : strikeLabel(d) ? d.x1 + 15 : d.x1 + 15
+            },${(d.y1 + d.y0) / 2})`;
+          }
 
     return svg.node();
   }

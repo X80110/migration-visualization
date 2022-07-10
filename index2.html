@@ -98,6 +98,7 @@
 			</div>
 		</div>
 		<div id="chart" class="center"></div>
+		<div id="sankey" class="center"></div>
 	</div>
 	<div class="details">
 		<div class="box">
@@ -135,9 +136,9 @@
 	const allTypes = ""
 
 	filename = fileName(config).json
-	// chart(filename).update(raw,config)
+	// chart(filename).draw(raw,config)
 	getData(filename).then(raw => {
-		update(raw,config)
+		draw(raw,config)
 	})
 	
 </script>

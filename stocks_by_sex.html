@@ -115,7 +115,10 @@
 				   onclick="updateData()" />
 		</div> -->
 		
-		<div id="chart" ></div>
+		<div id="visualization">
+			<div id="chart" ></div>
+			<div id="sankey" ></div><div>Sankey</div>
+		</div>
 		<div class="box"> 
 				<div class="about">
 					<h2>About the Data</h2>
@@ -163,8 +166,9 @@
 	   <span class="version"> Version 1.0.0 (June 2022). </span>
 
     </footer>
-   <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
    <script src="libs/chord.js"></script>
+   <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 
 	<!-- SETTINGS -->
    <script>
@@ -187,6 +191,7 @@
 
 	<!-- CHART -->
 	<script src="chord-chart.js"></script>
+	<script src="sankey-chart.js"></script>
 	
 	<!-- RUN DATA AND DRAW CHART	 -->
 	<script>
@@ -204,12 +209,12 @@
 				return {raw_data:await Promise.all(raw), metadata: await metadata}
 			};
 			getDataNDraw().then(raw=> {
-				return update(raw,config)
+				update(raw,config)
 			})
-/* 	   // chart(filename).update(raw,config)
+/* 	   // chart(filename).draw(raw,config)
 	   getData(filename).then(raw => {
 			console.log(raw)
-		   update(raw,config)
+		   draw(raw,config)
 	   })    */
    
    </script>

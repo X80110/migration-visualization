@@ -1,3 +1,5 @@
+
+
 // ##########################################################
 //  INITIAL PARAMETERS
 // ##########################################################
@@ -274,7 +276,7 @@ function dataPrepare(input, config){
         
         // SET OUTPUT DATA
         let finalData = filteredData.filter(d=> 
-            names.includes(d.source)  && names.includes(d.target)
+            names.includes(d.source) && names.includes(d.target)
             )
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names,finalData)
@@ -666,7 +668,7 @@ function draw(raw,config){
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
         .transition()
-        .duration(500)
+        .duration(600)
         .attrTween("d", function(d,j) {
             var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) /* || config.initialAngle.arc */, d);
             return function (t) {
@@ -715,7 +717,7 @@ function draw(raw,config){
         // .style("mix-blend-mode", "multiply")
         .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.03: 0.80)
         .transition()
-        .duration(500)
+        .duration(600)
         .attrTween("d", function (d) {
             var p  = previous.chords[d.source.id] && previous.chords[d.source.id][d.target.id]
             p = p || previous.chords[d.source.region] && previous.chords[d.source.region][d.target.region]
@@ -744,7 +746,7 @@ function draw(raw,config){
             )
         .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
         .transition()
-        .duration(500)
+        .duration(600)
         .attrTween("transform", function(d) {
             var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || { angle: 0 }, d);
             return function (t) {
@@ -1144,8 +1146,8 @@ function wrapTextOnArc(text, radius) {
             console.log(d.name)
             config.regions.push(d.name) // console.log(d.name)
             d3.selectAll("g")
-            .remove()    
-            draw(raw,config)
+              .remove()    
+            update(raw,config)
         })
 
     // close regions
@@ -1165,7 +1167,7 @@ function wrapTextOnArc(text, radius) {
             config.previous = data 
             d3.selectAll("g")
                 .remove()    
-            draw(raw,config)
+            update(raw,config)
             // draw new chart 
             /* getData(filename).then(data=> {
                     data = data
@@ -1233,13 +1235,13 @@ function wrapTextOnArc(text, radius) {
                 return tooltip.style("visibility", "hidden");
             })
     }
+
+    
     d3.selectAll("#selectYear")
         .on("input", function(d) {
             config.previous = data 
             config.year = +d3.select(this).property("value")
-            d3.selectAll("g")
-            .remove()    
-            draw(raw,config)
+            update(raw,config)
 
             /* getData(filename).then(data=> {
                 data = data
@@ -1254,9 +1256,7 @@ function wrapTextOnArc(text, radius) {
         .on("change", function(d) {
             config.previous = data 
             config.stockflow = d3.select(this).property("value")
-            d3.selectAll("g")
-                .remove()    
-            draw(raw,config)
+            update(raw,config)
             /*filename = fileName(config).json
 
             getData(filename).then(data=> {
@@ -1273,9 +1273,10 @@ function wrapTextOnArc(text, radius) {
         .on("change", function(d) {
             config.previous = data 
             config.method = d3.select(this).property("value")
-            d3.selectAll("g")
+            update(raw,config)
+            /* d3.selectAll("g")
                 .remove()    
-            draw(raw,config)
+                update(raw,config) */
             /* filename = fileName(config).json
                 
             getData(filename).then(data=> {
@@ -1293,10 +1294,11 @@ function wrapTextOnArc(text, radius) {
         .on("change", function(d) {
             config.previous = data 
             config.sex = d3.select(this).property("value")
-            console.log(config.sex)
-            d3.selectAll("g")
+            // console.log(config.sex)
+            update(raw,config)
+        /*     d3.selectAll("g")
                 .remove()    
-            draw(raw,config)
+            draw(raw,config) */
             /* filename = fileName(config).json
             console.log(filename)
 
@@ -1316,27 +1318,12 @@ function wrapTextOnArc(text, radius) {
         .on("change", function(d) {
             config.previous = data 
             config.type = d3.select(this).property("value")
-            d3.selectAll("g")
+            update(raw,config)
+      /*       d3.selectAll("g")
                 .remove()    
-            draw(raw,config)
-            /* filename = fileName(config).json
-
-            getData(filename).then(data=> {
-                data = data
-                // Remove previous
-                d3.selectAll("g")
-                    .remove();
-
-               return draw(data,config)
-            }) */
-            
-      
+            draw(raw,config)      */
     })
+        
 }
-function update(input,config){
-    draw(input,config)
-    drawSankey(input,config)
-}
-
 
 
