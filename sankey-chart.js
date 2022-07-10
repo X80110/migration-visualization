@@ -174,12 +174,30 @@ function drawSankey(raw, config){
                 
                 update(raw,config)
             })
+            
+        d3.selectAll('.node').filter(function(d) {
+
+                return !isRegion(d.name)
+            })
+            .on('click', function(evt, d) {
+                config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
+                d3.selectAll("g")
+                    .remove()    
+                update(raw,config)
+            })
             .append("title")
             .text(d => d.name + "\n" + Math.round(d.value/total*100) + "% (" + d.value.toLocaleString() + "")
             .call(enter => enter.transition(t)
                 .attr("y", 0)
                 )
-
+        // d3.selectAll(".node")
+        //     .on("click", function (evt, d) {                    
+                
+        //         /* config.previous = data  */
+        //         d3.selectAll("g")
+        //             .remove()    
+        //         update(raw,config)
+        //   })
             
         },
         (update) => { update

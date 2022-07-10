@@ -458,6 +458,7 @@ function draw(raw,config){
     let total_flows = dataPrepare(input,config).total_flows */
     let preparedData =  dataPrepare(input,config)
     let data = preparedData.result
+    
     let total_flows = preparedData.total_flows
     input = input.raw_data                  // used for metadata
     let previous = config.previous || data  // used to interpolate between layouts
@@ -1164,6 +1165,7 @@ function wrapTextOnArc(text, radius) {
 
     chordDiagram.selectAll(".group-arc")
         .on("click", function (evt, d) {                    
+            /* console.log(data) */
             config.previous = data 
             d3.selectAll("g")
                 .remove()    
@@ -1239,6 +1241,7 @@ function wrapTextOnArc(text, radius) {
     
     d3.selectAll("#selectYear")
         .on("input", function(d) {
+
             config.previous = data 
             config.year = +d3.select(this).property("value")
             update(raw,config)
