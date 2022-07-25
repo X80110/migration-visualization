@@ -68,6 +68,7 @@ ul.menu li{
     padding:1em;
     display:inline-block;
     max-width: 60%;
+    align-items:flex-start;
     vertical-align: middle;
 }
 
@@ -172,7 +173,7 @@ img:hover {
 }
 
 .logos hr {
-  border: .6px solid #ccc;
+  border: .6px solid #f4f4f4;
   width:30%;
   margin-top:4em;
   margin-bottom:3em;
@@ -186,7 +187,11 @@ img:hover {
 .version{
   opacity:0.7;
 }
+.selectors > div{
+  z-index: 2;
+  margin-top:-1em;
 
+}
 .selectors{  
     -ms-box-orient: horizontal;
     display: -webkit-box;
@@ -198,6 +203,7 @@ img:hover {
     justify-content: center;
     -webkit-flex-flow: row wrap;
     flex-flow: row wrap;
+    
     /* justify-content: space-between; */
 
     color: #888;
@@ -303,7 +309,7 @@ img:hover {
 /*------ SLIDER each 5 years -----------------*/
 .slider {
     -webkit-appearance: none;
-    width: 380px;
+    width: 300px;
     height: 0.1em;
     border: 1px solid #598cae90;
     outline: none;
@@ -338,7 +344,7 @@ img:hover {
 }
 .sliderticks {
     display: flex;
-    width: 380px;
+    width: 300px;
     /* padding-top: 1em; */
     justify-content: space-between; 
 
@@ -359,7 +365,7 @@ img:hover {
 /*------ SLIDER FOR STOCKS (specific to year) -----------------*/
 .slider-stock {
     -webkit-appearance: none;
-    width: 380px;
+    width: 300px;
     height: 0.1em;
     /* border: 1px solid #598cae90; */
     outline: none;
@@ -408,11 +414,9 @@ img:hover {
   color: #656565;
   font-size: 85%;
 }
- 
 
 .box > .about {
   flex: 1 1 var(--min);
-  
 }
 .options {
   justify-content: center;
@@ -428,7 +432,7 @@ img:hover {
 /* 48em = 768px */
 @media (max-width: 768px) {
     #chart{
-        transform: scale(1.15);
+        transform: scale(1.25);
     }
     ul.menu li{
       top:0;
@@ -437,7 +441,6 @@ img:hover {
       display:block;
       max-width: 60%;
   }
-  
 }
 @media (min-width: 768px) {
   /* .header li {
@@ -447,6 +450,9 @@ img:hover {
       
     padding: 10px 20px;
   } */
+  #chart{
+    transform: scale(1.08);
+}
   .header .menu {
     float: right;
     max-height: none;
@@ -454,7 +460,6 @@ img:hover {
   .header .menu-icon {
     display: none;
   }
-  
 }
 
 /* https://codepen.io/envoy47/pen/eogNVX */
@@ -472,7 +477,7 @@ li:hover{
     display:block;
     position:absolute;
     visibility: hidden;
-
+    
     /* background:#f4f4f4; */
     /* border-radius: 20px; */
     width:150px;
@@ -525,8 +530,8 @@ li:hover{
 
   }
   .dropdown  p{
-    padding: 3px;
-    margin-bottom:.1em;
+    padding: 3px ;
+    margin-bottom: 0em;
     /* border-radius: 0; */
     color: white;
     /* border: 2px solid #000; */
@@ -560,7 +565,7 @@ li:hover{
   .form .collection input[type=radio] + label {
     cursor: pointer;
     flex: 1 0 0px;
-    padding: 2px 8px;
+    /* padding: 2px /* 8px */; */
   }
   .form .collection input[type=radio] + label > * {
     padding: 2px 3px;
@@ -613,11 +618,22 @@ select {
 select::-ms-expand {
   display: none;
 } */
-
-.select select, .select::after {
-  grid-area: select;
+#visualization {
+  margin:0% 10% 0 10%;
 }
-#sankey{
-  padding:10%;
+#visualization p{
+  font-weight:700;
+  text-transform: uppercase;
   
+}
+/* #visualization p>*:first-child {
+  align-items: flex-start;
+} */
+
+
+
+.sourceTarget{
+  display: flex; 
+  align-items: flex-end;
+  justify-content: space-between;
 }
