@@ -22,12 +22,13 @@ var labelRadius = labelRadius || (outerRadius + 10);
 let threshold = []
 let regionColors = []
 
+
 // ##########################################################
 // Functions and initial config
 // ##########################################################
 /* let config = {} */
 config.year = 1990 || ""
-config.stockflow 
+config.stockflow = config.stockflow
 config.sex 
 config.type 
 config.method = "da_pb_closed" || ""
@@ -85,9 +86,10 @@ function filterYear(input,year){
 }
 
 // build the data filename (json) with config values
-let fileName = (config) => {
+let fileName = (configs) => {
+    configs = {...config}
     // build filename hierarchy
-    stockflow = config.stockflow 
+    let stockflow = config.stockflow 
     sex = config.sex === "all" || ""  
         ? ""
         : "_"+config.sex
@@ -136,11 +138,15 @@ async function getData(filename) {
 //  DATA PREPARE
 // ##########################################################
 function dataPrepare(input, config){
-    meta = input.metadata 
-    threshold = input.raw_data.threshold
-    colors = input.raw_data.colours
+
+    var input_data = {...input} 
+    console.log(input_data)
+    meta = input_data.metadata 
+    threshold = input_data.raw_data.threshold
+    colors = input_data.raw_data.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE']
     flags = meta.map(d=>{return { [d.origin_name]:d.origin_flag }})
-    input = input.raw_data    
+    input = input_data.raw_data    
+    console.log(input)
 
     year = +config.year
     sex = config.sex
@@ -267,7 +273,7 @@ function dataPrepare(input, config){
             
             // reindex joined names
             let names_indexed = names.filter(d=> innerjoin.includes(d))
-            console.log(names.length, names_source.length, names_target.length, innerjoin.length)
+            /* console.log(names.length, names_source.length, names_target.length, innerjoin.length) */
 
             return names_indexed
         } 
@@ -345,7 +351,7 @@ function dataPrepare(input, config){
     } 
     
     let filteredLayout = mergeFilter()    
-    console.log(filteredLayout)
+    /* console.log(filteredLayout) */
     let names = []
     let unfilteredMatrix = []               // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
     let matrix = []                         // yeah, this is the final matrix 
@@ -383,7 +389,7 @@ d3.select("#selectMethod")
                 .attr("value",d=> { return d; }) 
 
 
-function draw(raw,config){
+function drawChords(raw,config){
     // GET SELECTED DATASET   
     filename = fileName(config).json
     let file_index = files.indexOf(filename)
@@ -419,7 +425,7 @@ function draw(raw,config){
     
             if (filename.includes("stock")){
                 function getTicks (year){
-                    console.log(year)
+                    /* console.log(year) */
                     let ticks = allYears.map(col =>
                          +col === +year 
                          ? `<p style="color:black"><b>${col}</b></p   >`
@@ -456,7 +462,7 @@ function draw(raw,config){
 
     /* let data = dataPrepare(input,config).result
     let total_flows = dataPrepare(input,config).total_flows */
-    let preparedData =  dataPrepare(input,config)
+    preparedData =  dataPrepare(input,config)
     let data = preparedData.result
     
     let total_flows = preparedData.total_flows
@@ -639,8 +645,7 @@ function draw(raw,config){
         b = a.indexOf(name)
         return colors[b]
     }
-    
-    
+
     const colorCountries = (name) => {
         let color_country = getRegionColor(getMeta(name).region_name)
         let hsl = d3.hsl(color_country)
@@ -1144,7 +1149,7 @@ function wrapTextOnArc(text, radius) {
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       
             }
-            console.log(d.name)
+            /* console.log(d.name) */
             config.regions.push(d.name) // console.log(d.name)
             d3.selectAll("g")
               .remove()    
@@ -1160,7 +1165,7 @@ function wrapTextOnArc(text, radius) {
             config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
             d3.selectAll("g")
                 .remove()    
-            draw(raw,config)
+            update(raw,config)
         });
 
     chordDiagram.selectAll(".group-arc")
@@ -1292,7 +1297,7 @@ function wrapTextOnArc(text, radius) {
             }) */
             
     })    
-        
+  
     d3.selectAll(".selectSex")
         .on("change", function(d) {
             config.previous = data 
@@ -1318,14 +1323,26 @@ function wrapTextOnArc(text, radius) {
     })
     
     d3.selectAll(".selectType")
-        .on("change", function(d) {
-            config.previous = data 
-            config.type = d3.select(this).property("value")
-            update(raw,config)
-      /*       d3.selectAll("g")
-                .remove()    
-            draw(raw,config)      */
+    .on("change", function(d) {
+        config.previous = data 
+        config.type = d3.select(this).property("value")
+        update(raw,config)
+        /*       d3.selectAll("g")
+        .remove()    
+        draw(raw,config)      */
     })
+    AIAI = d3.selectAll("html#reset")
+    console.log(AIAI)
+    
+    d3.selectAll(".button")
+        .on("click", function(d, evt) {
+            config.previous = [] 
+        
+        
+            console.log("MY EYE AI", evt)
+            update(raw,config)
+            }
+        )
         
 }
 
