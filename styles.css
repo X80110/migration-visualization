@@ -538,10 +538,15 @@ li:hover{
     background-color: #333;     
   }
   .drop-link:hover{
-    transform:scale(1.2);
+    transform:scale(1.1);
     opacity:1; 
+
   }
   
+  .drop-link .selected{
+    background-color: #598cae;
+
+  }
 
   
   .form {
@@ -618,10 +623,10 @@ select {
 select::-ms-expand {
   display: none;
 } */
-#visualization {
+#sankey-visualization {
   margin:0% 10% 0 10%;
 }
-#visualization p{
+#sankey-visualization p{
   font-weight:700;
   text-transform: uppercase;
   
