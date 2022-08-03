@@ -1,4 +1,21 @@
+//  INITIAL PARAMETERS
+var width = 800;
+var height = width-50;
+const textId = "O-text-1"; 
 
+let regionIndex = 1        
+
+let threshold = []
+let regionColors = []
+
+// ##########################################################
+// Functions and initial config
+config.year = 1990 || ""
+config.stockflow = config.stockflow
+config.sex 
+config.type 
+config.method = "da_pb_closed" || ""
+config.regions = []
 function filterYear(input,year){ 
 
     year = +year || 1990
@@ -40,8 +57,9 @@ let filename = fileName(config).json
 // ##########################################################
 //  DATA PREPARE
 function dataPrepare(input, config){
-
-    var input_data = {...input} 
+    console.log(input)
+    var input_data = {...input}
+    
     /* console.log(input_data) */
     meta = input_data.metadata 
     threshold = input_data.raw_data.threshold
@@ -315,6 +333,39 @@ function dataPrepare(input, config){
                  getTicks(value)
              }
          }            
+    d3.selectAll("#selectYear")
+        .on("input", function(d) {
+            config.previous = data 
+            config.year = +d3.select(this).property("value")
+            update(input_data,config)
+        })        
+    d3.selectAll("#stockFlow")
+        .on("change", function(d) {
+            config.previous = data 
+            config.stockflow = d3.select(this).property("value")
+            update(input_data,config)
+    })    
+    d3.selectAll("#selectMethod")
+        .on("change", function(d) {
+            config.previous = data 
+            config.method = d3.select(this).property("value")
+            update(input_data,config)            
+    })    
+  
+    d3.selectAll(".selectSex")
+        .on("change", function(d) {
+            config.previous = data 
+            config.sex = d3.select(this).property("value")
+            // console.log(config.sex)
+            update(input_data,config)
+    })
+    
+    d3.selectAll(".selectType")
+        .on("change", function(d) {
+            config.previous = data 
+            config.type = d3.select(this).property("value")
+            update(input_data,config)
+        })
     }
     setSelectors()
     

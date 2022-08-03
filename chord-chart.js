@@ -1,21 +1,18 @@
 
 
 // ##########################################################
-//  INITIAL PARAMETERS
-var width = 800;
-var height = width-50;
-const textId = "O-text-1"; 
+
 // Create svg 
 const chordDiagram = d3.select("#chord-chart")
     .append("svg")
     .attr('preserveAspectRatio', 'xMinYMid')
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
-let regionIndex = 1        
+/* let regionIndex = 1     */    
 var innerRadius = Math.min(width, height) *0.35+10;
 var outerRadius = innerRadius + 17;
 var labelRadius = labelRadius || (outerRadius + 10);
-
+/* 
 let threshold = []
 let regionColors = []
 
@@ -26,7 +23,7 @@ config.stockflow = config.stockflow
 config.sex 
 config.type 
 config.method = "da_pb_closed" || ""
-config.regions = []
+config.regions = [] */
 
 var chord = chord(true,false)
         .padAngle(0.05)

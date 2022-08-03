@@ -221,18 +221,19 @@
 
 	<!-- CHART -->
 	
-	<script src="prepare-data.js"></script>
-	<script src="chord-chart.js"></script>
+	<script  src="prepare-data.js"></script>
+	<script id="selectedChart" src="chord-chart.js"></script>
 	<script src="sankey-chart.js"></script>	
 	
 	<!-- RUN DATA AND DRAW CHART	 -->
 	<script>
-			 selectedViz = "chord-chart"
+			selecteViz = "chord-chart"
 			filename = fileName(config).json
 			let datasets =  [];			// promises
 			files.forEach(url => datasets.push(d3.json(url)));
 
 			let file_index = files.indexOf(filename)
+			
 			async function getDataNDraw() {      
 				let raw  = []
 				for (let dataset of datasets) {
@@ -250,6 +251,8 @@
 				notIn = viz.filter(d=> !d.includes(selectedViz))
 				document.getElementById(...notIn).style.display = 'none'
 				document.getElementById(...notIn).classList = ''
+
+				document.getElementById('selectedChart').src = selectedViz+'.js'
 				document.getElementById(selectedViz).style.display = ''
 				document.getElementById(selectedViz).classList.toogle = '.selected'
 
@@ -261,10 +264,10 @@
 					drawChords(raw,config)
 				})
 				}  else  */
-				getDataNDraw().then(raw=> {
-					drawChords(raw,config)
-					setData(raw,config) 
-				})
+			getDataNDraw().then(raw=> {
+				/*  */
+				update(raw,config)
+			})
 				
 				
 
@@ -279,8 +282,6 @@
 					d3.selectAll("#chord-chart g")
 						.remove()    
 					drawChords(raw,config)
-		
-				
 					setData(raw,config)
 
 
