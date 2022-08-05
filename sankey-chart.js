@@ -343,10 +343,7 @@ function updateSankey(raw, input, config, graph_data){
     nodeEnter
         .on("mousemove", tooltipRegion)
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
-    d3.selectAll(".node g")
-        .on("mouseout", d=> tooltip.style("visibility", "hidden"))
-    
-    
+ 
 }
     
     
