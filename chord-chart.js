@@ -29,15 +29,6 @@ var chord = chord(true,false)
         .padAngle(0.05)
         .sortSubgroups(d3.descending)
       
-var arc = d3.arc() 
-    .innerRadius(innerRadius)
-    .outerRadius(outerRadius);
-
-var ribbon = d3.ribbonArrow()
-    .sourceRadius(innerRadius)
-    .targetRadius(innerRadius -10) 
-    .headRadius(15)
-
 function formatValue(nStr, seperator) {
     seperator = seperator || ','
     nStr += ''
@@ -65,7 +56,8 @@ function labelPosition(angle) {
     }
 
 // ##########################################################
-//  DRAW
+//  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
+//  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
 // We set this outside the draw() function to avoid appending a new array to the selector on each run. 
 d3.select("#selectMethod")
                 .selectAll('myOptions')
@@ -98,6 +90,17 @@ function drawChords(raw,config){
     // ----------------------
     // Utils functions 
     
+    var arc = d3.arc() 
+        .innerRadius(innerRadius)
+        /* .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius) */
+
+        .outerRadius(outerRadius);
+
+    var ribbon = d3.ribbonArrow()
+        .sourceRadius(innerRadius)
+        .targetRadius(innerRadius -10) 
+        .headRadius(15)
+
     // Get metadata for a given name
     function getMeta(name) {
         const flag = (name) =>{ 
@@ -273,11 +276,13 @@ function drawChords(raw,config){
     groups.append("path")
         .attr("class","group-arc")
         .attr("d", arc) 
+        
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
+        .style("opacity",/* d=> isRegion(d.name) && config.regions.length > 0 ? 0.03:  */0.8)
         .transition()
         .duration(600)
+        
         .attrTween("d", function(d,j) {
             var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) /* || config.initialAngle.arc */, d);
             return function (t) {
@@ -322,6 +327,7 @@ function drawChords(raw,config){
         .attr("d", ribbon)
         .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
         .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.03: 0.80)
+        
         .transition()
         .duration(600)
         .attrTween("d", function (d) {
@@ -335,7 +341,7 @@ function drawChords(raw,config){
                 return ribbon(i(t));
           }
         })
-    
+        
     countryLabels = groups
         .filter(d=>!isRegion(d.name))
         .append("text")

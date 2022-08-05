@@ -27,6 +27,14 @@ function filterYear(input,year){
     return result;
 }
 
+/* d3.select("#selectMethod")
+                .selectAll('myOptions')
+                .data(allMethods)
+                .enter()
+                .append('option')
+                .text(d=>{ return d; })    // text showed in the menu dropdown
+                .attr("value",d=> { return d; })  */
+              
 // build the data filename (json) with config values
 let fileName = (configs) => {
     configs = {...config}
@@ -333,39 +341,39 @@ function dataPrepare(input, config){
                  getTicks(value)
              }
          }            
-    d3.selectAll("#selectYear")
-        .on("input", function(d) {
-            config.previous = data 
-            config.year = +d3.select(this).property("value")
-            update(input_data,config)
-        })        
-    d3.selectAll("#stockFlow")
-        .on("change", function(d) {
-            config.previous = data 
-            config.stockflow = d3.select(this).property("value")
-            update(input_data,config)
-    })    
-    d3.selectAll("#selectMethod")
-        .on("change", function(d) {
-            config.previous = data 
-            config.method = d3.select(this).property("value")
-            update(input_data,config)            
-    })    
+    // d3.selectAll("#selectYear")
+    //     .on("input", function(d) {
+    //         config.previous = data 
+    //         config.year = +d3.select(this).property("value")
+    //         update(input_data,config)
+    //     })        
+    // d3.selectAll("#stockFlow")
+    //     .on("change", function(d) {
+    //         config.previous = data 
+    //         config.stockflow = d3.select(this).property("value")
+    //         update(input_data,config)
+    // })    
+    // d3.selectAll("#selectMethod")
+    //     .on("change", function(d) {
+    //         config.previous = data 
+    //         config.method = d3.select(this).property("value")
+    //         update(input_data,config)            
+    // })    
   
-    d3.selectAll(".selectSex")
-        .on("change", function(d) {
-            config.previous = data 
-            config.sex = d3.select(this).property("value")
-            // console.log(config.sex)
-            update(input_data,config)
-    })
+    // d3.selectAll(".selectSex")
+    //     .on("change", function(d) {
+    //         config.previous = data 
+    //         config.sex = d3.select(this).property("value")
+    //         // console.log(config.sex)
+    //         update(input_data,config)
+    // })
     
-    d3.selectAll(".selectType")
-        .on("change", function(d) {
-            config.previous = data 
-            config.type = d3.select(this).property("value")
-            update(input_data,config)
-        })
+    // d3.selectAll(".selectType")
+    //     .on("change", function(d) {
+    //         config.previous = data 
+    //         config.type = d3.select(this).property("value")
+    //         update(input_data,config)
+    // })
     }
     setSelectors()
     
