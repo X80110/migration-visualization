@@ -65,16 +65,6 @@ var Nodes = sankeyDiagram.append("g")
     .attr("class", "nodes");
 
 function setData(raw,config){
-    /* console.log(raw) */
-    /* let file_index = files.indexOf(filename)
-    filename = fileName(config).json */
-    /* console.log(raw) */
-    /* input_data = {raw_data: raw.raw_data[file_index], metadata: raw.metadata} */
-        
-    /* preparedData = dataPrepare(input_data,config) */
-    /* data = {...preparedData.result} */
-    /* total_flows = preparedData.total_flows */
-
      // GET SELECTED DATASET   
      filename = fileName(config).json
      let file_index = files.indexOf(filename)
@@ -93,10 +83,11 @@ function setData(raw,config){
     let indexed_names = [...new Set(data.names)]
 
     sortedLinks = graphData.links
-            .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
-            .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets
+            // .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
+            // .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets
     /* console.log(sortedLinks) */
-    sortedNodes = graphData.nodes.sort((a, b) => indexed_names.indexOf(a) - indexed_names.indexOf(b));
+    sortedNodes = graphData.nodes
+            // .sort((a, b) => indexed_names.indexOf(a) - indexed_names.indexOf(b));
 
     const sankey_data = () => {          
         const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); //.map((x) => _.cloneDeep(x));
@@ -238,8 +229,8 @@ function updateSankey(raw, input, config, graph_data){
             ? getMeta(d.name).flag+ " "+  d.name
             :  d.name+ " "+ getMeta(d.name).flag
         )
-    nodeEnter
     // OPEN REGIONS
+    nodeEnter
         .on('click', function(evt, d) {
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       
@@ -248,14 +239,13 @@ function updateSankey(raw, input, config, graph_data){
             update(raw,config);
         })
     /// CLOSE REGIONS
-    d3.selectAll('.node')
+    nodeEnter
         .filter(d=>!isRegion(d.name))
         .on('click', function(evt, d) {
             config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
             update(raw,config)
             
         })     
-    
     node.exit().remove();
     /* nodeEnter.append("title")
         .text(function(d) { return d.name + "\n" + format(d.value / 1e3); });
@@ -273,7 +263,7 @@ function updateSankey(raw, input, config, graph_data){
             .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
 
     function tooltipCountry(evt,d)  {
-        console.log(d)
+        /* console.log(d) */
         var source = isRegion(input.names[d.source.index])  
             ? `<span style="color:${ getRegionColor(input.names[d.source.index])}"> ${d.source.name}</span>`
             : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
@@ -343,7 +333,9 @@ function updateSankey(raw, input, config, graph_data){
     nodeEnter
         .on("mousemove", tooltipRegion)
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
- 
+    
+    sankeyDiagram
+        .on("mouseout", d=> tooltip.style("visibility", "hidden"))
 }
     
     

@@ -92,9 +92,8 @@ function drawChords(raw,config){
     
     var arc = d3.arc() 
         .innerRadius(innerRadius)
+        .outerRadius(outerRadius)
         /* .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius) */
-
-        .outerRadius(outerRadius);
 
     var ribbon = d3.ribbonArrow()
         .sourceRadius(innerRadius)
@@ -276,13 +275,11 @@ function drawChords(raw,config){
     groups.append("path")
         .attr("class","group-arc")
         .attr("d", arc) 
-        
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        .style("opacity",/* d=> isRegion(d.name) && config.regions.length > 0 ? 0.03:  */0.8)
+        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
         .transition()
         .duration(600)
-        
         .attrTween("d", function(d,j) {
             var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) /* || config.initialAngle.arc */, d);
             return function (t) {
@@ -327,7 +324,6 @@ function drawChords(raw,config){
         .attr("d", ribbon)
         .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
         .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.03: 0.80)
-        
         .transition()
         .duration(600)
         .attrTween("d", function (d) {
@@ -341,7 +337,7 @@ function drawChords(raw,config){
                 return ribbon(i(t));
           }
         })
-        
+    
     countryLabels = groups
         .filter(d=>!isRegion(d.name))
         .append("text")
@@ -655,7 +651,7 @@ function tooltipRegion(evt,d) {
     }
 
     // INTERACTIONS
-    // open regions
+    // OPEN REGIONS
     config.maxRegionsOpen = 2 // config.regions = region || config.regions
     
     groups.on('click', function(evt, d) {
@@ -663,40 +659,30 @@ function tooltipRegion(evt,d) {
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       
             }
-            /* console.log(d.name) */
-            config.regions.push(d.name) // console.log(d.name)
-            d3.selectAll("g")
-              .remove()    
+            config.regions.push(d.name) 
+            d3.selectAll("#tooltip")
+                .remove()    
             update(raw,config)
         })
 
-    // close regions
+    /// CLOSE REGIONS
     groups
         .filter(function(d) {
             return d.id !== d.region;
         })
         .on('click', function(evt, d) {
             config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
-            d3.selectAll("g")
+            d3.selectAll("#tooltip")
                 .remove()    
             update(raw,config)
         });
 
     chordDiagram.selectAll(".group-arc")
         .on("click", function (evt, d) {                    
-            /* console.log(data) */
             config.previous = data 
-            d3.selectAll("g")
-                .remove()    
+            d3.selectAll("#tooltip")
+                        .remove()    
             update(raw,config)
-            // draw new chart 
-            /* getData(filename).then(data=> {
-                    data = data
-                    // remove current content
-                    d3.selectAll("g")
-                        .remove()        
-                    return draw(data,config)
-                }) */
         })
 
     chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
@@ -741,99 +727,42 @@ function tooltipRegion(evt,d) {
                     .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.03: 0.80)
                 groups.selectAll(".group-arc")
                     .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
-                
             })  
 
         chordDiagram.selectAll(".path-item, .country-label")
             .on("mousemove", tooltipCountry)
-            .on("mouseout", function(){
-                 tooltip.style("visibility", "hidden");
-            })
+            .on("mouseout", d=> tooltip.style("visibility", "hidden"))
 
         chordDiagram.selectAll(".group-arc, .country-label")
             .on("mousemove", tooltipRegion)
-            .on("mouseout", function(){
-                return tooltip.style("visibility", "hidden");
-            })
+            .on("mouseout", d=> tooltip.style("visibility", "hidden"))
     }
 
     
     d3.selectAll("#selectYear")
         .on("input", function(d) {
-
             config.previous = data 
             config.year = +d3.select(this).property("value")
             update(raw,config)
-
-            /* getData(filename).then(data=> {
-                data = data
-                // Remove previous
-                d3.selectAll("g")
-                    .remove();
-               return draw(data,config)
-            }) */
-
         })        
     d3.selectAll("#stockFlow")
         .on("change", function(d) {
             config.previous = data 
             config.stockflow = d3.select(this).property("value")
             update(raw,config)
-            /*filename = fileName(config).json
-
-            getData(filename).then(data=> {
-                data = data
-                // Remove previous
-                d3.selectAll("g")
-                    .remove();
-
-               return draw(data,config)
-            }) */
-
     })    
     d3.selectAll("#selectMethod")
         .on("change", function(d) {
             config.previous = data 
             config.method = d3.select(this).property("value")
             update(raw,config)
-            /* d3.selectAll("g")
-                .remove()    
-                update(raw,config) */
-            /* filename = fileName(config).json
-                
-            getData(filename).then(data=> {
-                data = data
-                // Remove previous
-                d3.selectAll("g")
-                    .remove();
-
-               return draw(data,config)
-            }) */
-            
     })    
   
     d3.selectAll(".selectSex")
         .on("change", function(d) {
             config.previous = data 
             config.sex = d3.select(this).property("value")
-            // console.log(config.sex)
             update(raw,config)
-        /*     d3.selectAll("g")
-                .remove()    
-            draw(raw,config) */
-            /* filename = fileName(config).json
-            console.log(filename)
-
-            getData(filename).then(data=> {
-                data = data
-                // Remove previous
-                d3.selectAll("g")
-                    .remove();
-
-               return draw(data,config)
-            }) */
-
-        // drawSankey(config)
     })
     
     d3.selectAll(".selectType")
@@ -841,22 +770,8 @@ function tooltipRegion(evt,d) {
             config.previous = data 
             config.type = d3.select(this).property("value")
             update(raw,config)
-            /*       d3.selectAll("g")
-            .remove()    
-            draw(raw,config)      */
         })
-    /* AIAI = d3.selectAll("html#reset")
-    console.log(AIAI) */
-    
-   /*  d3.selectAll(".button")
-        .on("click", function(d, evt) {
-            config.previous = [] 
-        
-        
-            console.log("MY EYE AI", evt)
-            update(raw,config)
-            }
-        ) */
+   
         
 }
 
