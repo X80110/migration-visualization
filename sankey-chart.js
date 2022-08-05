@@ -57,9 +57,9 @@ const sankey = d3.sankey()
     .nodeSort(null)
     .linkSort(null)
     
-const sankeyDiagram = d3.select("#sankey")
+const sankeyDiagram = d3.select("#sankey-chart")
     .append("svg")
-    .attr("viewBox", [0 , 0, width, height])
+    .attr("viewBox", [0 , 0, width, height+50])
 
 var Links = sankeyDiagram.append("g")
     .attr("class", "links");
@@ -206,10 +206,11 @@ function updateSankey(raw, input, config, graph_data){
     node.select("rect")  
         .transition()
         .duration(500)
-        // .attr("x", function(d) { return d.x0; })
+        .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
         .attr("y", function(d) { return d.y0; })
-        .attr("height", function(d) { return d.y1 - d.y0; });
-        // .attr("width", function(d) { return d.x1 - d.x0; });
+        .attr("height", function(d) { return d.y1 - d.y0; })
+        /* .attr("width", d=>  isRegion(d.name) ? d.x1:d.x1 - d.x0) */
+        .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
 
     nodeEnter.append("text")
         .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
@@ -228,9 +229,10 @@ function updateSankey(raw, input, config, graph_data){
         .duration(500)
         .attr("font-size", d=> isRegion(d.name) ? "85%": "65%")
         .attr("font-weight", d=> isRegion(d.name) ? "600": "400")
-        /* .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6) */
+        .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
         .attr("y", d => (d.y1 + d.y0) / 2 - 6)
         .attr("dy", "0.6em")
+        .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
         .text(d => d.sourceLinks.length > 0
             ? getMeta(d.name).flag+ " "+  d.name
             :  d.name+ " "+ getMeta(d.name).flag

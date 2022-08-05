@@ -624,18 +624,23 @@ select::-ms-expand {
   display: none;
 } */
 #sankey-visualization {
+  transition: all 0.1s;
   margin:0% 10% 0 10%;
 }
 #sankey-visualization p{
   font-weight:700;
-  text-transform: uppercase;
-  
+  text-transform: uppercase; 
 }
+
+
 /* #visualization p>*:first-child {
   align-items: flex-start;
 } */
 
-
+/* 
+.selected {
+  background-color: #000;
+} */
 
 .sourceTarget{
   display: flex; 
