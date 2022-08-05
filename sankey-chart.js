@@ -273,7 +273,8 @@ function updateSankey(raw, input, config, graph_data){
             .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
 
     function tooltipCountry(evt,d)  {
-        var source = isRegion(input.names[d.source.index])
+        console.log(d)
+        var source = isRegion(input.names[d.source.index])  
             ? `<span style="color:${ getRegionColor(input.names[d.source.index])}"> ${d.source.name}</span>`
             : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
         
@@ -335,12 +336,14 @@ function updateSankey(raw, input, config, graph_data){
                 .style("visibility", "visible")
             }
         }
-    d3.selectAll(".link")
+    linkEnter
         .on("mousemove", tooltipCountry)
         .on("mouseout",d=> tooltip.style("visibility", "hidden"));
 
-    d3.selectAll(".nodes g")
+    nodeEnter
         .on("mousemove", tooltipRegion)
+        .on("mouseout", d=> tooltip.style("visibility", "hidden"))
+    d3.selectAll(".node g")
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
     
     
