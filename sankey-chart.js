@@ -54,6 +54,9 @@ const sankey = d3.sankey()
     .nodeWidth(25)
     .nodePadding(12) 
     .extent([[5, 5],[width, height]])
+    .nodeSort(null)
+    .linkSort(null)
+    
 const sankeyDiagram = d3.select("#sankey")
     .append("svg")
     .attr("viewBox", [0 , 0, width, height])
@@ -83,11 +86,12 @@ function setData(raw,config){
     let indexed_names = [...new Set(data.names)]
 
     sortedLinks = graphData.links
-            // .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
-            // .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets
-    /* console.log(sortedLinks) */
-    sortedNodes = graphData.nodes
-            // .sort((a, b) => indexed_names.indexOf(a) - indexed_names.indexOf(b));
+            .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
+            /* .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets */
+
+    indexed_nodes = indexed_names.map(d=> {return {name: d}}) // create node-graph datastructure
+    sortedNodes = indexed_nodes.concat(indexed_nodes)
+       
 
     const sankey_data = () => {          
         const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); //.map((x) => _.cloneDeep(x));
@@ -101,11 +105,10 @@ function setData(raw,config){
 }
 
 function updateSankey(raw, input, config, graph_data){
-
     let file_index = files.indexOf(filename)
     filename = fileName(config).json
     /* input = {raw_data: raw.raw_data[0][file_index], metadata: raw.metadata} */
-
+    graph_data = graph_data
     function formatValue(nStr, seperator) {
         seperator = seperator || ','
         nStr += ''
@@ -131,6 +134,7 @@ function updateSankey(raw, input, config, graph_data){
             } r = i;
         } return input.regions[r];
     }
+    
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
@@ -145,13 +149,14 @@ function updateSankey(raw, input, config, graph_data){
         const outflow = total_flows.filter(d=>d.name.includes(name))[0].outflow
         const inflow = total_flows.filter(d=>d.name.includes(name))[0].inflow
             return {flag: flag(name), region,region_name,id,outflow,inflow}
-
     }
+    
     const getRegionColor = (name) => {
         a = input.regions.map((d)=> { return input.names[d]})
         b = a.indexOf(name)
         return colors[b]
     }
+
     const colorCountries = (name) => {
         let color_country = getRegionColor(getMeta(name).region_name)
         let hsl = d3.hsl(color_country)
@@ -159,7 +164,7 @@ function updateSankey(raw, input, config, graph_data){
         r = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)]
         return r[(d.id-d.region)%5]
     }
-
+    console.log(graph_data)
 
     var link = Links.selectAll("path")
         .data(graph_data.links )
@@ -170,19 +175,20 @@ function updateSankey(raw, input, config, graph_data){
         .attr("class", "link")
         .attr("opacity",0.6)
         .attr("stroke-width", function(d) { return Math.max(1, d.width); })
-        .attr("stroke", d=> isRegion(d.names[0]) ? getRegionColor(d.names[0]) :colorCountries(d.names[0]))
+        .attr("stroke", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
     
     link
         .transition()
         .duration(500)
-        .attr("stroke-width", function(d) { return Math.max(1, d.width); })
-        /* .attr("stroke", d=> isRegion(d.names[0]) ? getRegionColor(d.names[0]) :colorCountries(d.names[0])) */
         .attr("d", d3.sankeyLinkHorizontal())
+        .attr("stroke-width", function(d) { return Math.max(1, d.width); })
+        .attr("stroke", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
 
     /* linkEnter.append("title")
       .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + format(d.value / 1e3); }); */
 
     link.exit().remove();
+    
     var node = Nodes.selectAll("g")
       .data(graph_data.nodes);
 
