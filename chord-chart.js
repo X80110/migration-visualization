@@ -269,7 +269,7 @@ function drawChords(raw,config){
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        /* .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80) */
+        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80)
         .transition()
         .duration(600)
         .attrTween("d", function(d,j) {
@@ -295,7 +295,7 @@ function drawChords(raw,config){
     //     .attr("class","arc2")
     //     .attr("d", arc.innerRadius(innerRadius-5).outerRadius(outerRadius)) 
     //     .style("fill",d=> isRegion(d.target.name) ? getRegionColor(d.target.name) :colorCountries(d.target.name))
-    //     /* .style("opacity",d=> isRegion(d.target.name) && config.regions.length > 0 ? 0.03: 0.80) */
+    //     /* .style("opacity",d=> isRegion(d.target.name) && config.regions.length > 0 ? 0.1: 0.80) */
     //     .transition()
     //     .duration(500)
     //     .attrTween("d", function(d,j) {
@@ -315,7 +315,7 @@ function drawChords(raw,config){
         .attr("class", "path-item")
         .attr("d", ribbon)
         .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
-        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.03: 0.80)
+        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.80)
         .transition()
         .duration(600)
         .attrTween("d", function (d) {
@@ -690,9 +690,9 @@ function tooltipRegion(evt,d) {
                     .selectAll(".path-item, .group-arc")
                     .transition()
                     .duration(80)
-                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
+                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.80)
                 /* arcs.selectAll(".group-arc")
-                .style("opacity",d=> isRegion(d.name) ? 0.03: 0.80) */
+                .style("opacity",d=> isRegion(d.name) ? 0.1: 0.80) */
                 d3.select(this)
                     .transition()
                     .duration(80)
@@ -704,11 +704,11 @@ function tooltipRegion(evt,d) {
                     .selectAll(".path-item, .group-arc")
                     /* .transition()
                     .duration(100) */
-                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
+                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.80)
                 d3.select(this)
                     /* .transition()
                     .duration(100) */
-                    .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
+                    .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.80)
                 }
             }
         )
@@ -718,20 +718,20 @@ function tooltipRegion(evt,d) {
         chordDiagram.selectAll("g")
             .on("mouseout", function (evt, d) {        
                 chords.selectAll(".path-item")
-                    .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.03: 0.80)
+                    .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1: 0.80)
                 groups.selectAll(".group-arc")
-                    .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
+                    .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80)
             })  
 
-        chordDiagram.selectAll(".path-item, .country-label")
-            .on("mousemove", tooltipCountry)
-            .on("mouseout", d=> tooltip.style("visibility", "hidden"))
-
-        chordDiagram.selectAll(".group-arc, .country-label")
-            .on("mousemove", tooltipRegion)
-            .on("mouseout", d=> tooltip.style("visibility", "hidden"))
+        
     }
+    chordDiagram.selectAll(".path-item, .country-label")
+        .on("mousemove", tooltipCountry)
+        .on("mouseout", d=> tooltip.style("visibility", "hidden"))
 
+    chordDiagram.selectAll(".group-arc, .country-label")
+        .on("mousemove", tooltipRegion)
+        .on("mouseout", d=> tooltip.style("visibility", "hidden"))
     
     d3.selectAll("#selectYear")
         .on("input", function(d) {

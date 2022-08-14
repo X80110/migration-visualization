@@ -239,7 +239,7 @@
 				}
 				const metadata = d3.csv("data/country-metadata-flags.csv")
 				const settings = d3.json('config.json')
-				return {raw_data:await Promise.all(raw), metadata: await metadata, settings:await settings}
+				return {raw_data:await raw, metadata: await metadata, settings:await settings}
 
 			};
 

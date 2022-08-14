@@ -51,9 +51,10 @@ let graph = (data) => {
 }
 let input_data = {}
 const sankey = d3.sankey()
+    /* .nodeId(d=> d.index) */
     .nodeWidth(25)
     .nodePadding(12) 
-    .extent([[5, 5],[width, height]])
+    .extent([[125, 25],[width-150, height]])
     .nodeSort(null)
     .linkSort(null)
     
@@ -173,7 +174,7 @@ function updateSankey(raw, input, config, graph_data){
         .attr("d", d3.sankeyLinkHorizontal())
         .attr("fill","none")
         .attr("class", "link")
-        .attr("opacity",0.6)
+        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.80)
         .attr("stroke-width", function(d) { return Math.max(1, d.width); })
         .attr("stroke", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
     
@@ -181,6 +182,7 @@ function updateSankey(raw, input, config, graph_data){
         .transition()
         .duration(500)
         .attr("d", d3.sankeyLinkHorizontal())
+        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.80)
         .attr("stroke-width", function(d) { return Math.max(1, d.width); })
         .attr("stroke", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
 
@@ -195,13 +197,15 @@ function updateSankey(raw, input, config, graph_data){
     var nodeEnter = node.enter().append("g");
 
     nodeEnter.append("rect")
-        .attr("class", "link")
+        .attr("class", "node")
         .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
         .attr("y", d=> d.y0)
         .attr("height", d=> d.y1 - d.y0 )
-        .attr("opacity",0.6)
+        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80)
+        
         .attr("width", d=> d.x1 - d.x0)
         .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
+        
 
     node.select("rect")  
         .transition()
@@ -211,12 +215,14 @@ function updateSankey(raw, input, config, graph_data){
         .attr("height", function(d) { return d.y1 - d.y0; })
         /* .attr("width", d=>  isRegion(d.name) ? d.x1:d.x1 - d.x0) */
         .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
+        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80)
 
     nodeEnter.append("text")
         .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
         .attr("y", d => (d.y1 + d.y0) / 2 - 6)
         .attr("font-size", d=> isRegion(d.name) ? "85%": "65%")
         .attr("font-weight", d=> isRegion(d.name) ? "600": "400")
+        
         .attr("dy", "0.6em")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
         .text(d => d.sourceLinks.length > 0
@@ -260,20 +266,13 @@ function updateSankey(raw, input, config, graph_data){
             update(raw,config)
             
         })    
-    /*     chordDiagram.selectAll(".group-arc")
-        .on("click", function (evt, d) {                    
-            config.previous = data 
-            d3.selectAll("#tooltip")
-                        .remove()    
-            update(raw,config)
-        }) */
 
     node.exit().remove();
     /* nodeEnter.append("title")
-        .text(function(d) { return d.name + "\n" + format(d.value / 1e3); });
+        .text(function(d) { return d.name + "\n" + formatValue(d.value); });
 
     node.select("title")
-        .text(function(d) { return d.name + "\n" + format(d.value / 1e3); }); */
+        .text(function(d) { return d.name + "\n" + formatValue(d.value); }); */
     const tooltip = d3.select('body').append('g')
             .attr('id', 'tooltip')
             .style('background-color','#ffffff')
@@ -348,6 +347,9 @@ function updateSankey(raw, input, config, graph_data){
                 .style("visibility", "visible")
             }
         }
+    
+    // HOVER INTERACTIONS
+    // -> Tooltip
     linkEnter
         .on("mousemove", tooltipCountry)
         .on("mouseout",d=> tooltip.style("visibility", "hidden"));
@@ -356,8 +358,40 @@ function updateSankey(raw, input, config, graph_data){
         .on("mousemove", tooltipRegion)
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
     
- /*    sankeyDiagram
-        .on("mouseout", d=> tooltip.style("visibility", "hidden")) */
+
+   /*  // -> Node highlighting
+    linkEnter
+        .on("mouseover", function (e, i) {
+            d3.select(this)
+                .attr("width",d=> console.log(d))
+                .transition()
+                .duration("50")
+                .attr("opacity", 1)
+        })
+    
+        .on('mouseout', function () {
+            d3.select(this)
+                .transition()
+                .duration('50')
+                .attr('opacity', 0.5)
+        })
+    
+    nodeEnter
+        .selectAll("rect")
+        .on("mouseover", function (e, i) {
+            d3.select(this)
+                .transition()
+                .duration("50")
+                .attr("opacity", 1)
+        })
+    
+        .on('mouseout', function () {
+            d3.select(this)
+                .transition()
+                .duration('50')
+                .attr('opacity', 0.5)
+        }) */
+
 }
     
     
