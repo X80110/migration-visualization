@@ -164,7 +164,7 @@ function updateSankey(raw, input, config, graph_data){
         r = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)]
         return r[(d.id-d.region)%5]
     }
-    console.log(graph_data)
+    /* console.log(graph_data) */
 
     var link = Links.selectAll("path")
         .data(graph_data.links )
@@ -243,17 +243,31 @@ function updateSankey(raw, input, config, graph_data){
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       
             }
-            config.regions.push(d.name); // console.log(d.name)                
+            if (isRegion(d.name)){
+               config.regions.push(d.name); // console.log(d.name)                
+            } /* else {
+                config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
+            } */
+            /* console.log(config.regions) */
             update(raw,config);
         })
     /// CLOSE REGIONS
-    nodeEnter
+     node
         .filter(d=>!isRegion(d.name))
         .on('click', function(evt, d) {
+            /* console.log(d.name) */
             config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
             update(raw,config)
             
-        })     
+        })    
+    /*     chordDiagram.selectAll(".group-arc")
+        .on("click", function (evt, d) {                    
+            config.previous = data 
+            d3.selectAll("#tooltip")
+                        .remove()    
+            update(raw,config)
+        }) */
+
     node.exit().remove();
     /* nodeEnter.append("title")
         .text(function(d) { return d.name + "\n" + format(d.value / 1e3); });
@@ -342,8 +356,8 @@ function updateSankey(raw, input, config, graph_data){
         .on("mousemove", tooltipRegion)
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
     
-    sankeyDiagram
-        .on("mouseout", d=> tooltip.style("visibility", "hidden"))
+ /*    sankeyDiagram
+        .on("mouseout", d=> tooltip.style("visibility", "hidden")) */
 }
     
     

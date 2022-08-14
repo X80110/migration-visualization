@@ -311,7 +311,7 @@ img:hover {
     -webkit-appearance: none;
     width: 300px;
     height: 0.1em;
-    border: 1px solid #598cae90;
+/*     border: 1px solid #598cae90; */
     outline: none;
     opacity: 0.5;
     -webkit-transition: .2s;
@@ -362,7 +362,7 @@ img:hover {
     transition: resize .2s;
 }
 
-/*------ SLIDER FOR STOCKS (specific to year) -----------------*/
+/*------ SLIDER FOR STOCKS (specific to 1 year not ranges) -----------------*/
 .slider-stock {
     -webkit-appearance: none;
     width: 300px;
@@ -387,6 +387,7 @@ img:hover {
     width: 1em;
     height: 1em;
     background: #598cae70;
+    transition: all 0.1s;
     cursor: pointer;
     border-radius: 20px;
 }
@@ -431,8 +432,8 @@ img:hover {
 
 /* 48em = 768px */
 @media (max-width: 768px) {
-    #chart{
-        transform: scale(1.25);
+    div > button{
+        transform: scale(1.4);
     }
     ul.menu li{
       top:0;
@@ -451,7 +452,7 @@ img:hover {
     padding: 10px 20px;
   } */
   #chart{
-    transform: scale(1.08);
+    transform: scale(1.1);
 }
   .header .menu {
     float: right;

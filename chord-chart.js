@@ -57,15 +57,7 @@ function labelPosition(angle) {
 
 // ##########################################################
 //  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
-//  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
 // We set this outside the draw() function to avoid appending a new array to the selector on each run. 
-d3.select("#selectMethod")
-                .selectAll('myOptions')
-                .data(allMethods)
-                .enter()
-                .append('option')
-                .text(d=>{ return d; })    // text showed in the menu dropdown
-                .attr("value",d=> { return d; }) 
 
 function drawChords(raw,config){
     // GET SELECTED DATASET   
@@ -92,8 +84,8 @@ function drawChords(raw,config){
     
     var arc = d3.arc() 
         .innerRadius(innerRadius)
-        .outerRadius(outerRadius)
-        /* .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius) */
+        /* .outerRadius(outerRadius) */
+        .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
 
     var ribbon = d3.ribbonArrow()
         .sourceRadius(innerRadius)
@@ -277,7 +269,7 @@ function drawChords(raw,config){
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
+        /* .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80) */
         .transition()
         .duration(600)
         .attrTween("d", function(d,j) {
@@ -670,8 +662,10 @@ function tooltipRegion(evt,d) {
         .filter(function(d) {
             return d.id !== d.region;
         })
+        /* .attr("width", d=> console.log(d)) */
         .on('click', function(evt, d) {
             config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
+            
             d3.selectAll("#tooltip")
                 .remove()    
             update(raw,config)

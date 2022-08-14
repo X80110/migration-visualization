@@ -16,6 +16,7 @@ config.sex
 config.type 
 config.method = "da_pb_closed" || ""
 config.regions = []
+config.maxRegionsOpen = 2 // config.regions = region || config.regions
 function filterYear(input,year){ 
 
     year = +year || 1990
@@ -61,11 +62,18 @@ let fileName = (configs) => {
 
 let filename = fileName(config).json
 
+d3.select("#selectMethod")
+                .selectAll('myOptions')
+                .data(allMethods)
+                .enter()
+                .append('option')
+                .text(d=>{ return d; })    // text showed in the menu dropdown
+                .attr("value",d=> { return d; }) 
 
 // ##########################################################
 //  DATA PREPARE
 function dataPrepare(input, config){
-    console.log(input)
+    /* console.log(input) */
     var input_data = {...input}
     
     /* console.log(input_data) */
@@ -280,7 +288,7 @@ function dataPrepare(input, config){
         let item ={name: d, id: getMeta(d).id}
         nodes.push(item)
     })
-    nodes = nodes.concat(nodes)
+    /* nodes = nodes.concat(nodes) */
     let nldata = {nodes:nodes,links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target))}
 
     function setSelectors() {
