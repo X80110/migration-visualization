@@ -87,7 +87,7 @@ function setData(raw,config){
     graphData = graph(preparedData.nldata.links)  
 
     let indexed_names = [...new Set(data.names)]
-
+    console.log()
     sortedLinks = graphData.links
             .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
             /* .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets */
@@ -248,6 +248,15 @@ function updateSankey(raw, input, config, graph_data){
     // OPEN REGIONS
     nodeEnter
         .on('click', function(evt, d) {
+
+            function nodeSide(a){
+                a = d
+                a.x0 < width / 2 ?  config.source = a.name : null;
+                a.x0 > width / 2 ? config.target = a.name : null
+                console.log({source: config.source, target: config.target})
+            }
+            nodeSide()
+
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       
             }
