@@ -261,7 +261,8 @@ function dataPrepare(input, config){
     } 
     
     let filteredLayout = mergeFilter()    
-    /* console.log(filteredLayout) */
+
+    console.log(filteredLayout)
     let names = []
     let unfilteredMatrix = []               // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
     let matrix = []                         // yeah, this is the final matrix 

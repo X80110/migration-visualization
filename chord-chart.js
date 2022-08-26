@@ -269,7 +269,7 @@ function drawChords(raw,config){
         .attr("d", arc) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80)
+        /* .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80) */
         .transition()
         .duration(600)
         .attrTween("d", function(d,j) {

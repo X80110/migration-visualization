@@ -474,7 +474,7 @@ li:hover{
     cursor:pointer;
 }
 .dropdown{
-    z-index:-1;
+    z-index: 1;
     display:block;
     position:absolute;
     visibility: hidden;
@@ -491,7 +491,7 @@ li:hover{
   }
   
   li:hover > .dropdown{
-    z-index:1;
+    z-index:2;
     opacity:1;
     visibility: visible;
     transform:translateY(8px);

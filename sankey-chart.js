@@ -6,6 +6,8 @@
 
 
 // create graph structure for sankey
+
+
 let graph = (data) => {
     let keys = ["source", "target"]
     let index = -1;
@@ -78,9 +80,9 @@ function setData(raw,config){
      /* preparedData =  dataPrepare(input,config) */
      let data = preparedData.result
  
-     let total_flows = preparedData.total_flows
+     /* let total_flows = preparedData.total_flows */
      input = input.raw_data                  // used for metadata
-     let previous = config.previous || data  // used to interpolate between layouts
+     /* let previous = config.previous || data  // used to interpolate between layouts */
 
     graphData = graph(preparedData.nldata.links)  
 
@@ -89,7 +91,7 @@ function setData(raw,config){
     sortedLinks = graphData.links
             .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
             /* .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets */
-
+    
     indexed_nodes = indexed_names.map(d=> {return {name: d}}) // create node-graph datastructure
     sortedNodes = indexed_nodes.concat(indexed_nodes)
        
@@ -101,12 +103,12 @@ function setData(raw,config){
     }
 
     graph_data = sankey_data()   
-
+    console.log(graph_data)
     updateSankey(raw, input, config, graph_data)
 }
 
 function updateSankey(raw, input, config, graph_data){
-    let file_index = files.indexOf(filename)
+    /* let file_index = files.indexOf(filename) */
     filename = fileName(config).json
     /* input = {raw_data: raw.raw_data[0][file_index], metadata: raw.metadata} */
     graph_data = graph_data
