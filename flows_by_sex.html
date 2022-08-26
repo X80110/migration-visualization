@@ -241,22 +241,27 @@
 				return {raw_data:await Promise.all(raw), metadata: await metadata, settings:await settings}
 
 			};
-
+			
 			function getAnchor() {
 				return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
 			}
+			// run visualization selected on #anchor link
 			switchViz(getAnchor())
+			
 			function switchViz(chart){
 				const selectedViz = chart === null ? "chord" : chart
 				viz = ["chord","sankey","map"]
 				notIn = viz.filter(d=> !d.includes(selectedViz))
 				document.getElementById(...notIn).style.display = 'none'
 				document.getElementById(selectedViz).style.display = ''
-			}
 
-			getDataNDraw().then(raw=> {
-				update(raw,config)
-			})
+				config.regions = []
+
+				getDataNDraw().then(raw=> {
+					update(raw,config)
+				})
+			}
+		
 			
 			function update(raw,config){
 					d3.selectAll("#chord-chart g")

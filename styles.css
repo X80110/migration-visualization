@@ -646,7 +646,7 @@ select::-ms-expand {
 
 .sourceTarget{
   display: flex; 
-  margin: 0 100px 0 100px;
+  margin: 0 10em 0  10em;
   align-items: flex-end;
   justify-content: space-between;
 }
