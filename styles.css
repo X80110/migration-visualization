@@ -47,6 +47,7 @@ h1 {
   margin-bottom:0.2px;
   font-weight: bold;
 }
+h1 a { color : black !important}
 
 h2{
   font-size:130%;

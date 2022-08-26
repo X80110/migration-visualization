@@ -14,7 +14,6 @@ config.year = 1990 || ""
 config.stockflow = config.stockflow
 config.sex 
 config.type 
-config.method = "da_pb_closed" || ""
 config.regions = []
 config.maxRegionsOpen = 2 // config.regions = region || config.regions
 function filterYear(input,year){ 
