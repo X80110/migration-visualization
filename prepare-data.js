@@ -249,6 +249,10 @@ function dataPrepare(input, config){
     // Produce layout by concatenating and sort all expaned regions and their countries indexes
     let last_selected = expandRegion(data,config.regions[1]).indexList
     let first_selected = expandRegion(data,config.regions[0]).indexList
+    let source = expandRegion(data,config.source).indexList
+    let target = expandRegion(data,config.target).indexList
+    let sankey_layout = {source:source,target:target}
+    console.log(sankey_layout)
 
     let mergeFilter = () =>  {
         let together = last_selected.concat(first_selected)
@@ -351,6 +355,6 @@ function dataPrepare(input, config){
          }            
     }
     setSelectors()
-    
+    console.log(result)
     return {result,total_flows, nldata}
 }

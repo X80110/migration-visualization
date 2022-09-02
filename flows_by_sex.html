@@ -145,10 +145,10 @@
 				<div class="options">
 					<h2>View another measure</h2>
 					<hr>
-						<p>Population Stocks Datasets</p>
+						<p>Population <u><b>Stocks</b></u> Datasets</p>
 						<a class='drop-link' href='index.html'>all</a>
 						<a class='drop-link' href='stocks_by_sex.html'>by sex</a>
-						<p>Migration Flows Datasets</p>
+						<p>Migration <u><b>Flows</b></u> Datasets</p>
 						<a class='drop-link' href='flows.html'>all</a>
 						<a class='drop-link' href='flows_by_sex.html'>by sex</a>
 						<a class='drop-link' href='flows_by_type.html'>by type</a>
@@ -241,7 +241,7 @@
 				return {raw_data:await Promise.all(raw), metadata: await metadata, settings:await settings}
 
 			};
-			
+
 			function getAnchor() {
 				return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
 			}

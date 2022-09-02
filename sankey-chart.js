@@ -9,6 +9,7 @@
 
 
 let graph = (data) => {
+    console.log(data)
     let keys = ["source", "target"]
     let index = -1;
     const nodes = [];
@@ -73,6 +74,7 @@ var Nodes = sankeyDiagram.append("g")
 function setData(raw,config){
      // GET SELECTED DATASET   
      filename = fileName(config).json
+ 
      let file_index = files.indexOf(filename)
      let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
  
@@ -87,7 +89,7 @@ function setData(raw,config){
     graphData = graph(preparedData.nldata.links)  
 
     let indexed_names = [...new Set(data.names)]
-    console.log()
+    console.log(indexed_names)
     sortedLinks = graphData.links
             .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
             /* .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets */
@@ -111,6 +113,7 @@ function updateSankey(raw, input, config, graph_data){
     /* let file_index = files.indexOf(filename) */
     filename = fileName(config).json
     /* input = {raw_data: raw.raw_data[0][file_index], metadata: raw.metadata} */
+    
     graph_data = graph_data
     function formatValue(nStr, seperator) {
         seperator = seperator || ','
@@ -255,7 +258,7 @@ function updateSankey(raw, input, config, graph_data){
                 a.x0 > width / 2 ? config.target = a.name : null
                 console.log({source: config.source, target: config.target})
             }
-            nodeSide()
+            nodeSide(d)
 
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       

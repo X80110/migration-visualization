@@ -1,9 +1,9 @@
 @import url(//fonts.googleapis.com/css?family=Jost:400,600,700,300);
-/* @import url(//fonts.googleapis.com/css?family=Proxima+Nova:400,600,700,300); */
+
 
 * {
     box-sizing: border-box; 
-    border-radius: 5px;
+    border-radius: 12px;
     font-family:  'Jost', sans-serif !important;
 }
 body {
@@ -241,70 +241,7 @@ img:hover {
     margin-bottom:1.2em;
     color: #000;
 }
-/* 
-.data-type div{
-    text-align: left;
-    
-} */
 
-
-
-
-/* 
-.wrap-collabsible{ 
-    float: left;
-    text-align: left;
-    margin-right: 1em
-}
-
-.wrap-collabsible ul li{ 
-    display:block; 
-}
-.wrap-collabsible input[type='checkbox'] {
-    display: none;
-  }
-.lbl-toggle {
-    cursor: pointer;
-    transition: all 0.25s ease-out;
-}
-.lbl-toggle:hover {
-    color: #000;
-}
-.lbl-toggle::before {
-    content: ' ';
-    display: inline-block;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-left: 5px solid currentColor;
-    vertical-align: middle;
-    margin-right: 0.7rem;
-    transform: translateY(-2px);
-    transition: transform 0.2s ease-out;
-}
-.toggle:checked  + .lbl-toggle::before {
-    transform: rotate(90deg) translateX(-3px);
-}
-.collapsible-content {
-    max-height: 0px;
-    overflow: hidden;
-    transition:  0.25s ease-in-out;
-}
-.toggle:checked + .lbl-toggle + .collapsible-content {
-    max-height: 150px;
-}
-.toggle:checked + .lbl-toggle {
-
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-}
-.collapsible-content .content-inner {
-    border-bottom-left-radius: 7px;
-    border-bottom-right-radius: 7px;
-}
-.collapsible-content p {
-    margin-top: 0;
-}
- */
 
 
 /*------ SLIDER each 5 years -----------------*/
@@ -646,7 +583,10 @@ select::-ms-expand {
 
 .sourceTarget{
   display: flex; 
-  margin: 0 10em 0  10em;
+  margin: 0 9em -1em 9em;
+  font-size: 17px;
+  color: #656565;
+  text-transform: uppercase; 
   align-items: flex-end;
   justify-content: space-between;
 }
