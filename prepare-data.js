@@ -114,6 +114,7 @@ function dataPrepare(input, config){
     function filteredMatrix(input){
         data = input
         const countryNames = data.names
+
         // GET SOURCE-TARGET STRUCTURE 
         // Create array of name & connections objects
         let matrix = data.names.map((d,i)=> {
@@ -146,6 +147,7 @@ function dataPrepare(input, config){
         }
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links} 
+
         let unfilteredNL = {...nldata}
         let names = nldata.nodes.map(d=> d.name)
         
@@ -190,6 +192,7 @@ function dataPrepare(input, config){
             // reindex joined names
             let names_indexed = names.filter(d=> innerjoin.includes(d))
             /* console.log(names.length, names_source.length, names_target.length, innerjoin.length) */
+
             return names_indexed
         } 
         names = Array.from(new Set(removeNullNames())) 
@@ -211,13 +214,12 @@ function dataPrepare(input, config){
 
     // DEFINE LAYOUT FOR SELECTED REGIONS
     // Expand countries under selected regions
-    let nextNameRegionIndex
     function expandRegion(input, region) {
         // here we'll find the region index -> we'll get following region -> finally we define a range between both index and replace them on selected region value
         const nameRegionIndex = input.names.indexOf(region)                                         // index of selected region in names
         const regionIndex =  input.regions.indexOf(nameRegionIndex)                                 // index of selected region in regions
         const nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop()    // if equal or higher than last element in regions
-                                     ? input.names.length                                           // return last index iin names
+                                     ? input.names.length                                           // return last index in names
                                      : input.regions[regionIndex+1]                                 // return next element in regions        
                                      // console.log(nameRegionIndex,nextNameRegionIndex)
         // get range between two values
@@ -230,7 +232,7 @@ function dataPrepare(input, config){
     }
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)    
-    let unfilteredNL = {...filteredMatrix(data,year).unfilteredNL}    
+    /* let unfilteredNL = {...filteredMatrix(data,year).unfilteredNL}     */
     data = dataSliced
     total_flows = dataSliced.total_flows
 
@@ -249,10 +251,10 @@ function dataPrepare(input, config){
     // Produce layout by concatenating and sort all expaned regions and their countries indexes
     let last_selected = expandRegion(data,config.regions[1]).indexList
     let first_selected = expandRegion(data,config.regions[0]).indexList
-    let source = expandRegion(data,config.source).indexList
-    let target = expandRegion(data,config.target).indexList
+    let source = expandRegion(data,config.selected_source).indexList
+    let target = expandRegion(data,config.selected_target).indexList
     let sankey_layout = {source:source,target:target}
-    console.log(sankey_layout)
+
 
     let mergeFilter = () =>  {
         let together = last_selected.concat(first_selected)
@@ -265,7 +267,7 @@ function dataPrepare(input, config){
     
     let filteredLayout = mergeFilter()    
 
-    console.log(filteredLayout)
+
     let names = []
     let unfilteredMatrix = []               // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
     let matrix = []                         // yeah, this is the final matrix 
@@ -292,7 +294,12 @@ function dataPrepare(input, config){
         let item ={name: d, id: getMeta(d).id}
         nodes.push(item)
     })
-    /* nodes = nodes.concat(nodes) */
+    /* nodes = nodes.concat(nodes) */   
+    // set sankey links by selected source/target
+    config.selected_source = "Europe"
+    /* console.log(dataSliced.nldata.filter(d=> )) */
+    console.log(names)
+
     let nldata = {nodes:nodes,links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target))}
 
     function setSelectors() {
@@ -355,6 +362,6 @@ function dataPrepare(input, config){
          }            
     }
     setSelectors()
-    console.log(result)
+
     return {result,total_flows, nldata}
 }

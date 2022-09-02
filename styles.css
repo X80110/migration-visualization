@@ -460,12 +460,12 @@ li:hover{
     width:fit-content;
     color:#333;
     filter:  drop-shadow(0px 5px 5px rgba(0, 0, 0, 0.2));
-    padding: 2px 5px;
+    padding: 5px 15px;
     margin:4px;
     /* margin-left: 1.5em ;  */
     background-color:#fff;
 
-    transition:all 0.3s ease;
+    transition:all 0.3s;
 
   }
   .dropdown  p{
@@ -590,3 +590,9 @@ select::-ms-expand {
   align-items: flex-end;
   justify-content: space-between;
 }
+
+#reset {
+  margin-top: 1em;
+  cursor:pointer;
+  transition:all 0.3s;
+} 
