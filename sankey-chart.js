@@ -9,7 +9,7 @@
 
 
 let graph = (data) => {
-    console.log(data)
+
     let keys = ["source", "target"]
     let index = -1;
     const nodes = [];
@@ -72,30 +72,32 @@ var Nodes = sankeyDiagram.append("g")
     .attr("class", "nodes");
 
 function setData(raw,config){
-     // GET SELECTED DATASET   
-     filename = fileName(config).json
- 
-     let file_index = files.indexOf(filename)
-     let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
- 
-     // CREATE SELECTORS
-     /* preparedData =  dataPrepare(input,config) */
-     let data = preparedData.result
- 
-     /* let total_flows = preparedData.total_flows */
-     input = input.raw_data                  // used for metadata
-     /* let previous = config.previous || data  // used to interpolate between layouts */
+    // GET SELECTED DATASET   
+    filename = fileName(config).json
 
+    let file_index = files.indexOf(filename)
+    let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
+
+    // CREATE SELECTORS
+    /* preparedData =  dataPrepare(input,config) */
+    let data = preparedData.result
+
+    /* let total_flows = preparedData.total_flows */
+    input = input.raw_data                  // used for metadata
+    /* let previous = config.previous || data  // used to interpolate between layouts */
+    
+    preparedData.nldata.links.map(d=>console.log(d))
     graphData = graph(preparedData.nldata.links)  
 
-    let indexed_names = [...new Set(data.names)]
-    console.log(indexed_names)
+    indexed_names = [...new Set(data.names)]
+
     sortedLinks = graphData.links
             .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
             /* .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets */
     
     indexed_nodes = indexed_names.map(d=> {return {name: d}}) // create node-graph datastructure
     sortedNodes = indexed_nodes.concat(indexed_nodes)
+    console.log(sortedLinks,sortedNodes)
        
 
     const sankey_data = () => {          
@@ -105,7 +107,7 @@ function setData(raw,config){
     }
 
     graph_data = sankey_data()   
-    console.log(graph_data)
+
     updateSankey(raw, input, config, graph_data)
 }
 
@@ -254,8 +256,8 @@ function updateSankey(raw, input, config, graph_data){
 
             function nodeSide(a){
                 a = d
-                a.x0 < width / 2 ?  config.source = a.name : null;
-                a.x0 > width / 2 ? config.target = a.name : null
+                a.x0 < width / 2 ?  config.selected_source = a.name : null;
+                a.x0 > width / 2 ? config.selected_target = a.name : null
                 console.log({source: config.source, target: config.target})
             }
             nodeSide(d)
