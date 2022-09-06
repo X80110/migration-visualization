@@ -3,10 +3,12 @@
 * {
     box-sizing: border-box; 
     border-radius: 12px;
+
     font-family:  'Jost', sans-serif !important;
 }
 body {
     background:#e7e7e7;
+    padding:0 0.5em 0 0.5em ;
     margin: .6em  auto;
     text-align: center;
     max-width: 1200px;    
@@ -510,7 +512,8 @@ select {
 
 .sourceTarget{
   display: flex; 
-  margin: 0 9em -1em 9em;
+  margin: 0 6.5em -.8em 6.5em;
+  padding:0 1em 0 1em ;
   font-size: 17px;
   color: #656565;
   text-transform: uppercase; 
@@ -521,7 +524,6 @@ select {
 #reset {
   margin-top: 1em;
   cursor:pointer;
-  transition:all 0.3s;
 } 
 
 /* The graphic interaction */

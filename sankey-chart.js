@@ -36,6 +36,7 @@ let graph = (data) => {
         for (const d of data) {
         const names = prefix.map(k => d[k]);
         const key = JSON.stringify(names);
+
         const value = d.value || 1;
         let link = linkByKey.get(key);
         if (link) { link.value += value; continue; }
@@ -73,6 +74,9 @@ var Nodes = sankeyDiagram.append("g")
 
 function setData(raw,config){
     // GET SELECTED DATASET   
+    function isRegion(name) {
+        return input.regions.includes(input.names.indexOf(name))
+    } 
     filename = fileName(config).json
 
     let file_index = files.indexOf(filename)
@@ -81,32 +85,65 @@ function setData(raw,config){
     // CREATE SELECTORS
     /* preparedData =  dataPrepare(input,config) */
     let data = preparedData.result
-
+    /* console.log(data) */
     /* let total_flows = preparedData.total_flows */
     input = input.raw_data                  // used for metadata
     /* let previous = config.previous || data  // used to interpolate between layouts */
-    
-    preparedData.nldata.links.map(d=>console.log(d))
-    graphData = graph(preparedData.nldata.links)  
 
-    indexed_names = [...new Set(data.names)]
 
-    sortedLinks = graphData.links
-            .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
-            /* .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets */
+    /* preparedData.nldata.links.map(d=>console.log(d)) */
     
-    indexed_nodes = indexed_names.map(d=> {return {name: d}}) // create node-graph datastructure
-    sortedNodes = indexed_nodes.concat(indexed_nodes)
-    console.log(sortedLinks,sortedNodes)
-       
+    //--- Prepare layout for selected origin-destination regions
+    indexedSource = [...new Set(preparedData.nldata.sankey_layout.source)]  // list all origin nodes
+    selectedSource = indexedSource.filter(d=> !isRegion(d))                 // list only countries at source
+    
+    indexedTarget = [...new Set(preparedData.nldata.sankey_layout.target)]  // list all destination nodes
+    selectedTarget = indexedTarget.filter(d=> !isRegion(d))                // list only countries at destination
+    
+    indexedNodes = indexedSource  
+        .concat(indexedTarget)       // sequential list of source and target
+        .map(d=> {return {name: d}}) // create node-graph datastructure 
+
+    
+    selectedLinks = preparedData.nldata.links 
+        .filter(d=> !selectedSource.includes(d.target))  // remove expanded countries on source in target
+        .filter(d=> !selectedTarget.includes(d.source))  // same above but for expanded region on target
+        
+    /* test_source = [...new Set(selectedLinks.map(d=>d.source))] 
+    test_target = [...new Set(selectedLinks.map(d=>d.target))] 
+    console.log(test_source, indexedSource)
+    console.log(test_target, indexedTarget) */
+    /* sourceTargetLayout = preparedData.nldata.sankey_layout.source.concat(preparedData.nldata.sankey_layout.target).map(d=> {return {name: d}}) // create node-graph datastructure  */
+    graphSelected = graph(selectedLinks)            // create graph structure
+    sortedSelectedLinks = graphSelected.links       // resort links by region on both sides
+        .sort((a,b) => d3.ascending(indexedNodes.indexOf(a.names[0]), indexedNodes.indexOf(b.names[0]) )) //sources
+        /* .sort((a,b) => d3.ascending(indexedNodes.indexOf(a.names[1]), indexedNodes.indexOf(b.names[1]) )) //sources */
+
+    
+    //---
+    // graphData = graph(preparedData.nldata.links)  
+    // indexed_names =graphData.nodes.map(d=>d.name)
+
+    // sortedNodes = indexed_names.map(d=> {return {name: d}}) // create node-graph datastructure
+
+    /* sortedNodes = indexed_nodes.concat(indexed_nodes) */
+    // sortedLinks = graphData.links
+    //         .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
+
+    
+    // sortedLinks = graphData.links
+    //         .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources
+    //         /* .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets */
+    
+    // console.log(sortedLinks,sortedNodes)
 
     const sankey_data = () => {          
-        const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); //.map((x) => _.cloneDeep(x));
-        const linkCopy = JSON.parse(JSON.stringify(sortedLinks)); //.map((each) => _.cloneDeep(each));
+        const nodeCopy = JSON.parse(JSON.stringify(indexedNodes)); //.map((x) => _.cloneDeep(x));
+        const linkCopy = JSON.parse(JSON.stringify(sortedSelectedLinks)); //.map((each) => _.cloneDeep(each));
     return sankey({ nodes: nodeCopy, links: linkCopy });
     }
-
     graph_data = sankey_data()   
+    console.log(sankey_data())
 
     updateSankey(raw, input, config, graph_data)
 }
@@ -253,24 +290,25 @@ function updateSankey(raw, input, config, graph_data){
     // OPEN REGIONS
     nodeEnter
         .on('click', function(evt, d) {
-
+            // define if clicked region is target or source 
+            // config.regions[0] will be source
+            // config.regions[1] will be target
             function nodeSide(a){
                 a = d
-                a.x0 < width / 2 ?  config.selected_source = a.name : null;
-                a.x0 > width / 2 ? config.selected_target = a.name : null
-                console.log({source: config.source, target: config.target})
+                a.x0 < width / 2 ?  config.regions[0] = a.name : null;
+                a.x0 > width / 2 ? config.regions[1] = a.name : null
             }
             nodeSide(d)
+            
+            // if (config.regions.length + 1 > config.maxRegionsOpen) {
+            //     config.regions.shift();       
+            // }
+            // if (isRegion(d.name)){
+            //    config.regions.push(d.name); // console.log(d.name)                
+            // } /* else {
+            //     config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
+            // } */
 
-            if (config.regions.length + 1 > config.maxRegionsOpen) {
-                config.regions.shift();       
-            }
-            if (isRegion(d.name)){
-               config.regions.push(d.name); // console.log(d.name)                
-            } /* else {
-                config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
-            } */
-            /* console.log(config.regions) */
             update(raw,config);
         })
     /// CLOSE REGIONS

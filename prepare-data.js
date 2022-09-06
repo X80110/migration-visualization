@@ -251,9 +251,10 @@ function dataPrepare(input, config){
     // Produce layout by concatenating and sort all expaned regions and their countries indexes
     let last_selected = expandRegion(data,config.regions[1]).indexList
     let first_selected = expandRegion(data,config.regions[0]).indexList
-    let source = expandRegion(data,config.selected_source).indexList
-    let target = expandRegion(data,config.selected_target).indexList
+    let target = last_selected.map(d=> data.names[d])
+    let source = first_selected.map(d=> data.names[d])
     let sankey_layout = {source:source,target:target}
+
 
 
     let mergeFilter = () =>  {
@@ -296,11 +297,11 @@ function dataPrepare(input, config){
     })
     /* nodes = nodes.concat(nodes) */   
     // set sankey links by selected source/target
-    config.selected_source = "Europe"
-    /* console.log(dataSliced.nldata.filter(d=> )) */
-    console.log(names)
 
-    let nldata = {nodes:nodes,links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target))}
+    /* console.log(dataSliced.nldata.filter(d=> )) */
+
+
+    let nldata = {nodes:nodes,links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target)), sankey_layout}
 
     function setSelectors() {
         // YEAR SELECTOR 
