@@ -85,7 +85,7 @@ function setData(raw,config){
     // CREATE SELECTORS
     /* preparedData =  dataPrepare(input,config) */
     let data = preparedData.result
-    /* console.log(data) */
+    console.log(data)
     /* let total_flows = preparedData.total_flows */
     input = input.raw_data                  // used for metadata
     /* let previous = config.previous || data  // used to interpolate between layouts */
@@ -104,21 +104,21 @@ function setData(raw,config){
         .concat(indexedTarget)       // sequential list of source and target
         .map(d=> {return {name: d}}) // create node-graph datastructure 
 
-    
+
+    // selectedLinks = preparedData.nldata.links 
+    //     .filter(d=> !selectedSource.includes(d.target))  // remove expanded countries on source in target
+    //     .filter(d=> !selectedTarget.includes(d.source))  // same above but for expanded region on target
     selectedLinks = preparedData.nldata.links 
-        .filter(d=> !selectedSource.includes(d.target))  // remove expanded countries on source in target
-        .filter(d=> !selectedTarget.includes(d.source))  // same above but for expanded region on target
-        
-    /* test_source = [...new Set(selectedLinks.map(d=>d.source))] 
-    test_target = [...new Set(selectedLinks.map(d=>d.target))] 
-    console.log(test_source, indexedSource)
-    console.log(test_target, indexedTarget) */
-    /* sourceTargetLayout = preparedData.nldata.sankey_layout.source.concat(preparedData.nldata.sankey_layout.target).map(d=> {return {name: d}}) // create node-graph datastructure  */
+        .filter(d=> indexedSource.includes(d.source))  // remove expanded countries on source in target
+        .filter(d=> indexedTarget.includes(d.target))  // same above but for expanded region on target
+    
     graphSelected = graph(selectedLinks)            // create graph structure
     sortedSelectedLinks = graphSelected.links       // resort links by region on both sides
-        .sort((a,b) => d3.ascending(indexedNodes.indexOf(a.names[0]), indexedNodes.indexOf(b.names[0]) )) //sources
+        .sort((a,b) => d3.ascending(indexedSource.indexOf(a.names[0]), indexedSource.indexOf(b.names[0]) )) //sources
+        .sort((a,b) => d3.ascending(indexedTarget.indexOf(a.names[1]), indexedTarget.indexOf(b.names[0]) )) //targets
         /* .sort((a,b) => d3.ascending(indexedNodes.indexOf(a.names[1]), indexedNodes.indexOf(b.names[1]) )) //sources */
-
+    /* sourceTargetLayout = preparedData.nldata.sankey_layout.source.concat(preparedData.nldata.sankey_layout.target).map(d=> {return {name: d}}) // create node-graph datastructure  */
+    /* console.log(indexedNodes) */
     
     //---
     // graphData = graph(preparedData.nldata.links)  
@@ -142,8 +142,8 @@ function setData(raw,config){
         const linkCopy = JSON.parse(JSON.stringify(sortedSelectedLinks)); //.map((each) => _.cloneDeep(each));
     return sankey({ nodes: nodeCopy, links: linkCopy });
     }
+    console.log(config.regions)
     graph_data = sankey_data()   
-    console.log(sankey_data())
 
     updateSankey(raw, input, config, graph_data)
 }

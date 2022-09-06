@@ -252,7 +252,7 @@ function dataPrepare(input, config){
     let last_selected = expandRegion(data,config.regions[1]).indexList
     let first_selected = expandRegion(data,config.regions[0]).indexList
     let target = last_selected.map(d=> data.names[d])
-    let source = first_selected.map(d=> data.names[d])
+    let source = first_selected.map(d=> data.names[d])  
     let sankey_layout = {source:source,target:target}
 
 
@@ -301,7 +301,10 @@ function dataPrepare(input, config){
     /* console.log(dataSliced.nldata.filter(d=> )) */
 
 
-    let nldata = {nodes:nodes,links: dataSliced.nldata.filter(d=> names.includes(d.source) && names.includes(d.target)), sankey_layout}
+    let selectedLinks = dataSliced.nldata
+        .filter(d=> names.includes(d.source) && names.includes(d.target))
+        // 
+    let nldata = {nodes:nodes,links: selectedLinks, sankey_layout}
 
     function setSelectors() {
         // YEAR SELECTOR 
