@@ -262,7 +262,7 @@ function drawChords(raw,config){
         .selectAll("g")
         .data(computedGroups(data))
         .join("g")
-        .attr("class",d=>"group-"+d.id)
+        /* .attr("class",d=>"group-"+d.id) */
 
     groups.append("path")
         .attr("class","group-arc")
@@ -476,7 +476,7 @@ var arcRegionLabel = d3.arc()
     .innerRadius(maxBarHeight)
     .outerRadius(maxBarHeight + 2)
 
-var regionText = container.selectAll("path.region_label_arc")
+var regionText = groups.selectAll("path.region_label_arc")
     .data(computedGroups(data))
     .enter().append("path")
     .filter(d=> isRegion(d.name))
@@ -524,6 +524,7 @@ regionText.each((d,i)=> {
         d3.select(textPath.childNodes[0]).attr("dy", -.3 + (tspanCount - 1) * -0.6 + 'em');
     }
 });
+
 function wrapTextOnArc(text, radius) {
     var temporaryText = d3.select('svg')
         .append("text")
@@ -646,6 +647,7 @@ function tooltipRegion(evt,d) {
     // OPEN REGIONS
     config.maxRegionsOpen = 2 // config.regions = region || config.regions
     
+    /* groups.on('click', function(evt, d) { */
     groups.on('click', function(evt, d) {
             
             if (config.regions.length + 1 > config.maxRegionsOpen) {

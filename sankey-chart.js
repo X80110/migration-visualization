@@ -130,13 +130,13 @@ function setData(raw,config){
     sortedLinks = graphData.links
         .sort((a,b) => d3.ascending(indexedSource.indexOf(a.names[0]), indexedSource.indexOf(b.names[0]) )) //sources
         .sort((a,b) => d3.ascending(indexedTarget.indexOf(a.names[1]), indexedTarget.indexOf(b.names[0]) )) //targets
-        /*     .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources */
+     /*        .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[0]), indexed_names.indexOf(b.names[0]) )) //sources */
 
     
     
             /* .sort((a,b) => d3.ascending(indexed_names.indexOf(a.names[1]), indexed_names.indexOf(b.names[1]) )) //targets */
-    
-    console.log(sortedLinks,sortedNodes)
+
+    // console.log(sortedLinks,sortedNodes)
 
     const sankey_data = () => {          
         const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); //.map((x) => _.cloneDeep(x));

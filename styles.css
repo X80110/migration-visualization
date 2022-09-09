@@ -527,7 +527,7 @@ select {
 } 
 
 /* The graphic interaction */
-.group-arc, .node, #selectYear{
+.group-arc, .node, .region-label-text, #selectYear{
   cursor:pointer;
 }
 
