@@ -254,19 +254,21 @@ function dataPrepare(input, config){
     let target = last_selected.map(d=> data.names[d])
     let source = first_selected.map(d=> data.names[d])  
     let sankey_layout = {source:source,target:target}
+1
 
 
-
-    let mergeFilter = () =>  {
-        let together = last_selected.concat(first_selected)
-        let unique = [...new Set(together)]
+    let together = last_selected.concat(first_selected) 
+    let mergeFilter = (set) =>  {
+        let unique = [...new Set(set)]
         let ids = config.regions.map(d=>{return getMeta(d).id}) // remove values for regions expaned
         let unique_id = unique.filter(d=> !ids.includes(d))
         let sort = unique_id.sort(function(a, b){return a-b}) // 
         return sort
     } 
     
-    let filteredLayout = mergeFilter()    
+    let filteredLayout = mergeFilter(together)
+    sankey_layout.source = mergeFilter(source)    
+    sankey_layout.target = mergeFilter(target)    
 
 
     let names = []
@@ -292,17 +294,22 @@ function dataPrepare(input, config){
     let result = finalNamesMatrix()
     let nodes = []
     names.map(d=>{
-        let item ={name: d, id: getMeta(d).id}
+        let item ={name: d/* , id: getMeta(d).id */}
         nodes.push(item)
     })
+    
     /* nodes = nodes.concat(nodes) */   
     // set sankey links by selected source/target
 
     /* console.log(dataSliced.nldata.filter(d=> )) */
+    console.log(nodes.map(d=> d.name))
+    console.log(sankey_layout.source.includes(nodes.map(d=> d.name)))
+    /* sankey_layout = Object.values(sankey_layout).map(d=> d.filter(a=> nodes.map(k=> k[a]))) */
+    console.log(sankey_layout['source'].map(d=> names.includes(d)))
 
-
+    /* console.log(sankey_layout.source.filter(d=> d.includes(nodes.map(d=>d.nam    )))) */
     let selectedLinks = dataSliced.nldata
-        .filter(d=> names.includes(d.source) && names.includes(d.target))
+        .filter(d=> sankey_layout.source.includes(d.source) && sankey_layout.target.includes(d.target))
         // 
     let nldata = {nodes:nodes,links: selectedLinks, sankey_layout}
 

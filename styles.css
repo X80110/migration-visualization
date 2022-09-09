@@ -70,7 +70,7 @@ ul.menu li{
 
 .header .menu {
     max-height: 0;
-    transition:  .2s ease-out;
+    transition:  .3s ease-out;
     vertical-align: middle;
 }
 .logo{
@@ -114,7 +114,7 @@ img:hover {
   display: block;
   height: 2px;
   position: relative;
-  transition: background .2s ease-out;
+  transition: background .3s ease-out;
   width: 18px;
 }
 .header .menu-icon .navicon:before,
@@ -124,7 +124,7 @@ img:hover {
   display: block;
   height: 100%;
   position: absolute;
-  transition: all .2s ease-out;
+  transition: all .3s ease-out;
   width: 100%;
 }
 .header .menu-icon .navicon:before {
@@ -199,7 +199,7 @@ img:hover {
     /* background-color: #fff; */
     /* outline:dashed; */
     padding:0px 26px 0 26px ;    
-    transition:  .2s ease-in-out; 
+    transition:  .3s ease-in-out; 
 }
 .selectors  input{
     filter:  drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.2));
@@ -207,12 +207,12 @@ img:hover {
 .selectors:hover > div {
  /*    background-color: #ffffffe7; */
     color: #000;
-    transition:  .2s ease-in-out; 
+    transition:  .3s ease-in-out; 
 }
 .selectors:hover > input{
     
     filter:  drop-shadow(0px 20px 20px rgba(0, 0, 0, 0.4));
-    transition:  .2s ease-in-out; 
+    transition:  .3s ease-in-out; 
 
 }
 #yearRange {
@@ -228,8 +228,8 @@ img:hover {
 /*     border: 1px solid #598cae90; */
     outline: none;
     opacity: 0.5;
-    -webkit-transition: .2s;
-    transition: .2s;
+    -webkit-transition: .3s;
+    transition: .3s;
     border-radius: 20px;
     padding: 10px;
     filter:  drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.2));
@@ -245,7 +245,7 @@ img:hover {
     height: 1em;
     background: #598cae70;
     border-radius: 20px;
-    transition: all 0.1s;
+    transition: all 0.3s;
     cursor: pointer;
 }
 .slider::-moz-range-thumb {
@@ -253,7 +253,7 @@ img:hover {
     height: 1em;
     background: #598cae70;
     border: 1px solid #598cae;
-    transition: all 0.1s;
+    transition: all 0.3s;
     cursor: pointer;
 }
 .sliderticks {
@@ -284,8 +284,8 @@ img:hover {
     /* border: 1px solid #598cae90; */
     outline: none;
     opacity: 0.5;
-    -webkit-transition: .2s;
-    transition:  .2s;
+    -webkit-transition: .3s;
+    transition:  .3s;
     border-radius: 20px;
     padding: 10px;
     filter:  drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.2));
@@ -301,7 +301,7 @@ img:hover {
     width: 1em;
     height: 1em;
     background: #598cae70;
-    transition: all 0.1s;
+    transition: all 0.3s;
     cursor: pointer;
     border-radius: 20px;
 }
@@ -458,7 +458,7 @@ li:hover{
   .form .collection input[type=radio] + label > * {
     padding: 2px 3px;
     opacity: 0.875;
-    transition: all 0.1s;
+    transition: all 0.3s;
   }
   .form .collection input[type=radio] + label:last-child {
     position: relative;
@@ -474,7 +474,7 @@ li:hover{
     border-radius: 10px;
     background-color: #598cae38;
     background-clip: padding-box;
-    transition: all 0.1s;
+    transition: all 0.3s;
   }
   .form .collection input[type=radio]:checked + label > * {
     opacity: 1;
@@ -502,7 +502,7 @@ select {
 }
 
 #sankey-visualization {
-  transition: all 0.1s;
+  transition: all 0.3s;
   margin:0% 10% 0 10%;
 }
 #sankey-visualization p{
