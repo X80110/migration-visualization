@@ -302,14 +302,14 @@ function dataPrepare(input, config){
     // set sankey links by selected source/target
 
     /* console.log(dataSliced.nldata.filter(d=> )) */
-    console.log(nodes.map(d=> d.name))
-    console.log(sankey_layout.source.includes(nodes.map(d=> d.name)))
-    /* sankey_layout = Object.values(sankey_layout).map(d=> d.filter(a=> nodes.map(k=> k[a]))) */
-    console.log(sankey_layout['source'].map(d=> names.includes(d)))
+    // console.log(nodes.map(d=> d.name))
+    // console.log(sankey_layout.source.includes(nodes.map(d=> d.name)))
+    // /* sankey_layout = Object.values(sankey_layout).map(d=> d.filter(a=> nodes.map(k=> k[a]))) */
+    // console.log(sankey_layout['source'].map(d=> names.includes(d)))
 
-    /* console.log(sankey_layout.source.filter(d=> d.includes(nodes.map(d=>d.nam    )))) */
+    // /* console.log(sankey_layout.source.filter(d=> d.includes(nodes.map(d=>d.nam    )))) */
     let selectedLinks = dataSliced.nldata
-        .filter(d=> sankey_layout.source.includes(d.source) && sankey_layout.target.includes(d.target))
+        .filter(d=> sankey_layout.source.includes(d.source) && sankey_layout.target.includes(d.target)) 
         // 
     let nldata = {nodes:nodes,links: selectedLinks, sankey_layout}
 
