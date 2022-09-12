@@ -110,17 +110,7 @@ function dataPrepare(input, config){
     const isRegion = (name) => {
         return input.regions.includes(input.names.indexOf(name))
     } 
-    function getMeta(name) {
-        // get flag for a given country name
-        const flag = (name) =>{ 
-            let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
-            return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
-        }
-        const region = getRegion(input.names.indexOf(name))
-        const region_name = input.names[region]
-        const id = input.names.indexOf(name)
-        return {flag: flag(name), region,region_name,id}
-    }
+    
     function filteredMatrix(input){
         data = input
         const countryNames = data.names
@@ -198,7 +188,6 @@ function dataPrepare(input, config){
             )
             let sources = Array.from(new Set(filteredData.flatMap(d=> d.source)))
             let targets = Array.from(new Set(filteredData.flatMap(d=> d.target)))            
-            console.log(sources)
             innerjoin = common(sources,targets)
             // reindex joined names
             let names_indexed = names.filter(d=> innerjoin.includes(d))
@@ -211,7 +200,6 @@ function dataPrepare(input, config){
         let finalData = filteredData.filter(d=> 
             names.includes(d.source) && names.includes(d.target)
             )
-
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names,finalData)
         // Reindex regions
@@ -248,31 +236,37 @@ function dataPrepare(input, config){
     data = dataSliced
     total_flows = dataSliced.total_flows
 
-   
-
+    function getMeta(name) {
+        // get flag for a given country name
+        const flag = (name) =>{ 
+            let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
+            return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
+        }
+        const region = getRegion(data.names.indexOf(name))
+        const region_name = data.names[region]
+        const id = data.names.indexOf(name)
+        return {flag: flag(name), region,region_name,id}
+    }
+    
     // Produce layout by concatenating and sort all expaned regions and their countries indexes
     let last_selected = expandRegion(data,config.regions[1]).indexList
     let first_selected = expandRegion(data,config.regions[0]).indexList
     let target = last_selected.map(d=> data.names[d])
     let source = first_selected.map(d=> data.names[d])  
     let sankey_layout = {source:source,target:target}
-    
 
 
-    let together = last_selected.concat(first_selected) 
-    let mergeFilter = (set) =>  {
-        let unique = [...new Set(set)]
+
+    let mergeFilter = () =>  {
+        let together = last_selected.concat(first_selected)
+        let unique = [...new Set(together)]
         let ids = config.regions.map(d=>{return getMeta(d).id}) // remove values for regions expaned
         let unique_id = unique.filter(d=> !ids.includes(d))
         let sort = unique_id.sort(function(a, b){return a-b}) // 
         return sort
     } 
     
-    let filteredLayout = mergeFilter(together)
-
-    sankey_layout.source = mergeFilter(source)    
-    sankey_layout.target = mergeFilter(target)    
-
+    let filteredLayout = mergeFilter()    
 
 
     let names = []
@@ -296,33 +290,17 @@ function dataPrepare(input, config){
     }
     
     let result = finalNamesMatrix()
-    // let nodes = []
-    // names.map(d=>{
-    //     let item ={name: d/* , id: getMeta(d).id */}
-    //     nodes.push(item)
-    // })
-    nodes = sankey_layout.source.concat(sankey_layout.target).map(d=> {return{ name: d}})
-    /* nodes = nodes.concat(nodes) */   
-    // set sankey links by selected source/target
-
-    /* console.log(dataSliced.nldata.filter(d=> )) */
-    /* console.log(nodes.map(d=> d.name)) */
-    // console.log(sankey_layout.source.includes(nodes.map(d=> d.name)))
-    // /* sankey_layout = Object.values(sankey_layout).map(d=> d.filter(a=> nodes.map(k=> k[a]))) */
-    // console.log(sankey_layout['source'].map(d=> names.includes(d)))
-
-    // /* console.log(sankey_layout.source.filter(d=> d.includes(nodes.map(d=>d.nam    )))) */
-    let selectedLinks = dataSliced.nldata
-        .filter(d=> sankey_layout.source.includes(d.source) &&  sankey_layout.target.includes(d.target))
-        /* .filter(d=> sankey_layout.target.includes(d.target))  */
-        .sort((a,b) => d3.ascending(sankey_layout.source.indexOf(a.source), sankey_layout.source.indexOf(b.source)) /* || d3.ascending(sankey_layout.target.indexOf(a.target), sankey_layout.target.indexOf(b.target)) */) //sources
-        /* .sort((a,b) => d3.ascending(sankey_layout.target.indexOf(a.target), sankey_layout.target.indexOf(b.target))) //targets */
-        // 
-
+    let nodes = []
+    names.map(d=>{
+        let item ={name: d, id: getMeta(d).id}
+        nodes.push(item)
+    })
     
-    let nldata = {nodes:nodes,links: selectedLinks, sankey_layout}
 
-    /* console.log(nodes.sort((a,b)=> getMeta(a.name).id - getMeta(b.name).id)) */
+    let selectedLinks = dataSliced.nldata
+        .filter(d=> names.includes(d.source) && names.includes(d.target))
+        // 
+    let nldata = {nodes:nodes,links: selectedLinks, sankey_layout}
 
     function setSelectors() {
         // YEAR SELECTOR 

@@ -94,7 +94,9 @@ function setData(raw,config){
         .concat(indexedTarget)              // sequential list of source and target
         
     sort_links = preparedData.nldata.links  // sort links by source and target
+        .filter(d=> indexedSource.includes(d.source) &&  indexedTarget.includes(d.target))
         .sort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)))
+
      
     graphData = graph(sort_links)      // generate graph
     
