@@ -94,8 +94,7 @@ function setData(raw,config){
         .concat(indexedTarget)              // sequential list of source and target
         
     sort_links = preparedData.nldata.links  // sort links by source and target
-        .sort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)))
-        .sort((a,b) => d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)))
+        .sort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)))
      
     graphData = graph(sort_links)      // generate graph
     
@@ -110,7 +109,7 @@ function setData(raw,config){
 
     const sankey_data = () => {           // generate sankey
         const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); 
-        const linkCopy = JSON.parse(JSON.stringify(sortedLinks)); 
+        const linkCopy = JSON.parse(JSON.stringify(graph(sort_links).links)); 
     return sankey({ nodes: nodeCopy, links: linkCopy });
     }
 
