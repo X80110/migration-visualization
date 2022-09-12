@@ -316,7 +316,7 @@ function dataPrepare(input, config){
         .filter(d=> sankey_layout.source.includes(d.source) &&  sankey_layout.target.includes(d.target))
         /* .filter(d=> sankey_layout.target.includes(d.target))  */
         .sort((a,b) => d3.ascending(sankey_layout.source.indexOf(a.source), sankey_layout.source.indexOf(b.source)) /* || d3.ascending(sankey_layout.target.indexOf(a.target), sankey_layout.target.indexOf(b.target)) */) //sources
-        .sort((a,b) => d3.ascending(sankey_layout.target.indexOf(a.target), sankey_layout.target.indexOf(b.target))) //targets
+        /* .sort((a,b) => d3.ascending(sankey_layout.target.indexOf(a.target), sankey_layout.target.indexOf(b.target))) //targets */
         // 
 
     
