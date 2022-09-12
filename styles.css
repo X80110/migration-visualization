@@ -157,6 +157,7 @@ img:hover {
 #main {
   min-height: calc(100vh - 70vh);
   text-align: center;
+  margin-top:-1.5em;
 }
 .logos hr {
   border: .6px solid #f4f4f4;
@@ -173,7 +174,6 @@ img:hover {
 }
 .selectors > div{
   z-index: 1;
-  margin-top:-1em;
 }
 .selectors{  
     -ms-box-orient: horizontal;
@@ -196,6 +196,7 @@ img:hover {
 }
 .selectors > div{
     border-radius: 15px;
+    margin-top:1em;
     /* background-color: #fff; */
     /* outline:dashed; */
     padding:0px 26px 0 26px ;    
@@ -375,6 +376,7 @@ img:hover {
   .header .menu-icon {
     display: none;
   }
+  
 }
 
 /* https://codepen.io/envoy47/pen/eogNVX */
