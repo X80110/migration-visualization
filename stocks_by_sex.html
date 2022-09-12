@@ -114,12 +114,11 @@
         </div>
 	
             
-<!-- 		<div class="reset">
-			<input name="updateButton" 
-				   type="button" 
-				   value="Update" 
-				   onclick="updateData()" />
-		</div> -->
+		<div style="display:none" id="reset" class="drop-link">
+			<a name="resetButton" type="button" onclick="resetData()">
+				Reset selection
+			</a>
+		</div>
 		<div  id="chord">
 			<div class="selectors" style="opacity:65%; margin-top:1em">
 				<p> Click on the outer arc of a region to explore it at a country level</p>
@@ -232,7 +231,6 @@
 				return {raw_data:await Promise.all(raw), metadata: await metadata, settings:await settings}
 
 			};
-
 			function getAnchor() {
 				return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
 			}
@@ -252,13 +250,29 @@
 					update(raw,config)
 				})
 			}
-		
+			
+			// Show/Hide 'resect selection' button
+			
+
+			function resetData(){
+				config.regions = []
+				getDataNDraw().then(raw=> {
+					update(raw,config)
+				})
+			}
+
 			
 			function update(raw,config){
-					d3.selectAll("#chord-chart g")
-						.remove()    
-					drawChords(raw,config)
-					setData(raw,config)
+				if (config.regions.length > 0){
+					document.getElementById("reset").style.display = ''
+				}  else {
+					document.getElementById("reset").style.display = 'none'
+				}
+				d3.selectAll("#chord-chart g")
+				.remove()    
+				
+				drawChords(raw,config)
+				setData(raw,config)
 			}
 	
    </script>
