@@ -54,24 +54,26 @@ let graph = (data) => {
     return {nodes, links};
 }
 let input_data = {}
-const sankey = d3.sankey()
-    /* .nodeId(d=> d.index) */
-    .nodeWidth(25)
-    .nodePadding(12) 
-    .extent([[125, 25],[width-150, height]])
-    .nodeSort(null)
-    .linkSort(null)
-    
+
+console.log(height)
 const sankeyDiagram = d3.select("#sankey-chart")
     .append("svg")
     .attr("viewBox", [0 , 0, width, height+50])
 
-var Links = sankeyDiagram.append("g")
+const Links = sankeyDiagram.append("g")
     .attr("class", "links");
 
-var Nodes = sankeyDiagram.append("g")
+const Nodes = sankeyDiagram.append("g")
     .attr("class", "nodes");
-
+const tooltip = d3.select('body').append('g')
+    .attr('id', 'tooltip')
+    .style('background-color','#ffffff')
+    .style('padding','1em')
+    .style('border-radius','4px')
+    .style('position', 'absolute')
+    .style('text-align', 'center')
+    .style('visibility', 'hidden')
+    .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
 function setData(raw,config){
     // GET SELECTED DATASET   
     filename = fileName(config).json
@@ -83,15 +85,16 @@ function setData(raw,config){
     input = input.raw_data               // used for metadata¡
     
     //--- Prepare layout for selected origin-destination regions
-    indexedSource = [...new Set(preparedData.nldata.sankey_layout.source)]  // list all origin node
-    indexedTarget = [...new Set(preparedData.nldata.sankey_layout.target)]  // list all destination nodes
+    let indexedSource = preparedData.nldata.sankey_layout.source  // list all origin node
+    let indexedTarget = preparedData.nldata.sankey_layout.target  // list all destination nodes
     
     // sequential list of source and target
     indexedNodes = indexedSource.concat(indexedTarget)              
-        
     sort_links = preparedData.nldata.links  // sort links by source and target
         .filter(d=> indexedSource.includes(d.source) &&  indexedTarget.includes(d.target))
-        .sort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)))
+        /* .sort((a,b) =>  d3.ascending(indexedSource.indexOf(a.source)&&indexedTarget.indexOf(a.target), indexedSource.indexOf(b.source) && indexedTarget.indexOf(b.target)) ) */
+        .sort((a,b) => indexedSource.indexOf(a.source) -indexedSource.indexOf(b.source) && indexedTarget.indexOf(a.target) -indexedTarget.indexOf(b.target))
+    
     graphData = graph(sort_links)                               // generate graph
     graphNodes = graphData.nodes                                // nodes will require to drop null values 
     uniqueNodes = [... new Set(graphNodes.map(d=> d.name))]     // list existing nodes on graph
@@ -100,14 +103,26 @@ function setData(raw,config){
         .filter(d=> uniqueNodes.includes(d))  
         .map(d=> {return {name: d}}) 
 
+    
+    const sankey = d3.sankey()
+        /* .nodeId(d=> d.index) */
+        .nodeAlign(d3.sankeyJustify)
+        .nodeWidth(25)
+        .nodePadding(12) 
+        .extent([[125, 25],[width-150, height]])
+        /* .nodeSort(null) */
+        /* .linkSort(null) */
+        .nodeSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) &&  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)) )
+        .linkSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) /* &&  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target))  */)
     const sankey_data = () => {           // generate sankey
-        const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); 
-        const linkCopy = JSON.parse(JSON.stringify(graph(sort_links).links)); 
+        // const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); 
+        const nodeCopy = JSON.parse(JSON.stringify(graphData.nodes )); 
+        const linkCopy = JSON.parse(JSON.stringify(graphData.links)); 
         return sankey({ nodes: nodeCopy, links: linkCopy });
     }
-
+    
     graph_data = sankey_data()   
-
+    
     updateSankey(raw, input, config, graph_data)
 }
 
@@ -172,7 +187,7 @@ function updateSankey(raw, input, config, graph_data){
         return r[(d.id-d.region)%5]
     }
     ///////////////////////////////////////////////////////////////////////////////////////////
-
+    
     //// DRAW VECTORS ////////////////////////////////////////////////////////////////////////
     var link = Links.selectAll("path")
         .data(graph_data.links )
@@ -181,7 +196,7 @@ function updateSankey(raw, input, config, graph_data){
         .attr("d", d3.sankeyLinkHorizontal())
         .attr("fill","none")
         .attr("class", "link")
-        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.80)
+        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.7)
         .attr("stroke-width", function(d) { return Math.max(1, d.width); })
         .attr("stroke", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
     
@@ -189,7 +204,7 @@ function updateSankey(raw, input, config, graph_data){
         .transition()
         .duration(500)
         .attr("d", d3.sankeyLinkHorizontal())
-        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.80)
+        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.7)
         .attr("stroke-width", function(d) { return Math.max(1, d.width); })
         .attr("stroke", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
 
@@ -208,7 +223,7 @@ function updateSankey(raw, input, config, graph_data){
         .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
         .attr("y", d=> d.y0)
         .attr("height", d=> d.y1 - d.y0 )
-        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80)
+        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
         
         .attr("width", d=> d.x1 - d.x0)
         .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
@@ -222,7 +237,7 @@ function updateSankey(raw, input, config, graph_data){
         .attr("height", d=> { return d.y1 - d.y0; })
         /* .attr("width", d=>  isRegion(d.name) ? d.x1:d.x1 - d.x0) */
         .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
-        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80)
+        .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
 
     nodeEnter.append("text")
         .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
@@ -250,6 +265,7 @@ function updateSankey(raw, input, config, graph_data){
             ? getMeta(d.name).flag+ " "+  d.name
             :  d.name+ " "+ getMeta(d.name).flag
         )
+    node.exit().remove();
     // OPEN REGIONS
     nodeEnter
         .on('click', function(evt, d) {
@@ -266,7 +282,7 @@ function updateSankey(raw, input, config, graph_data){
             update(raw,config);
         })
     /// CLOSE REGIONS
-     nodeEnter
+    nodeEnter
         .filter(d=>!isRegion(d.name))
         .on('click', function(evt, d) {
             /* console.log(d.name) */
@@ -277,22 +293,12 @@ function updateSankey(raw, input, config, graph_data){
             
         })    
 
-    node.exit().remove();
+    
     /* nodeEnter.append("title")
         .text(function(d) { return d.name + "\n" + formatValue(d.value); });
 
     node.select("title")
-        .text(function(d) { return d.name + "\n" + formatValue(d.value); }); */
-    const tooltip = d3.select('body').append('g')
-            .attr('id', 'tooltip')
-            .style('background-color','#ffffff')
-            .style('padding','1em')
-            .style('border-radius','4px')
-            .style('position', 'absolute')
-            .style('text-align', 'center')
-            .style('visibility', 'hidden')
-            .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
-    
+        .text(function(d) { return d.name + "\n" + formatValue(d.value); }); */    
     function tooltipCountry(evt,d)  {
         /* console.log(d) */
         var source = isRegion(input.names[d.source.index])  
@@ -306,17 +312,17 @@ function updateSankey(raw, input, config, graph_data){
         if(filename.includes('stock')){
             var value = ` <div> 
                         <b>${formatValue(d.value)}</b> 
-                        <br>in<br> `
+                        <br>in<br> </div> `
         } else {
             var value = ` <div> 
                         ▾<br>
                         <b>${formatValue(d.value)}</b> 
-                        <br>  `
+                        <br> </div> `
         }
         return tooltip
-            .html(`\ <b>${source} </b> 
+            .html(`<span>\ <b>${source} </b> 
                         ${value} 
-                        ${target}  `)
+                        ${target}  </span>`)
             .transition()
             .duration(50)
             .style('background-color','#ffffff')
@@ -363,45 +369,67 @@ function updateSankey(raw, input, config, graph_data){
     // -> Tooltip
     linkEnter
         .on("mousemove", tooltipCountry)
-        .on("mouseout",d=> tooltip.style("visibility", "hidden"));
+        .on("mouseout",d=> tooltip.selectAll("g").style("visibility", "hidden"));
     
     nodeEnter
         .on("mousemove", tooltipRegion)
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
 
         
-   /*  // -> Node highlighting
+    // -> Node highlighting
     linkEnter
-        .on("mouseover", function (e, i) {
+        .on("mouseover", function (evt, d) {
+            sankeyDiagram.selectAll(".link")
+     /*            .transition()
+                .duration("50") */
+                .style("opacity", 0.1)
             d3.select(this)
-                .attr("width",d=> console.log(d))
-                .transition()
-                .duration("50")
-                .attr("opacity", 1)
+                /* .attr("width",d=> console.log(d)) */
+            /*     .transition()
+                .duration("50") */
+                .style("opacity", 1)
         })
     
         .on('mouseout', function () {
-            d3.select(this)
-                .transition()
-                .duration('50')
-                .attr('opacity', 0.5)
+            sankeyDiagram.selectAll(".link")
+      /*           .transition()
+                .duration('50') */
+                .style('opacity', 0.7)
         })
     
     nodeEnter
-        .selectAll("rect")
-        .on("mouseover", function (e, i) {
+        .selectAll(".node")
+        .on("mouseover", function (evt, d) {
+            // dim non selected nodes
+            sankeyDiagram.selectAll(".node")
+                /* .attr("opacity",console.log(d.sourceLinks)) */
+              /*   .transition()
+                .duration("50") */
+                .style("opacity", 0.1)
+            // highlight links
+            sankeyDiagram.selectAll(".link")
+                /* .style("opacity",0.1) */
+                .filter(p=> d.targetLinks.length === 0)
+               /*  .transition()
+                .duration("50") */
+                .style("opacity", p=> p.names[0] === d.name ? 0.8:0.1)
+            sankeyDiagram.selectAll(".link")
+                .filter(p=> d.sourceLinks.length === 0)
+            /*  .transition()
+             .duration("50") */
+                .style("opacity", p=> p.names[1] === d.name ? 0.8:0.1)
             d3.select(this)
-                .transition()
-                .duration("50")
-                .attr("opacity", 1)
+              /*   .transition()
+                .duration("50") */
+                .style("opacity", 1)
         })
     
         .on('mouseout', function () {
-            d3.select(this)
-                .transition()
-                .duration('50')
-                .attr('opacity', 0.5)
-        }) */
+            sankeyDiagram.selectAll(".node")
+           /*      .transition()
+                .duration('50') */
+                .style('opacity', 0.7)
+        })
 
 }
     
