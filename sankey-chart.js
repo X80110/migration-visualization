@@ -348,9 +348,9 @@ function updateSankey(raw, input, config, graph_data){
         }
         else {
             return tooltip
-                .html(`\ ${source} </br>
+                .html(`<span>\ ${source} </br>
                         Total Out: <b> ${outflow}</b> </br>
-                        Total In: <b> ${inflow} </b> `)
+                        Total In: <b> ${inflow} </b> </span>`)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
                 .style("top", (evt.pageY-10)+"px")
                 .style("left", (evt.pageX+10)+"px")
