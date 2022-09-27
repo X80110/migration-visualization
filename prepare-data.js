@@ -72,10 +72,7 @@ d3.select("#selectMethod")
 // ##########################################################
 //  DATA PREPARE
 function dataPrepare(input, config){
-    /* console.log(input) */
     var input_data = {...input}
-    
-    /* console.log(input_data) */
     meta = input_data.metadata 
     threshold = input_data.raw_data.threshold
     colors = input_data.raw_data.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE']
@@ -121,13 +118,12 @@ function dataPrepare(input, config){
                 let name = d
                 let regionName = countryNames[getRegion(i)]
                 let matrix = data.matrix.map(a=>a[i])
-                    // console.log(regionName)
                 return{ name:name,
                         region: regionName,
                         connections:matrix }
         })
         let nodes = matrix 
-        /* console.log(nodes) */
+
         // Create object to push links during loop
         let links = []
         let l = 0 // <- iterator         
@@ -142,7 +138,6 @@ function dataPrepare(input, config){
                 
                 links[l] = {source_region,source,target_region,target,value}
                 l = l+1 
-                // }
             }
         }
         // GRAPH STRUCTURE
