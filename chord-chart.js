@@ -692,17 +692,14 @@ function tooltipRegion(evt,d) {
                         chords
                             .selectAll(".path-item, .group-arc")
                             .transition()
-                            .duration(80)
-                            
+                            .duration(80)   
                             .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.80)
-                     /*    arcs.selectAll(".group-arc")
-                        .style("opacity",d=> isRegion(d.name) ? 0.1: 0.80) */
+                            //  arcs.selectAll(".group-arc")
+                            // .style("opacity",d=> isRegion(d.name) ? 0.1: 0.80) 
                         d3.select(this)
                             .transition()
                             .duration(80)
-                            
-                            .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.80)
-                                
+                            .style("opacity", /*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.80)           
                     }
                     else{
                         chords
@@ -715,8 +712,7 @@ function tooltipRegion(evt,d) {
                             .duration(80) */ 
                             .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.80)
                     }
-               
-                    }
+                }
             )
         d3.selectAll(".group-arc")
             .on("mouseover", function(evt,d) {
@@ -725,8 +721,6 @@ function tooltipRegion(evt,d) {
                     .duration(80) 
                     .attr("d", arc.outerRadius(outerRadius))    
             })
-                    
-    
     }   
         
     function mouseout() {
@@ -739,9 +733,7 @@ function tooltipRegion(evt,d) {
                     .duration(80)
                     /* .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80) */
                     .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
-            })  
-
-        
+        })  
     }
     chordDiagram.selectAll(".path-item, .country-label")
         .on("mousemove", tooltipCountry)
@@ -756,35 +748,31 @@ function tooltipRegion(evt,d) {
             config.previous = data 
             config.year = +d3.select(this).property("value")
             update(raw,config)
-        })        
+        })
     d3.selectAll("#stockFlow")
         .on("change", function(d) {
             config.previous = data 
             config.stockflow = d3.select(this).property("value")
             update(raw,config)
-    })    
+        })
     d3.selectAll("#selectMethod")
         .on("change", function(d) {
             config.previous = data 
             config.method = d3.select(this).property("value")
             update(raw,config)
-    })    
-  
+        })
     d3.selectAll(".selectSex")
         .on("change", function(d) {
             config.previous = data 
             config.sex = d3.select(this).property("value")
             update(raw,config)
-    })
-    
+        })
     d3.selectAll(".selectType")
         .on("change", function(d) {
             config.previous = data 
             config.type = d3.select(this).property("value")
             update(raw,config)
-        })
-   
-        
+        })   
 }
 
 
