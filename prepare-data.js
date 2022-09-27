@@ -138,6 +138,7 @@ function dataPrepare(input, config){
                 
                 links[l] = {source_region,source,target_region,target,value}
                 l = l+1 
+
             }
         }
         // GRAPH STRUCTURE
@@ -264,16 +265,17 @@ function dataPrepare(input, config){
     let filteredLayout = mergeFilter()    
 
 
-    let names = []
+    // let names = []
+    let names = [...new Set(sankey_layout.source.concat(sankey_layout.target))]
     let unfilteredMatrix = []               // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
     let matrix = []                         // yeah, this is the final matrix 
     
     // Populate the filtered matrix and names in to the objects  
     function finalNamesMatrix(){
         filteredLayout.map(d=> {
-            let name = data.names[d]
+            /* let name = data.names[d] */
             let subgroup = data.matrix[d]
-            names.push(name)
+            /* names.push(name) */
             unfilteredMatrix.push(subgroup)
         })
         unfilteredMatrix.map(d=> {
@@ -286,15 +288,15 @@ function dataPrepare(input, config){
     
     let result = finalNamesMatrix()
     let nodes = []
-    names.map(d=>{
-        let item ={name: d, id: getMeta(d).id}
-        nodes.push(item)
-    })
+    // names.map(d=>{
+    //     let item ={name: d, id: getMeta(d).id}
+    //     nodes.push(item)
+    // })
     
 
     let selectedLinks = dataSliced.nldata
         .filter(d=> names.includes(d.source) && names.includes(d.target))
-        // 
+
     let nldata = {nodes:nodes,links: selectedLinks, sankey_layout}
 
     function setSelectors() {

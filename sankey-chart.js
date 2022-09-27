@@ -93,7 +93,7 @@ function setData(raw,config){
     sort_links = preparedData.nldata.links  // sort links by source and target
         .filter(d=> indexedSource.includes(d.source) &&  indexedTarget.includes(d.target))
         /* .sort((a,b) =>  d3.ascending(indexedSource.indexOf(a.source)&&indexedTarget.indexOf(a.target), indexedSource.indexOf(b.source) && indexedTarget.indexOf(b.target)) ) */
-        .sort((a,b) => indexedSource.indexOf(a.source) -indexedSource.indexOf(b.source) && indexedTarget.indexOf(a.target) -indexedTarget.indexOf(b.target))
+        /* .sort((a,b) => indexedSource.indexOf(a.source) -indexedSource.indexOf(b.source) && indexedTarget.indexOf(a.target) -indexedTarget.indexOf(b.target)) */
     
     graphData = graph(sort_links)                               // generate graph
     graphNodes = graphData.nodes                                // nodes will require to drop null values 
@@ -110,10 +110,17 @@ function setData(raw,config){
         .nodeWidth(25)
         .nodePadding(12) 
         .extent([[125, 25],[width-150, height]])
-        /* .nodeSort(null) */
-        /* .linkSort(null) */
-        .nodeSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) &&  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)) )
-        .linkSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) /* &&  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target))  */)
+        // .nodeSort(null)
+        .nodeSort((a,b) => {
+            if (b.sourceLinks.length > 0){
+                return d3.ascending(indexedSource.indexOf(a.name),indexedSource.indexOf(b.name))
+            } 
+            else if (b.targetLinks.length > 0){
+                return d3.ascending(indexedTarget.indexOf(a.name),indexedTarget.indexOf(b.name))
+            }
+        })
+        // .nodeSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)) )
+        .linkSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)) )
     const sankey_data = () => {           // generate sankey
         // const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); 
         const nodeCopy = JSON.parse(JSON.stringify(graphData.nodes )); 
