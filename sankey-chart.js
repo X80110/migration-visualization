@@ -74,45 +74,36 @@ var Nodes = sankeyDiagram.append("g")
 
 function setData(raw,config){
     // GET SELECTED DATASET   
-    function isRegion(name) {
-        return input.regions.includes(input.names.indexOf(name))
-    } 
     filename = fileName(config).json
-
-    let file_index = files.indexOf(filename)
+    file_index = files.indexOf(filename)
     let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
 
     // CREATE SELECTORS
-    let data = preparedData.result
+
     input = input.raw_data               // used for metadata¡
     
     //--- Prepare layout for selected origin-destination regions
     indexedSource = [...new Set(preparedData.nldata.sankey_layout.source)]  // list all origin node
     indexedTarget = [...new Set(preparedData.nldata.sankey_layout.target)]  // list all destination nodes
     
-    indexedNodes = indexedSource  
-        .concat(indexedTarget)              // sequential list of source and target
+    // sequential list of source and target
+    indexedNodes = indexedSource.concat(indexedTarget)              
         
     sort_links = preparedData.nldata.links  // sort links by source and target
         .filter(d=> indexedSource.includes(d.source) &&  indexedTarget.includes(d.target))
         .sort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)))
+    graphData = graph(sort_links)                               // generate graph
+    graphNodes = graphData.nodes                                // nodes will require to drop null values 
+    uniqueNodes = [... new Set(graphNodes.map(d=> d.name))]     // list existing nodes on graph
 
-     
-    graphData = graph(sort_links)      // generate graph
-    
-    graphNodes = graphData.nodes    // nodes will require to drop null values 
-    
-    uniqueNodes = [... new Set(graphNodes.map(d=> d.name))]  // list existing nodes on graph
-
-    sortedNodes = indexedNodes.filter(d=> uniqueNodes.includes(d))  // drop null nodes while keepking order
+    sortedNodes = indexedNodes                                  // drop null nodes while keepking order
+        .filter(d=> uniqueNodes.includes(d))  
         .map(d=> {return {name: d}}) 
-    /* console.log(graphNodes,indexedNodes,sortedNodes) */
-    sortedLinks = graphData.links
 
     const sankey_data = () => {           // generate sankey
         const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); 
         const linkCopy = JSON.parse(JSON.stringify(graph(sort_links).links)); 
-    return sankey({ nodes: nodeCopy, links: linkCopy });
+        return sankey({ nodes: nodeCopy, links: linkCopy });
     }
 
     graph_data = sankey_data()   
@@ -121,11 +112,10 @@ function setData(raw,config){
 }
 
 function updateSankey(raw, input, config, graph_data){
-    /* let file_index = files.indexOf(filename) */
     filename = fileName(config).json
-    /* input = {raw_data: raw.raw_data[0][file_index], metadata: raw.metadata} */
-    
     graph_data = graph_data
+    
+    //// UTIL FUNCTIONS ////////////////////////////////////////////////////////////////////////
     function formatValue(nStr, seperator) {
         seperator = seperator || ','
         nStr += ''
@@ -181,8 +171,9 @@ function updateSankey(raw, input, config, graph_data){
         r = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)]
         return r[(d.id-d.region)%5]
     }
-    /* console.log(graph_data) */
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
+    //// DRAW VECTORS ////////////////////////////////////////////////////////////////////////
     var link = Links.selectAll("path")
         .data(graph_data.links )
 
@@ -227,8 +218,8 @@ function updateSankey(raw, input, config, graph_data){
         .transition()
         .duration(500)
         .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
-        .attr("y", function(d) { return d.y0; })
-        .attr("height", function(d) { return d.y1 - d.y0; })
+        .attr("y", d=> { return d.y0; })
+        .attr("height", d=> { return d.y1 - d.y0; })
         /* .attr("width", d=>  isRegion(d.name) ? d.x1:d.x1 - d.x0) */
         .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80)
@@ -262,33 +253,26 @@ function updateSankey(raw, input, config, graph_data){
     // OPEN REGIONS
     nodeEnter
         .on('click', function(evt, d) {
-            // define if clicked region is target or source 
-            // config.regions[0] will be source
-            // config.regions[1] will be target
+            // compute clicked region
+              // config.regions[0] will be *source*
+              // config.regions[1] will be *target*
             function nodeSide(a){
                 a = d
                 a.x0 < width / 2 ?  config.regions[0] = a.name : null;
                 a.x0 > width / 2 ? config.regions[1] = a.name : null
             }
             nodeSide(d)
-            
-            // if (config.regions.length + 1 > config.maxRegionsOpen) {
-            //     config.regions.shift();       
-            // }
-            // if (isRegion(d.name)){
-            //    config.regions.push(d.name); // console.log(d.name)                
-            // } /* else {
-            //     config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
-            // } */
-
+       
             update(raw,config);
         })
     /// CLOSE REGIONS
-     node
+     nodeEnter
         .filter(d=>!isRegion(d.name))
         .on('click', function(evt, d) {
             /* console.log(d.name) */
             config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
+            // d3.selectAll("#tooltip")
+            //     .remove() 
             update(raw,config)
             
         })    
@@ -308,7 +292,7 @@ function updateSankey(raw, input, config, graph_data){
             .style('text-align', 'center')
             .style('visibility', 'hidden')
             .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
-
+    
     function tooltipCountry(evt,d)  {
         /* console.log(d) */
         var source = isRegion(input.names[d.source.index])  
@@ -354,9 +338,9 @@ function updateSankey(raw, input, config, graph_data){
         // console.log(filename.includes("stock")) ---> false ? then synthax is outflow/inflow instead of emigrants/immigrants
         if (filename.includes('stock') ){
             return tooltip
-                .html(`\ ${source} </br>
+                .html(`<span>\ ${source} </br>
                         Total emigrants: <b> ${outflow}</b> </br>
-                        Total immigrants: <b> ${inflow} </b> `)
+                        Total immigrants: <b> ${inflow} </b> </span>`)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
                 .style("top", (evt.pageY-10)+"px")
                 .style("left", (evt.pageX+10)+"px")
@@ -372,6 +356,7 @@ function updateSankey(raw, input, config, graph_data){
                 .style("left", (evt.pageX+10)+"px")
                 .style("visibility", "visible")
             }
+        
         }
     
     // HOVER INTERACTIONS
@@ -379,12 +364,12 @@ function updateSankey(raw, input, config, graph_data){
     linkEnter
         .on("mousemove", tooltipCountry)
         .on("mouseout",d=> tooltip.style("visibility", "hidden"));
-
+    
     nodeEnter
         .on("mousemove", tooltipRegion)
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
-    
 
+        
    /*  // -> Node highlighting
     linkEnter
         .on("mouseover", function (e, i) {
