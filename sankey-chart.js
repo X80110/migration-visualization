@@ -106,7 +106,6 @@ function setData(raw,config){
     
     const sankey = d3.sankey()
         /* .nodeId(d=> d.index) */
-        .nodeAlign(d3.sankeyJustify)
         .nodeWidth(25)
         .nodePadding(12) 
         .extent([[125, 25],[width-150, height]])
@@ -120,7 +119,7 @@ function setData(raw,config){
             }
         })
         // .nodeSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)) )
-        .linkSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)) )
+        /* .linkSort((a,b) => d3.ascending(indexedSource.indexOf(a.source), indexedSource.indexOf(b.source)) ||  d3.ascending(indexedTarget.indexOf(a.target), indexedTarget.indexOf(b.target)) ) */
     const sankey_data = () => {           // generate sankey
         // const nodeCopy = JSON.parse(JSON.stringify(sortedNodes)); 
         const nodeCopy = JSON.parse(JSON.stringify(graphData.nodes )); 
@@ -383,56 +382,49 @@ function updateSankey(raw, input, config, graph_data){
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
 
         
-    // -> Node highlighting
-    linkEnter
-        .on("mouseover", function (evt, d) {
-            sankeyDiagram.selectAll(".link")
-     /*            .transition()
-                .duration("50") */
-                .style("opacity", 0.1)
-            d3.select(this)
-                /* .attr("width",d=> console.log(d)) */
-            /*     .transition()
-                .duration("50") */
-                .style("opacity", 1)
-        })
-    
-        .on('mouseout', function () {
-            sankeyDiagram.selectAll(".link")
-      /*           .transition()
-                .duration('50') */
-                .style('opacity', 0.7)
-        })
-    
+    // Hover highlighting    
     nodeEnter
         .selectAll(".node")
         .on("mouseover", function (evt, d) {
             // dim non selected nodes
             sankeyDiagram.selectAll(".node")
-                /* .attr("opacity",console.log(d.sourceLinks)) */
               /*   .transition()
                 .duration("50") */
                 .style("opacity", 0.1)
+            
             // highlight links
             sankeyDiagram.selectAll(".link")
-                /* .style("opacity",0.1) */
-                .filter(p=> d.targetLinks.length === 0)
+                .style("opacity",0.1)
+                .filter(p=> d.targetLinks.length === 0)     // Source
                /*  .transition()
                 .duration("50") */
                 .style("opacity", p=> p.names[0] === d.name ? 0.8:0.1)
+            
             sankeyDiagram.selectAll(".link")
-                .filter(p=> d.sourceLinks.length === 0)
-            /*  .transition()
-             .duration("50") */
+                .filter(p=> d.sourceLinks.length === 0)     // Target
+              /*   .transition()
+                .duration("50") */
                 .style("opacity", p=> p.names[1] === d.name ? 0.8:0.1)
             d3.select(this)
               /*   .transition()
                 .duration("50") */
                 .style("opacity", 1)
         })
-    
+    linkEnter
+        .on("mouseover", function (evt, d) {
+            sankeyDiagram.selectAll(".link")
+                .transition()
+                .duration("50")
+                .style("opacity", 0.1)
+            
+            d3.select(this)
+                .transition()
+                .duration("50")
+                .style("opacity", 1)
+        })
+    sankeyDiagram
         .on('mouseout', function () {
-            sankeyDiagram.selectAll(".node")
+            sankeyDiagram.selectAll(".node, .link")
            /*      .transition()
                 .duration('50') */
                 .style('opacity', 0.7)
