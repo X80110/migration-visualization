@@ -210,7 +210,7 @@ function updateSankey(raw, input, config, graph_data){
         .transition()
         .duration(500)
         .attr("d", d3.sankeyLinkHorizontal())
-        .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.7)
+        .style("opacity",d=> isRegion(d.source.name) && isRegion(d.target.name) && config.regions.length > 0 ? 0.1: 0.7)
         .attr("stroke-width", function(d) { return Math.max(1, d.width); })
         .attr("stroke", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
 
@@ -424,10 +424,10 @@ function updateSankey(raw, input, config, graph_data){
         })
     sankeyDiagram
         .on('mouseout', function () {
-            sankeyDiagram.selectAll(".node, .link")
-           /*      .transition()
-                .duration('50') */
-                .style('opacity', 0.7)
+            sankeyDiagram.selectAll(".link")
+                .style("opacity",d=> isRegion(d.source.name) && isRegion(d.target.name) && config.regions.length > 0 ? 0.1: 0.7)
+            sankeyDiagram.selectAll(".node")
+                .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
         })
 
 }
