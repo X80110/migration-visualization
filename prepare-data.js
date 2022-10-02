@@ -264,18 +264,29 @@ function dataPrepare(input, config){
     
     let filteredLayout = mergeFilter()    
 
+    // PREPARE SANKEY LAYOUT
+    let sankey_names = [...new Set(sankey_layout.source.concat(sankey_layout.target))]
+    let nodes = []
+    sankey_names.map(d=>{
+        let item ={name: d, id: getMeta(d).id}
+        nodes.push(item)
+    })
+    let selectedLinks = dataSliced.nldata
+        .filter(d=> sankey_names.includes(d.source) && sankey_names.includes(d.target))
 
-    // let names = []
-    let names = [...new Set(sankey_layout.source.concat(sankey_layout.target))]
+    let nldata = {nodes:nodes,links: selectedLinks, sankey_layout}
+
+    // PREPARE CHORD DATA
+    let names = []
     let unfilteredMatrix = []               // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
     let matrix = []                         // yeah, this is the final matrix 
     
     // Populate the filtered matrix and names in to the objects  
     function finalNamesMatrix(){
         filteredLayout.map(d=> {
-            /* let name = data.names[d] */
+            let name = data.names[d]
             let subgroup = data.matrix[d]
-            /* names.push(name) */
+            names.push(name)
             unfilteredMatrix.push(subgroup)
         })
         unfilteredMatrix.map(d=> {
@@ -285,19 +296,8 @@ function dataPrepare(input, config){
         data = {names,matrix}        
         return data
     }
-    
     let result = finalNamesMatrix()
-    let nodes = []
-    // names.map(d=>{
-    //     let item ={name: d, id: getMeta(d).id}
-    //     nodes.push(item)
-    // })
     
-
-    let selectedLinks = dataSliced.nldata
-        .filter(d=> names.includes(d.source) && names.includes(d.target))
-
-    let nldata = {nodes:nodes,links: selectedLinks, sankey_layout}
 
     function setSelectors() {
         // YEAR SELECTOR 
