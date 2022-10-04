@@ -55,8 +55,9 @@ h1 a { color : black !important}
   color: #474747;
   font-weight: 400;
 }
-h4 {
-  color: #474747;
+.options h4 {
+  margin:1.2em 0 0 0.3em;
+  color: #6c6c6c;
   font-weight: 400;
 }
 /* header */    
@@ -326,7 +327,7 @@ img:hover {
 .box {
   margin-right: 3em;
   margin-left: 3em;
-  --min: 16ch;
+  --min: 10ch;
   --gap: 2rem;
   text-align: left;
   justify-content: center;
@@ -338,19 +339,24 @@ img:hover {
 .box p  {
   line-height: 1.6em;
   color: #656565;
-  font-size: 85%;
+  font-size: 80%;
 }
 
-.box > .about {
-  flex: 1 1 var(--min);
+.box >  .about{
+  /* margin: 0 4em 0 4em; */
+  flex: 2 0 var(--min);
+  /* flex: 1ch 0 var(--min) ; */
 }
-.options {
+.options > div {
   justify-content: center;
   margin-left:2em;
+  /* margin-bottom: 3em; */
+  padding: 2em;
   
 }
-.options h2 {
-  font-weight: 400;
+.options h2  {
+  /* font-weight: 400; */
+  margin-bottom: -.1em;
   font-size: 1.2em;
 }
 
