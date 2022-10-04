@@ -132,12 +132,13 @@
 		<div class="box"> 
 				<div class="about">
 					<h2><b>About the Data</b></h2>
-					<p> The bilateral flows between 196 countries are estimated from sequential stock tables. They are comparable across countries and capture the number of people who changed their country of residence over five-year periods. The estimates reflect migration transitions and thus cannot be compared to annual movements flow data published by United Nations and Eurostat. </p>
+					<div id="markdown_text"></div>
+					<!-- <p> The bilateral flows between 196 countries are estimated from sequential stock tables. They are comparable across countries and capture the number of people who changed their country of residence over five-year periods. The estimates reflect migration transitions and thus cannot be compared to annual movements flow data published by United Nations and Eurostat. </p>
 					<div class="center">
 					  <a href="Data%20on%20the%20global%20flow%20of%20people_Version%20March2014.csv" class="button">
 						Download the data
 					  </a>
-					</div>
+					</div> -->
 				</div>
 		
 				<div class="options">
@@ -194,16 +195,14 @@
 		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
 		let svg
 		let preparedData
-		/* console.log(filename) */
 		let files = [
-			"json/stock.json"/* ,
-			"json/stock_female.json",
-			"json/stock_male.json", */
+			"json/stock.json"
 			]
-
+		let markdown_file  = 'static/texts/stock-data-text.md'
 	</script>
 
 	<!-- CHART -->
+	<script src="parsemd.js"></script>
 	<script src="prepare-data.js"></script>
 	<script src="chord-chart.js"></script>
 	<script src="sankey-chart.js"></script>	
@@ -215,7 +214,15 @@
 			files.forEach(url => datasets.push(d3.json(url)));
 
 			let file_index = files.indexOf(filename)
-			
+			console.log(filename)
+			async function getMarkdown(){
+				const about_data = d3.text(markdown_file)
+				return await about_data
+			}
+			getMarkdown().then(text => {
+				parsed_text = parseMarkdown(text)
+				document.getElementById("markdown_text").innerHTML = parsed_text
+			})
 			async function getDataNDraw() {      
 				let raw  = []
 				for (let dataset of datasets) {
@@ -223,6 +230,7 @@
 				}
 				const metadata = d3.csv("data/country-metadata-flags.csv")
 				const settings = d3.json('config.json')
+			
 				return {raw_data:await Promise.all(raw), metadata: await metadata, settings:await settings}
 
 			};

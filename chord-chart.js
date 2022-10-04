@@ -270,7 +270,7 @@ function drawChords(raw,config){
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity",/* d=> isRegion(d.name) && config.regions.length > 0 ? 0.1:  */0.80)
-        .transition()
+        .transition('group-arc')
         .duration(600)
         .attrTween("d", function(d,j) {
             var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) /* || config.initialAngle.arc */, d);
@@ -285,25 +285,7 @@ function drawChords(raw,config){
         .attr("fill", "none")
         .attr("d", d3.arc()({ outerRadius:outerRadius   , startAngle: 0, endAngle:   2 * Math.PI  }));
 
-    // const arcs2 = container.append("g")        
-    //     .attr("class","group")
-    //     .selectAll("g")
-    //     .data(computedChords(data))
-    //     .join("g")
-    
-    // arcs2.append("path")
-    //     .attr("class","arc2")
-    //     .attr("d", arc.innerRadius(innerRadius-5).outerRadius(outerRadius)) 
-    //     .style("fill",d=> isRegion(d.target.name) ? getRegionColor(d.target.name) :colorCountries(d.target.name))
-    //     /* .style("opacity",d=> isRegion(d.target.name) && config.regions.length > 0 ? 0.1: 0.80) */
-    //     .transition()
-    //     .duration(500)
-    //     .attrTween("d", function(d,j) {
-    //         var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || config.initialAngle.arc, d);
-    //         return function (t) {
-    //             return arc(i(t))
-    //         }
-    //     })    
+ 
     const chords = container.append("g")
         .selectAll("g")
         .attr("class", "ribbon")
@@ -316,7 +298,7 @@ function drawChords(raw,config){
         .attr("d", ribbon)
         .attr("fill", d=> isRegion(d.source.name) ? getRegionColor(d.source.name) :colorCountries(d.source.name))
         .style("opacity",d=> isRegion(d.source.name) && config.regions.length > 0 ? 0.1: 0.80)
-        .transition()
+        .transition('path-item')
         .duration(600)
         .attrTween("d", function (d) {
             var p  = previous.chords[d.source.id] && previous.chords[d.source.id][d.target.id]
@@ -345,7 +327,7 @@ function drawChords(raw,config){
                 :  getMeta(d.name).flag+ " "+  d.name
             )
         .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
-        .transition()
+        .transition('country-label')
         .duration(600)
         .attrTween("transform", function(d) {
             var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || { angle: 0 }, d);
@@ -354,122 +336,6 @@ function drawChords(raw,config){
                   return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
               };
         });
-//     var groupTextPathPath = groups      
-//         .filter(function(d) {return d.id === d.region})
-//         .selectAll('.group-textpath-arc')
-//         .data(computedGroups(data));
-//     groupTextPathPath.enter()
-//     .append('path')
-//     .attr("class", "group-textpath-arc")
-//     .attr("id", function(d, i, k) { return "group-textpath-arc" + d.id; });
-//     groupTextPathPath
-//     .style("fill", 'none')
-//     .transition()
-//     .duration(500)
-//     .attrTween("d", function(d) {
-//         var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || config.initialAngle.arc, d );
-//         if (d.angle > Math.PI/2 && d.angle < Math.PI*3/2) {
-//         return function (t) {
-//             return textPathArc2(i(t));
-//         };
-//         } else {
-//         return function (t) {
-//             return textPathArc(i(t));
-//         };
-//         }
-//     });
-//     groupTextPathPath.exit().remove();
-//     // Creating a Field for the Textfield
-//     var groupTextPathPath2 = groups
-//         .filter(function(d) {return d.id === d.region})
-//         .selectAll('.group-textpath-arc2')
-//         .data(computedGroups(data));
-//     groupTextPathPath2.enter()
-//         .append('path')
-//         .attr("class", "group-textpath-arc2")
-//         .attr("id", function(d, i, k) { return "group-textpath-arc2" + d.id; });
-//     groupTextPathPath2
-//         .style("fill", 'none')
-//         .transition()
-//         .duration(500)
-//         .attrTween("d", function(d) {
-//         var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || config.initialAngle.arc, d );
-//         if (d.angle > Math.PI/2 && d.angle < Math.PI*3/2) {
-//             return function (t) {
-//             return textPathArc3(i(t));
-//             };
-//         } else {
-//             return function (t) {
-//             return textPathArc4(i(t));
-//             };
-//         }
-//         });
-//     groupTextPathPath2.exit().remove();
-//     // text on path
-//     var groupTextPath = groups
-//     .filter(function(d) {return d.id === d.region})
-//     .selectAll('textPath')
-//     .data(computedGroups(data));
-
-//     groupTextPath
-//     .enter()
-//     .append("textPath");
-
-//     groupTextPath
-//         .text(function(d) {
-//         var meanCalc = (d.endAngle + d.startAngle ) / 2 ;
-//         if (nname2[d.id] == ""){
-//             return nname1[d.id] ;
-//         }else if (meanCalc < 1.57 || meanCalc > 4.711 ){
-//             var out = nname2[d.id] ;
-//             //var out = "first" ;
-//         }else {
-//             var out = nname1[d.id] ;
-//             // var out = "second";
-//         }                         //First NAME  !!!!
-//         return  out ; })                  
-//         .attr('startOffset', function(d) {
-//         if (d.angle > Math.PI/2 && d.angle < Math.PI*3/2) {
-//         return '75%';
-//         } else {
-//         return '25%';
-//         }
-//     })
-//     .attr("xlink:href", function(d, i, k) { return "#group-textpath-arc" + d.id; })
-// // Added for creating a second layer of TextField for longer names
-//     var groupTextPath2 = groups
-//         .filter(function(d) {return d.id === d.region})
-//         .selectAll('.sec')
-//         .data(computedGroups(data));
-//     groupTextPath2
-//         .enter()
-//         .append("textPath")
-//         .attr("class", "sec");
-//     groupTextPath2
-//         .text(function(d) {
-//         var meanCalc = (d.endAngle + d.startAngle ) / 2 ;
-//         if (nname2[d.id] == ""){
-//             return  ;
-//         }
-//             else if (meanCalc < 1.57 || meanCalc > 4.711 ){
-//             var out = nname1[d.id] ; // var out = "first" ;
-//         }else {
-//             var out = nname2[d.id] ; // var out = "second";
-//         }                         
-//         return out;  })           
-//         .attr('startOffset', function(d) {
-//         if (d.angle > Math.PI/2 && d.angle < Math.PI*3/2) {
-//             return '75%';
-//         } else {
-//             return '25%';
-//         }
-//         })
-//         .attr("xlink:href", function(d, i, k) { return "#group-textpath-arc2" + d.id; })    
-//     groupTextPath
-//     .filter(function(d, i) {
-//         return this.getComputedTextLength() > (d.endAngle - d.startAngle) * (config.outerRadius + 18);
-//     })
-//     .remove();
   
 var maxBarHeight = height / 2 - (70);
 var arcRegionLabel = d3.arc()
@@ -510,7 +376,7 @@ groups.append("text")
         return "#region_label_" + i;
     })
     .text(d=> d.name)
-    .transition()
+    .transition('region-label-text')
     .duration(600)
     .call(wrapTextOnArc, height / 2 - (70));
 
@@ -602,7 +468,7 @@ function tooltipCountry(evt,d)  {
         .html(`\ <b>${source} </b> 
                     ${value} 
                     ${target}  `)
-        .transition()
+        .transition('tooltip')
         .duration(50)
         .style('background-color','#ffffff')
         .style('padding','1em')
@@ -692,25 +558,26 @@ function tooltipRegion(evt,d) {
                         chords
                             .selectAll(".path-item, .group-arc")
                             .transition()
-                            .duration(80)   
-                            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.80)
-                            //  arcs.selectAll(".group-arc")
-                            // .style("opacity",d=> isRegion(d.name) ? 0.1: 0.80) 
+                            .duration(80)
+                            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
+                        /* arcs.selectAll(".group-arc")
+                        .style("opacity",d=> isRegion(d.name) ? 0.03: 0.80) */
                         d3.select(this)
                             .transition()
                             .duration(80)
-                            .style("opacity", /*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.80)           
+                            .style("opacity", 0.80)
+                                
                     }
                     else{
                         chords
                             .selectAll(".path-item, .group-arc")
                             /* .transition()
-                            .duration(80) */
-                            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1:0.80)
+                            .duration(100) */
+                            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
                         d3.select(this)
                             /* .transition()
-                            .duration(80) */ 
-                            .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.1: */0.80)
+                            .duration(100) */
+                            .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
                     }
                 }
             )
