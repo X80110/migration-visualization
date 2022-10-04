@@ -9,20 +9,18 @@ let threshold = []
 let regionColors = []
 
 // ##########################################################
-// Functions and initial config
+// Util functions and initial config
 config.year = 1990 || ""
 config.stockflow = config.stockflow
 config.sex 
 config.type 
 config.regions = []
 config.maxRegionsOpen = 2 // config.regions = region || config.regions
-function filterYear(input,year){ 
-
+function filterYear(input,year){
     year = +year || 1990
     nodes = input
     const selectedMatrix  = nodes.matrix[year]
     let names = nodes.names
-        
     let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
     return result;
 }
@@ -48,7 +46,6 @@ let fileName = (configs) => {
         ? ""
         : "_"+config.method || "_da_pb_closed"
     let json = 'json/'+stockflow+'_'+sex+type+method+'.json'
-    
     // clean non-lineal irregularities
     json = json.replace("__","_").replace("_.",".").replace("__","_").replace("__","_")
     // console.log( config.method, config.stockflow)
@@ -58,16 +55,29 @@ let fileName = (configs) => {
          type: config.type
         }
 }
-
 let filename = fileName(config).json
+
+let methods_indexed = ["sd_drop_neg" , "sd_rev_neg" , "mig_rate" , "da_min_open" , "da_min_closed" , "da_pb_closed"]
+let methods_labels_indexed = ["Stock Difference Drop Negative", "Stock Differencing Reverse Negative", "Migration Rates", "Open Demographic Accounting Minimisation", "Closed Demographic Accounting Minimisation", "Closed Demographic Accounting Pseudo-Bayesian"] 
+let methods = methods_indexed.map((d,i)=>{ 
+    id = d
+    label = methods_labels_indexed[i]
+    return {id, label}
+})
+
+if (allMethods.length < methods_indexed.length){              // Flows by type only has 3 methods, list only those id is specified
+    methods = methods.filter(d=> allMethods.includes(d.id))   // in the var allMethods in the .html and specify
+}   /* console.log(allMethods,methods) */
 
 d3.select("#selectMethod")
                 .selectAll('myOptions')
-                .data(allMethods)
+                .data(methods)
                 .enter()
                 .append('option')
-                .text(d=>{ return d; })    // text showed in the menu dropdown
-                .attr("value",d=> { return d; }) 
+                /* .text(d=> d.label)    // text showed in the menu dropdown */
+                .attr("value",d=> d.id) 
+                .attr("label",d=> d.label) 
+                .attr("selected", d=> d.id === "da_pb_closed" ? "selected": null)   // 
 
 // ##########################################################
 //  DATA PREPARE
@@ -78,17 +88,13 @@ function dataPrepare(input, config){
     colors = input_data.raw_data.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE']
     flags = meta.map(d=>{return { [d.origin_name]:d.origin_flag }})
     input = input_data.raw_data    
-    /* console.log(input) */
     year = +config.year
     sex = config.sex
     var data = filterYear(input,year)   
-    
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
-
         const index = new Map(names.map((name, i) => [name, i]));
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
-
         for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
             return matrix;
     }
@@ -107,11 +113,9 @@ function dataPrepare(input, config){
     const isRegion = (name) => {
         return input.regions.includes(input.names.indexOf(name))
     } 
-    
     function filteredMatrix(input){
         data = input
         const countryNames = data.names
-
         // GET SOURCE-TARGET STRUCTURE 
         // Create array of name & connections objects
         let matrix = data.names.map((d,i)=> {
@@ -123,7 +127,6 @@ function dataPrepare(input, config){
                         connections:matrix }
         })
         let nodes = matrix 
-
         // Create object to push links during loop
         let links = []
         let l = 0 // <- iterator         

@@ -10,17 +10,18 @@
 <article>
   <header class="header">
    
-  	<div class="logo">
-        <h1> <a href="./">Global migration <br>data explorer</a></h1>
+	<div class="logo">
+        <h1> <a href="./">Global Migration Data Explorer</a></h1>
         <div class="credits">
             by
             <a href="http://www.guyabel.com">Guy J. Abel</a> 
 			&amp; 
             <a href="http://X80110.github.io/about-me">Xavier Bolló</a>             
-        </div> 
-		<h2>Migration <b>flows</b><!--  by <div><b>sex</b></div> --></h2>
-	</div>
 
+			<h2> Explore the change in estimates of outward, transit and return global migrant flows over the past 30 years. <!-- Click on a region to explore it at a country level. --></h2>
+			<p style="opacity:65%; margin-top:1em; font-size: 1em"> Click on a region to explore it at a country level</p>
+        </div> 
+	</div>
 
 	<div>
 		<input class="menu-btn" type="checkbox" id="menu-btn" />
@@ -78,7 +79,7 @@
   <div id="main">
         <div class="selectors">
 			<div class="form">
-				<div ><span>Select type</span></div>
+				<div ><span>Type:</span></div>
 				<div class="field collection">
 				  <input checked="" class="selectType" id="outward" name="selectType" type="radio" value="outward" />
 				  <label for="outward">
@@ -102,7 +103,7 @@
 			  </div>
 
           <div class="range">
-            <div ><span>Select year</span></div>
+            <div ><span>Year:</span></div>
             <!-- <br> -->
             <label for="range" id="start-value"></label>
             <label for="range" id="end-value"></label>
@@ -111,9 +112,8 @@
             
           </div>
           <div class="method">
-            <div ><span>Estimation method</span></div>
-            <select value="da_pb_open" id="selectMethod">
-            </select>
+            <div ><span>Estimation method:</span></div>
+            <select id="selectMethod"></select>
           </div>
 
         </div>
@@ -196,7 +196,7 @@
 		config.stockflow = "flow"
 		config.sex = ""
 		config.type = "outward"
-		config.method = "da_min_closed"
+		config.method = "da_pb_closed"
 		
 		const allMethods = ['da_min_closed', 'da_min_open','da_pb_closed'].reverse()
 		const allTypes = ['outward','transit','return']

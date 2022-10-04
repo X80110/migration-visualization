@@ -5,7 +5,7 @@
 // Create svg 
 const chordDiagram = d3.select("#chord-chart")
     .append("svg")
-    .attr('preserveAspectRatio', 'xMinYMid')
+    /* .attr('preserveAspectRatio', 'xMinYMid') */
     .attr("viewBox", [-width / 2, -height / 2, width, height]);
 
 /* let regionIndex = 1     */    

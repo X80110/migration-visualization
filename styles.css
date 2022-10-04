@@ -41,14 +41,21 @@ footer {
 }
 h1 {
   display: block;
-  font-size: 2em;
-  margin-bottom:0.2px;
+  font-size: 1.8em;
+  margin:1em 0 0.2em;
   font-weight: bold;
 }
 h1 a { color : black !important}
 
-h2{
-  font-size:130%;
+.logo h2{
+  font-size:120%;
+  margin-top:2em;
+  line-height: 1.3em;
+  max-width: 70%;
+  color: #474747;
+  font-weight: 400;
+}
+h4 {
   color: #474747;
   font-weight: 400;
 }
@@ -62,13 +69,13 @@ h2{
 /* menu */
 ul.menu li{
     padding:1em;
-    display:inline-block;
+    display:inline;
     max-width: 60%;
-    align-items:flex-start;
-    vertical-align: middle;
+  /*   align-items:flex-start; */
+    /* vertical-align: middle; */
 }
 
-.header .menu {
+.menu {
     max-height: 0;
     transition:  .3s ease-out;
     vertical-align: middle;
@@ -80,9 +87,13 @@ ul.menu li{
     text-align: left;
     float:left;
     padding-bottom:0;
-    vertical-align: middle;
+    /* vertical-align: middle; */
 }
- img {
+
+.subtitle{
+  display:flex;
+}
+img {
   filter: gray; /* IE6-9 */
   -webkit-filter: grayscale(.8); /* Google Chrome, Safari 6+ & Opera 15+ */
   filter: grayscale(.8); /* Microsoft Edge and Firefox 35+ */
@@ -94,7 +105,7 @@ img:hover {
 }
 .credits  {
     text-decoration: none;
-    line-height: 1.6em;
+    /* line-height: 1.6em; */
     margin-top:0.5em;
     color: #6D6B6B;
     margin-left:0.2em;
@@ -110,7 +121,6 @@ img:hover {
 }
 .header .menu-icon .navicon {
   background: #333;
-  
   display: block;
   height: 2px;
   position: relative;
@@ -337,7 +347,11 @@ img:hover {
 .options {
   justify-content: center;
   margin-left:2em;
-
+  
+}
+.options h2 {
+  font-weight: 400;
+  font-size: 1.2em;
 }
 
 .box  .drop-link {
@@ -490,6 +504,7 @@ li:hover{
   }
 
 select {
+    font-size:.9em;
     position: relative;
     display: flex;
     opacity:0.7;
