@@ -581,11 +581,17 @@ function tooltipRegion(evt,d) {
                     }
                 }
             )
-        d3.selectAll(".group-arc")
+        groups
             .on("mouseover", function(evt,d) {
-                d3.select(this)
+                d3.select(this).selectAll(".group-arc, .region-label-text")
                     .transition()
                     .duration(80) 
+                    .attr("d", arc.outerRadius(outerRadius))    
+            })
+        d3.selectAll("text.region-label-text")
+            .on("mouseover", function(evt,d) {
+                d3.select(this)
+                
                     .attr("d", arc.outerRadius(outerRadius))    
             })
     }   

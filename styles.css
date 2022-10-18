@@ -51,7 +51,7 @@ h1 a { color : black !important}
   font-size:120%;
   margin-top:2em;
   line-height: 1.3em;
-  max-width: 70%;
+  /* max-width: 70%; */
   color: #474747;
   font-weight: 400;
 }
