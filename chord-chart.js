@@ -1,7 +1,3 @@
-
-
-// ##########################################################
-
 // Create svg 
 const chordDiagram = d3.select("#chord-chart")
     .append("svg")
@@ -12,23 +8,13 @@ const chordDiagram = d3.select("#chord-chart")
 var innerRadius = Math.min(width, height) *0.35+10;
 var outerRadius = innerRadius + 17;
 var labelRadius = labelRadius || (outerRadius + 10);
-/* 
-let threshold = []
-let regionColors = []
 
-// ##########################################################
-// Functions and initial config
-config.year = 1990 || ""
-config.stockflow = config.stockflow
-config.sex 
-config.type 
-config.method = "da_pb_closed" || ""
-config.regions = [] */
-
+// Configure d3 chord 
 var chord = chord(true,false)
         .padAngle(0.05)
         .sortSubgroups(d3.descending)
       
+// Utils: Format values
 function formatValue(nStr, seperator) {
     seperator = seperator || ','
     nStr += ''
@@ -36,7 +22,7 @@ function formatValue(nStr, seperator) {
     x1 = x[0]
     x2 = x.length > 1 ? '.' + x[1] : ''
     var rgx = /(\d+)(\d{3})/
-
+    //--
     while (rgx.test(x1)) {
       x1 = x1.replace(rgx, '$1' + seperator + '$2');
     }
@@ -46,6 +32,7 @@ Number.prototype.mod = function (n) {
     return ((this % n) + n) % n
   };
 
+// Utils: return label position for given angle
 function labelPosition(angle) {
     var temp = angle.mod(2*Math.PI);
     return {
@@ -57,18 +44,15 @@ function labelPosition(angle) {
 
 // ##########################################################
 //  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
-// We set this outside the draw() function to avoid appending a new array to the selector on each run. 
-
 function drawChords(raw,config){
-    // GET SELECTED DATASET   
+    // Get selected dataset
     filename = fileName(config).json
     let file_index = files.indexOf(filename)
     let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
 
-    // CREATE SELECTORS
+    // Set context
     preparedData =  dataPrepare(input,config)
     let data = preparedData.result
-
     let total_flows = preparedData.total_flows
     input = input.raw_data                  // used for metadata
     let previous = config.previous || data  // used to interpolate between layouts
@@ -79,20 +63,18 @@ function drawChords(raw,config){
 
     rememberTheChords()
     rememberTheGroups() 
-    // ----------------------
-    // Utils functions 
-    
+
+    // Define svg geometries
     var arc = d3.arc() 
         .innerRadius(innerRadius)
         /* .outerRadius(outerRadius) */
         .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
-
     var ribbon = d3.ribbonArrow()
         .sourceRadius(innerRadius)
         .targetRadius(innerRadius -10) 
         .headRadius(15)
-
-    // Get metadata for a given name
+    
+    // Get metadata given a source/target name
     function getMeta(name) {
         const flag = (name) =>{ 
             let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
@@ -108,7 +90,7 @@ function drawChords(raw,config){
     }
     /* console.log(getMeta("Austria")) */
     
-    // Get region index for a given name
+    // Get region index given a source/target name
     function getRegion(index) {
         var r = 0;
         for (var i = 0; i < input.regions.length; i++) {
@@ -125,17 +107,17 @@ function drawChords(raw,config){
         return input.regions.includes(input.names.indexOf(name))
     } 
     
-    // Extend chord() function values
-    function computedChords(data)  {
+    // Append variables to the processed data for d3 chord() data inputs
+    function computedChords(data)  {        // data for each arrow
         let chords = chord(data.matrix).map(d=> {
             d.source.name = data.names[d.source.index]
             d.source.region = getMeta(d.source.name).region
             d.source.id = getMeta(d.source.name).id
-            
+            //-----
             d.target.name = data.names[d.target.index]
             d.target.region = getMeta(d.target.name).region
             d.target.id = getMeta(d.target.name).id
-            
+            //-----
             direction = d.source.id > d.target.id ? 'source' :'target'
             d.id = direction+`-`+d.source.id+`-`+d.target.id
             let result = {id:d.id, source: d.source, target:d.target}
@@ -144,7 +126,7 @@ function drawChords(raw,config){
     return chords
     }
 
-    function computedGroups(data)  {
+    function computedGroups(data)  {            // data for each arc
         let groups = chord(data.matrix).groups
         groups.map(d=>{
             d.name = data.names[d.index]
@@ -155,7 +137,7 @@ function drawChords(raw,config){
     return groups
     } 
 
-    // process last layout values for c
+    // process last layout values (used for transitions)
     function rememberTheChords() {
         previous.chords = computedChords(previous).reduce(function(sum, d) {
           sum[d.source.id] = sum[d.source.id] || {};
@@ -171,23 +153,13 @@ function drawChords(raw,config){
         }, {});
     }
 
+    // Utils
     function getCountryRange(id) {
         var end = input.regions[input.regions.indexOf(id) + 1];
         return {
             start: id + 1,
             end: end ? end - 1 : input.names.length - 1
         };
-    }
-
-    function inRange(id, range) {
-        return id >= range.start && id <= range.end;
-    }
-
-    function inAnyRange(d, ranges) {
-        return !!ranges.filter(function (range) {
-            return inRange(d.source.id, range) || inRange(d.target.id, range);
-        })
-        .length;
     }
 
     function meltPreviousGroupArc(d) {
@@ -203,6 +175,7 @@ function drawChords(raw,config){
             endAngle: end.endAngle
         };
     }
+    
     function meltPreviousChord(d) {
         if (d.source.id !== d.source.region) {return}
         var c = {source: {},target: {}};
@@ -337,185 +310,180 @@ function drawChords(raw,config){
               };
         });
   
-var maxBarHeight = height / 2 - (70);
-var arcRegionLabel = d3.arc()
-    .innerRadius(maxBarHeight)
-    .outerRadius(maxBarHeight + 2)
+    var maxBarHeight = height / 2 - (70);
+    var arcRegionLabel = d3.arc()
+        .innerRadius(maxBarHeight)
+        .outerRadius(maxBarHeight + 2)
 
-var regionText = groups.selectAll("path.region_label_arc")
-    .data(computedGroups(data))
-    .enter().append("path")
-    .filter(d=> isRegion(d.name))
-    .attr("id", (d,i) => {return  "region_label_" + i}) 
-    .attr("fill", "none")
-    .attr("d", arcRegionLabel);
+    var regionText = groups.selectAll("path.region_label_arc")
+        .data(computedGroups(data))
+        .enter().append("path")
+        .filter(d=> isRegion(d.name))
+        .attr("id", (d,i) => {return  "region_label_" + i}) 
+        .attr("fill", "none")
+        .attr("d", arcRegionLabel);
 
-regionText.each(function(d, i) {
-    var firstArcSection = /(^.+?)L/;
-    var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
-    newArc = newArc.replace(/,/g, " ");
-    if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
-        var startLoc = /M(.*?)A/, 
-            middleLoc = /A(.*?)0 0 1/, 
-            endLoc = /0 0 1 (.*?)$/; 
-        var newStart = endLoc.exec(newArc)[1];
-        var newEnd = startLoc.exec(newArc)[1];
-        var middleSec = middleLoc.exec(newArc)[1];
-        newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
-    }
-    d3.select(this).attr("d", newArc);
-});
-
-groups.append("text")
-    .attr("class", "region-label-text")
-    .filter(d=> isRegion(d.name))
-    .append("textPath")
-    .attr("font-size",11.5)
-    .attr("fill", d => getRegionColor(d.name))
-    .attr("xlink:href", function(d, i) {
-        return "#region_label_" + i;
-    })
-    .text(d=> d.name)
-    .transition('region-label-text')
-    .duration(600)
-    .call(wrapTextOnArc, height / 2 - (70));
-
-// adjust dy (labels vertical start) based on number of lines (i.e. tspans)
-regionText.each((d,i)=> { 
-    var textPath =d3.selectAll("textPath")["_groups"][0][i]
-    tspanCount = textPath.childNodes.length;
-    if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
-        d3.select(textPath.childNodes[0]).attr("dy", .3 + (tspanCount - 1) * -0.6 + 'em');
-    } else {
-        d3.select(textPath.childNodes[0]).attr("dy", -.3 + (tspanCount - 1) * -0.6 + 'em');
-    }
-});
-
-function wrapTextOnArc(text, radius) {
-    var temporaryText = d3.select('svg')
-        .append("text")
-        .attr("class", "temporary-text") // used to select later
-        .style("opacity", 0); // hide element
-
-    var getTextLength = function(string) {
-        temporaryText.text(string);
-        return temporaryText.node().getComputedTextLength();
-    };
-    text.each(function(d) {
-        var text = d3.select(this),
-        words = text.text().split(/[ \f\n\r\t\v]+/).reverse(),
-        word,
-        wordCount = words.length,
-        line = [],
-        textLength,
-        lineHeight = 1.1, // ems
-        x = 0,
-        y = 0,
-        dy = 0,
-        tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
-        arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
-        paddedArcLength = arcLength - 12;
-    /* console.log(wordCount) */
-        while (word = words.pop()) {
-        line.push(word);
-        tspan.text(line.join(" "));
-        textLength = getTextLength(tspan.text());
-        tspan.attr("x", (arcLength - textLength) / 2);
-        if (textLength > paddedArcLength && line.length > 1) {
-            line.pop();
-            tspan.text(line.join(" "));
-            textLength = getTextLength(tspan.text());
-            tspan.attr("x", (arcLength - textLength) / 2);
-            line = [word];
-            tspan = text.append("tspan").attr("dy", lineHeight + dy + "em").text(word);
-            textLength = getTextLength(tspan.text());
-            tspan.attr("x", (arcLength - textLength) / 2);
-        } 
+    regionText.each(function(d, i) {
+        var firstArcSection = /(^.+?)L/;
+        var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+        newArc = newArc.replace(/,/g, " ");
+        if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
+            var startLoc = /M(.*?)A/, 
+                middleLoc = /A(.*?)0 0 1/, 
+                endLoc = /0 0 1 (.*?)$/; 
+            var newStart = endLoc.exec(newArc)[1];
+            var newEnd = startLoc.exec(newArc)[1];
+            var middleSec = middleLoc.exec(newArc)[1];
+            newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
         }
-    }).filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0);
-}
-const tooltip = d3.select('body').append('g')
-    .attr('id', 'tooltip')
-    .style('background-color','#ffffff')
-    .style('padding','1em')
-    .style('border-radius','4px')
-    .style('position', 'absolute')
-    .style('text-align', 'center')
-    .style('visibility', 'hidden')
-    .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
-    
-function tooltipCountry(evt,d)  {
-    var source = isRegion(data.names[d.source.index])
-        ? `<span style="color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
-        : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
-    
-    var target = isRegion(data.names[d.target.index] )
-        ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
-        : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.target.name).flag+ " "+  d.target.name}</span>`
-    
-    if(filename.includes('stock')){
-        var value = ` <div> 
-                    <b>${formatValue(d.source.value)}</b> 
-                    <br>in<br> `
-    } else {
-        var value = ` <div> 
-                    ▾<br>
-                    <b>${formatValue(d.source.value)}</b> 
-                    <br>  `
+        d3.select(this).attr("d", newArc);
+    });
+
+    groups.append("text")
+        .attr("class", "region-label-text")
+        .filter(d=> isRegion(d.name))
+        .append("textPath")
+        .attr("font-size",11.5)
+        .attr("fill", d => getRegionColor(d.name))
+        .attr("xlink:href", function(d, i) {
+            return "#region_label_" + i;
+        })
+        .text(d=> d.name)
+        .transition('region-label-text')
+        .duration(600)
+        .call(wrapTextOnArc, height / 2 - (70));
+
+    /* // adjust dy (labels vertical start) based on number of lines (i.e. tspans)
+    regionText.each((d,i)=> { 
+        var textPath =d3.selectAll("textPath")["_groups"][0][i]
+        tspanCount = textPath.childNodes.length;
+        if (d.startAngle > Math.PI / 2 && d.startAngle < 3 * Math.PI / 2 && d.endAngle > Math.PI / 2 && d.endAngle < 3 * Math.PI / 2) {
+            d3.select(textPath.childNodes[0]).attr("dy", .3 + (tspanCount - 1) * -0.6 + 'em');
+        } else {
+            d3.select(textPath.childNodes[0]).attr("dy", -.3 + (tspanCount - 1) * -0.6 + 'em');
+        }
+    }); */
+
+    function wrapTextOnArc(text, radius) {
+        var temporaryText = d3.select('svg')
+            .append("text")
+            .attr("class", "temporary-text") // used to select later
+            .style("opacity", 0); // hide element
+        var getTextLength = function(string) {
+            temporaryText.text(string);
+            return temporaryText.node().getComputedTextLength();
+        };
+        
+        text.each(function(d) {
+            var text = d3.select(this),
+            words = text.text().split(/[ \f\n\r\t\v]+/).reverse(),
+            word,
+            wordCount = words.length,
+            line = [],
+            textLength,
+            lineHeight = 1.1, 
+            x = 0,
+            y = 0,
+            dy = 0,
+            tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
+            arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
+            paddedArcLength = arcLength - 12;
+            while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(" "));
+                textLength = getTextLength(tspan.text());
+                tspan.attr("x", (arcLength - textLength) / 2);
+                if (textLength > paddedArcLength && line.length > 1) {
+                    line.pop();
+                    tspan.text(line.join(" "));
+                    textLength = getTextLength(tspan.text());
+                    tspan.attr("x", (arcLength - textLength) / 2);
+                    line = [word];
+                    tspan = text.append("tspan").attr("dy", lineHeight + dy + "em").text(word);
+                    textLength = getTextLength(tspan.text());
+                    tspan.attr("x", (arcLength - textLength) / 2);    
+            }}
+        })
+        // Fix specific labels 
+        .filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0); 
     }
-    
-    return tooltip
-        .html(`\ <b>${source} </b> 
-                    ${value} 
-                    ${target}  `)
-        .transition('tooltip')
-        .duration(50)
+    const tooltip = d3.select('body').append('g')
+        .attr('id', 'tooltip')
         .style('background-color','#ffffff')
         .style('padding','1em')
-        .style("top", (evt.pageY-10)+"px")
-        .style("left", (evt.pageX+10)+"px")
-        .style("visibility", "visible")       
-}
-
-function tooltipRegion(evt,d) {
-    let source = isRegion(d.name)
-        ? `<span style="color:white"> <b>${d.name}</b></span>`
-        : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
-            <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
-    if (data.matrix !== undefined) {
-        var outflow = formatValue(getMeta(d.name).outflow) 
-        var inflow = formatValue(getMeta(d.name).inflow)
-    }
-    // console.log(filename.includes("stock")) ---> false ? then synthax is outflow/inflow instead of emigrants/immigrants
-    if (filename.includes('stock') ){
-        return tooltip
-            .html(`\ ${source} </br>
-                    Total emigrants: <b> ${outflow}</b> </br>
-                    Total immigrants: <b> ${inflow} </b> `)
-            .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
-            .style("top", (evt.pageY-10)+"px")
-            .style("left", (evt.pageX+10)+"px")
-            .style("visibility", "visible")
-    }
-    else {
-        return tooltip
-            .html(`\ ${source} </br>
-                    Total Out: <b> ${outflow}</b> </br>
-                    Total In: <b> ${inflow} </b> `)
-            .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
-            .style("top", (evt.pageY-10)+"px")
-            .style("left", (evt.pageX+10)+"px")
-            .style("visibility", "visible")
+        .style('border-radius','4px')
+        .style('position', 'absolute')
+        .style('text-align', 'center')
+        .style('visibility', 'hidden')
+        .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
+        
+    function tooltipCountry(evt,d)  {
+        var source = isRegion(data.names[d.source.index])
+            ? `<span style="color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
+            : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.source.name).flag+ " "+  d.source.name}</span>`
+        var target = isRegion(data.names[d.target.index] )
+            ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
+            : `<span style="color:${ colorCountries(d.source.name)}"> ${getMeta(d.target.name).flag+ " "+  d.target.name}</span>`
+        if(filename.includes('stock')){
+            var value = ` <div> 
+                        <b>${formatValue(d.source.value)}</b> 
+                        <br>in<br> `
+        } else {
+            var value = ` <div> 
+                        ▾<br>
+                        <b>${formatValue(d.source.value)}</b> 
+                        <br>  `
         }
+        return tooltip
+            .html(`\ <b>${source} </b> 
+                        ${value} 
+                        ${target}  `)
+            .transition('tooltip')
+            .duration(50)
+            .style('background-color','#ffffff')
+            .style('padding','1em')
+            .style("top", (evt.pageY-10)+"px")
+            .style("left", (evt.pageX+10)+"px")
+            .style("visibility", "visible")       
     }
 
-    // INTERACTIONS
-    // OPEN REGIONS
-    config.maxRegionsOpen = 2 // config.regions = region || config.regions
+    function tooltipRegion(evt,d) {
+        let source = isRegion(d.name)
+            ? `<span style="color:white"> <b>${d.name}</b></span>`
+            : `<span style="color:white"> ${getMeta(d.name).region_name}</span></br>
+                <span style="color:white"><b> ${getMeta(d.name).flag+ " "+  d.name}</b></span>`
+        if (data.matrix !== undefined) {
+            var outflow = formatValue(getMeta(d.name).outflow) 
+            var inflow = formatValue(getMeta(d.name).inflow)
+        }
+        // console.log(filename.includes("stock")) ---> false ? then synthax is outflow/inflow instead of emigrants/immigrants
+        if (filename.includes('stock') ){
+            return tooltip
+                .html(`\ ${source} </br>
+                        Total emigrants: <b> ${outflow}</b> </br>
+                        Total immigrants: <b> ${inflow} </b> `)
+                .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+                .style("top", (evt.pageY-10)+"px")
+                .style("left", (evt.pageX+10)+"px")
+                .style("visibility", "visible")
+        }
+        else {
+            return tooltip
+                .html(`\ ${source} </br>
+                        Total Out: <b> ${outflow}</b> </br>
+                        Total In: <b> ${inflow} </b> `)
+                .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+                .style("top", (evt.pageY-10)+"px")
+                .style("left", (evt.pageX+10)+"px")
+                .style("visibility", "visible")
+            }
+    }
+
+    // INTERACTIONS: Click
+    config.maxRegionsOpen = 2 
     
-    /* groups.on('click', function(evt, d) { */
+    // Open regions
     groups.on('click', function(evt, d) {
-            
             if (config.regions.length + 1 > config.maxRegionsOpen) {
                 config.regions.shift();       
             }
@@ -524,13 +492,11 @@ function tooltipRegion(evt,d) {
                 .remove()    
             update(raw,config)
         })
-
     /// CLOSE REGIONS
     groups
         .filter(function(d) {
             return d.id !== d.region;
         })
-        /* .attr("width", d=> console.log(d)) */
         .on('click', function(evt, d) {
             config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
             
@@ -546,37 +512,32 @@ function tooltipRegion(evt,d) {
                         .remove()    
             update(raw,config)
         })
-
+    
+    // INTERACTIONS: Mouseover
     chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
  
     function mouseover() {
-        
         chordDiagram.selectAll(".group-arc, .path-item")
              .on("mouseover", function (evt, d) {
                     // console.log(d.id)
                     if (config.regions < 1){
-                        chords
-                            .selectAll(".path-item, .group-arc")
-                            .transition()
+                        chords.selectAll(".path-item, .group-arc")
+                            .transition('mouseover')
                             .duration(80)
                             .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
-                        /* arcs.selectAll(".group-arc")
-                        .style("opacity",d=> isRegion(d.name) ? 0.03: 0.80) */
                         d3.select(this)
-                            .transition()
+                            .transition('mouseover-this')
                             .duration(80)
                             .style("opacity", 0.80)
-                                
                     }
                     else{
-                        chords
-                            .selectAll(".path-item, .group-arc")
-                            /* .transition()
-                            .duration(100) */
+                        chords.selectAll(".path-item, .group-arc")
+                            .transition('mouseover')
+                            .duration(80)
                             .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
                         d3.select(this)
-                            /* .transition()
-                            .duration(100) */
+                            .transition('mouseover-this')
+                            .duration(80)
                             .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
                     }
                 }
@@ -586,12 +547,6 @@ function tooltipRegion(evt,d) {
                 d3.select(this).selectAll(".group-arc, .region-label-text")
                     .transition()
                     .duration(80) 
-                    .attr("d", arc.outerRadius(outerRadius))    
-            })
-        d3.selectAll("text.region-label-text")
-            .on("mouseover", function(evt,d) {
-                d3.select(this)
-                
                     .attr("d", arc.outerRadius(outerRadius))    
             })
     }   
@@ -604,7 +559,6 @@ function tooltipRegion(evt,d) {
                 groups.selectAll(".group-arc")
                     .transition()
                     .duration(80)
-                    /* .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.80) */
                     .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
         })  
     }

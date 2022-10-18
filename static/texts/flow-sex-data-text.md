@@ -4,4 +4,4 @@ In the plot above we filter to show only estimated migrant flows above X??? pers
 
 Data Reference: Abel, G.J., Cohen, J.E. (2022) Bilateral international migration flow estimates updated and refined by sex. *Sci Data* **9**, 173. <https://doi.org/10.1038/s41597-022-01271-z>
 
-Data: Download \<- maybe a button with the link... <https://figshare.com/ndownloader/files/27980682> See download file [notes](https://doi.org/10.6084/m9.figshare.12845711) for further details.
+Data: [Download](https://figshare.com/ndownloader/files/27980682) - See file [notes](https://doi.org/10.6084/m9.figshare.12845711) for further details.

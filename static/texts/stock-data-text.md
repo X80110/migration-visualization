@@ -4,4 +4,4 @@ In the plot above we filter to show only migrant populations above X??? persons.
 
 Data Reference: United Nations Department of Economic and Social Affairs Population Division (2020). *International Migrant Stock 2020* (POP/DB/MIG/Stock/Rev.2020)
 
-Data: Download \<- maybe a button with the link... <https://www.un.org/development/desa/pd/sites/www.un.org.development.desa.pd/files/undesa_pd_2020_ims_stock_by_sex_destination_and_origin.xlsx>
+Data: [Download](https://www.un.org/development/desa/pd/sites/www.un.org.development.desa.pd/files/undesa_pd_2020_ims_stock_by_sex_destination_and_origin.xlsx)

@@ -4,4 +4,4 @@ In the plot above we filter to show only estimated migrant flows above X??? pers
 
 Data Reference: Abel, G.J., Cohen, J.E. (2019). Bilateral international migration flow estimates for 200 countries. *Sci Data* **6** 82 <https://doi.org/10.1038/s41597-019-0089-3>
 
-Data: Download \<- maybe a button with the link... <https://figshare.com/ndownloader/files/26239945> See download file [notes](https://doi.org/10.6084/m9.figshare.7731233) for further details.
+Data: [Download](https://figshare.com/ndownloader/files/26239945) - See file [notes](https://doi.org/10.6084/m9.figshare.7731233) for further details.
