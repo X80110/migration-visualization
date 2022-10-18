@@ -2,20 +2,19 @@
 var width = 800;
 var height = width-50;
 const textId = "O-text-1"; 
-
 let regionIndex = 1        
-
 let threshold = []
 let regionColors = []
 
-// ##########################################################
-// Util functions and initial config
+// #########################################################################################
+// Util functions and initial config  ------------–––-----------------------------------–
 config.year = 1990 || ""
 config.stockflow = config.stockflow
 config.sex 
 config.type 
 config.regions = []
 config.maxRegionsOpen = 2 // config.regions = region || config.regions
+// Get year data  ------------–––-----------------------------------–--------------------
 function filterYear(input,year){
     year = +year || 1990
     nodes = input
@@ -24,16 +23,19 @@ function filterYear(input,year){
     let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
     return result;
 }
+// Get allTime max Values  ------------–––-----------------------------------–--------------------
+function allTimeMax(input){
+    nodes = input
+    const allYears = [...new Set(Object.keys(nodes.matrix))]
+    // For each index in matrix[year], return the maximum value 
+    allYears.map(d=> {
+        let maxValue = nodes.matrix[d].reduce((max, node) => max[0] > node[0] ? max : node);
+        return maxValue
+    })
+    
+}
 
-/* d3.select("#selectMethod")
-                .selectAll('myOptions')
-                .data(allMethods)
-                .enter()
-                .append('option')
-                .text(d=>{ return d; })    // text showed in the menu dropdown
-                .attr("value",d=> { return d; })  */
-              
-// build the data filename (json) with config values
+// build the data filename (json) with config values  ------------–––-------------------
 let fileName = (configs) => {
     configs = {...config}
     // build filename hierarchy
@@ -48,15 +50,15 @@ let fileName = (configs) => {
     let json = 'json/'+stockflow+'_'+sex+type+method+'.json'
     // clean non-lineal irregularities
     json = json.replace("__","_").replace("_.",".").replace("__","_").replace("__","_")
-    // console.log( config.method, config.stockflow)
+    // console.log( config.method, config.stockflow) 
     return {
-         json:json,
-         values: stockflow, sex, type, method,
-         type: config.type
-        }
+        json:json,
+        values: stockflow, sex, type, method,
+        type: config.type
+    }
 }
 let filename = fileName(config).json
-
+// Method labels ------------–––------------------------------------------------------
 let methods_indexed = ["sd_drop_neg" , "sd_rev_neg" , "mig_rate" , "da_min_open" , "da_min_closed" , "da_pb_closed"]
 let methods_labels_indexed = ["Stock Difference Drop Negative", "Stock Differencing Reverse Negative", "Migration Rates", "Open Demographic Accounting Minimisation", "Closed Demographic Accounting Minimisation", "Closed Demographic Accounting Pseudo-Bayesian"] 
 let methods = methods_indexed.map((d,i)=>{ 
@@ -64,22 +66,20 @@ let methods = methods_indexed.map((d,i)=>{
     label = methods_labels_indexed[i]
     return {id, label}
 })
-
 if (allMethods.length < methods_indexed.length){              // Flows by type only has 3 methods, list only those id is specified
     methods = methods.filter(d=> allMethods.includes(d.id))   // in the var allMethods in the .html and specify
-}   /* console.log(allMethods,methods) */
+}   
+d3.select("#selectMethod")                                    // populate html
+    .selectAll('myOptions')
+    .data(methods)
+    .enter()
+        .append('option')
+        .attr("value",d=> d.id) 
+        .attr("label",d=> d.label) 
+        .attr("selected", d=> d.id === "da_pb_closed" ? "selected": null)   // 
 
-d3.select("#selectMethod")
-                .selectAll('myOptions')
-                .data(methods)
-                .enter()
-                .append('option')
-                /* .text(d=> d.label)    // text showed in the menu dropdown */
-                .attr("value",d=> d.id) 
-                .attr("label",d=> d.label) 
-                .attr("selected", d=> d.id === "da_pb_closed" ? "selected": null)   // 
 
-// ##########################################################
+// #########################################################################################
 //  DATA PREPARE
 function dataPrepare(input, config){
     var input_data = {...input}
@@ -91,6 +91,8 @@ function dataPrepare(input, config){
     year = +config.year
     sex = config.sex
     var data = filterYear(input,year)   
+    var maxValues = allTimeMax(input)
+    
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
@@ -98,12 +100,13 @@ function dataPrepare(input, config){
         for (const { source, target, value } of data) matrix[index.get(source)][index.get(target)] += value;
             return matrix;
     }
+    // UTILS ----------------------------------------------------------------------
     // Assign region to each index
     const getRegion = (index) => {
         var r = 0;
         for (var i = 0; i < input.regions.length; i++) {
             if (input.regions[i] > index) {
-            break;
+                break;
             }
             r = i;
         }
@@ -113,6 +116,7 @@ function dataPrepare(input, config){
     const isRegion = (name) => {
         return input.regions.includes(input.names.indexOf(name))
     } 
+    // APPLY FILTERS ------------------------------------------------------------
     function filteredMatrix(input){
         data = input
         const countryNames = data.names
@@ -138,26 +142,23 @@ function dataPrepare(input, config){
                 let source = matrix[k].name
                 let source_region = matrix[k].region    // <- include region why not
                 let value = matrix[j].connections[k]
-                
                 links[l] = {source_region,source,target_region,target,value}
                 l = l+1 
-
             }
         }
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links} 
-
         let unfilteredNL = {...nldata}
         let names = nldata.nodes.map(d=> d.name)
-        
+        //--
         let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
         let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
         let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
-        
+        //--
         let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
         let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source) 
         let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target) 
-
+        //--
         let outflows = region_outflows.concat(country_outflows)
         let inflows = region_inflows.concat(country_inflows)
         let total_flows = names.map(name=> {
@@ -176,9 +177,8 @@ function dataPrepare(input, config){
             let names_target = Array.from(new Set(dataSelect.flatMap(d => d.target ))); 
             function common(...arr){
                 return arr.reduce((first,second) => {
-                 return first.filter(el => second.includes(el));
-                })
-              }
+                    return first.filter(el => second.includes(el));
+            })}
             let innerjoin = common(names_source, names_target)
             // Repeat filtering
             // --- beware that i.e: countryA targeted countryB and countryC targeted countryA, after deleting countryB, countryA now shows no outflow, but it is still accounted
@@ -191,14 +191,13 @@ function dataPrepare(input, config){
             // reindex joined names
             let names_indexed = names.filter(d=> innerjoin.includes(d))
             /* console.log(names.length, names_source.length, names_target.length, innerjoin.length) */
-
             return names_indexed
         } 
         names = Array.from(new Set(removeNullNames())) 
         // SET OUTPUT DATA
         let finalData = filteredData.filter(d=> 
             names.includes(d.source) && names.includes(d.target)
-            )
+        )
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names,finalData)
         // Reindex regions
@@ -218,9 +217,9 @@ function dataPrepare(input, config){
         const nameRegionIndex = input.names.indexOf(region)                                         // index of selected region in names
         const regionIndex =  input.regions.indexOf(nameRegionIndex)                                 // index of selected region in regions
         const nextNameRegionIndex =  input.regions[regionIndex] >= input.regions.slice(-1).pop()    // if equal or higher than last element in regions
-                                     ? input.names.length                                           // return last index in names
-                                     : input.regions[regionIndex+1]                                 // return next element in regions        
-                                     // console.log(nameRegionIndex,nextNameRegionIndex)
+            ? input.names.length                                           // return last index in names
+            : input.regions[regionIndex+1]                                 // return next element in regions        
+            // console.log(nameRegionIndex,nextNameRegionIndex)
         // get range between two values
         const range = (min, max) => Array.from({ length: max - min + 1 }, (a, i) => min + i); // computes
         let countryRange = range(nameRegionIndex+1,nextNameRegionIndex-1) // applies
@@ -231,7 +230,6 @@ function dataPrepare(input, config){
     }
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)    
-    /* let unfilteredNL = {...filteredMatrix(data,year).unfilteredNL}     */
     data = dataSliced
     total_flows = dataSliced.total_flows
 
@@ -253,8 +251,6 @@ function dataPrepare(input, config){
     let target = last_selected.map(d=> data.names[d])
     let source = first_selected.map(d=> data.names[d])  
     let sankey_layout = {source:source,target:target}
-
-
 
     let mergeFilter = () =>  {
         let together = last_selected.concat(first_selected)
@@ -301,17 +297,15 @@ function dataPrepare(input, config){
     }
     let result = finalNamesMatrix()
     
-
     function setSelectors() {
         // YEAR SELECTOR 
-        /* let input_data = input */
         const allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
         const lastYearPlusFive = (+allYears[allYears.length-1]+5).toString()
-        /* console.log(lastYearPlusFive) */
+        //--
         let allRangeYears = allYears.concat(lastYearPlusFive)
         let sliderticks = document.getElementById("sliderticks");
         let slider = document.getElementById("selectYear");
-        let output = document.getElementById("yearRange");
+        //--
         let sliderValue = parseInt(slider.value)
         
         function getTicks (year){
@@ -362,6 +356,5 @@ function dataPrepare(input, config){
          }            
     }
     setSelectors()
-
     return {result,total_flows, nldata}
 }
