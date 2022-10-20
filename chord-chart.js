@@ -50,11 +50,13 @@ function drawChords(raw,config){
     let file_index = files.indexOf(filename)
     let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
 
+
     // Set context
     preparedData =  dataPrepare(input,config)
     let data = preparedData.result
     let total_flows = preparedData.total_flows
     input = input.raw_data                  // used for metadata
+
     let previous = config.previous || data  // used to interpolate between layouts
     var aLittleBit = Math.PI / 100000;
     config.initialAngle =  {};
@@ -258,7 +260,6 @@ function drawChords(raw,config){
         .attr("fill", "none")
         .attr("d", d3.arc()({ outerRadius:outerRadius   , startAngle: 0, endAngle:   2 * Math.PI  }));
 
- 
     const chords = container.append("g")
         .selectAll("g")
         .attr("class", "ribbon")
@@ -598,6 +599,12 @@ function drawChords(raw,config){
         .on("change", function(d) {
             config.previous = data 
             config.type = d3.select(this).property("value")
+            update(raw,config)
+        })   
+    d3.selectAll(".maxValues")
+        .on("change", function(d) {
+            config.previous = data 
+            config.max = d3.select(this).property("value")
             update(raw,config)
         })   
 }

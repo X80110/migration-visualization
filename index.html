@@ -79,8 +79,8 @@
   <div id="main">
         <div class="selectors">
           <div class="form">
-              <div ><span>Fix all-time maximum values</span></div>
-              <div class="field collection io">
+              <div><span>Fix all-time maximum values</span></div>
+              <div class="collection" class="maxValues">
                 <input checked="" class="maxValues" id="maxOff" name="maxValues" type="radio" value="off" />
                 <label for="maxOff">
                   <div class="text">
@@ -186,6 +186,7 @@
 		config.sex = "all"
 		config.type = ""
 		config.method = ""
+		config.max = "off"
 		const allSexes = ['male', 'female'].reverse()
 		const allTypes = ""
 		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 

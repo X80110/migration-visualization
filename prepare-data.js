@@ -25,14 +25,23 @@ function filterYear(input,year){
 }
 // Get allTime max Values  ------------–––-----------------------------------–--------------------
 function allTimeMax(input){
-    nodes = input
-    const allYears = [...new Set(Object.keys(nodes.matrix))]
-    // For each index in matrix[year], return the maximum value 
-    allYears.map(d=> {
-        let maxValue = nodes.matrix[d].reduce((max, node) => max[0] > node[0] ? max : node);
-        return maxValue
-    })
+
+    const allYears = [...new Set(Object.keys(input.matrix))]
     
+    const  year_datasets = () =>{
+        // 
+        dataset_year = allYears.map((d,i) => {
+            datasets = input.matrix[d]
+            dataset = {[d]:datasets[0]}
+
+            return dataset[d]
+        })
+        all_years_array = input.names.map((name,id)=>(d3.max(dataset_year.map(d=> d[id]))))
+
+        return all_years_array
+    } 
+    allyear_data = year_datasets()
+    console.log(allyear_data)
 }
 
 // build the data filename (json) with config values  ------------–––-------------------
@@ -91,8 +100,7 @@ function dataPrepare(input, config){
     year = +config.year
     sex = config.sex
     var data = filterYear(input,year)   
-    var maxValues = allTimeMax(input)
-    
+    maxValues = allTimeMax(input)
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
@@ -325,8 +333,8 @@ function dataPrepare(input, config){
                 /* console.log(year) */
                 let ticks = allYears.map(col =>
                      +col === +year 
-                     ? `<p style="color:black"><b>${col}</b></p   >`
-                     : `<p style="color:black">${col}</p   >`
+                     ? `<p><b>${col}</b></p   >`
+                     : `<p>${col}</p   >`
                     ).join("");
                 sliderticks.innerHTML = ticks
             }
@@ -355,6 +363,7 @@ function dataPrepare(input, config){
              }
          }            
     }
+
     setSelectors()
     return {result,total_flows, nldata}
 }
