@@ -20,6 +20,12 @@ function filterYear(input,year){
     nodes = input
     const selectedMatrix  = nodes.matrix[year]
     let names = nodes.names
+    let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
+    return result;
+}
+// Get allTime max Values  ------------–––-----------------------------------–--------------------
+function allTimeMax(input){
+
     const allYears = [...new Set(Object.keys(input.matrix))]
     
     const  year_datasets = () =>{
@@ -35,33 +41,8 @@ function filterYear(input,year){
         return all_years_array
     } 
     allyear_data = year_datasets()
-
-
-
-    let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
-    return result;
-}
-// Get allTime max Values  ------------–––-----------------------------------–--------------------
-/* function allTimeMax(input){
-
-    const allYears = [...new Set(Object.keys(input.matrix))]
-    
-    const  year_datasets = () =>{
-        // 
-        dataset_year = allYears.map((d,i) => {
-            datasets = input.matrix[d]
-            dataset = {[d]:datasets[0]}
-
-            return dataset[d]
-        })
-        all_years_array = input.names.map((name,id)=>(d3.max(dataset_year.map(d=> d[id]))))
-
-        return all_years_array
-    } 
-    allyear_data = year_datasets()
     return allyear_data
 }
-console.log */
 
 // build the data filename (json) with config values  ------------–––-------------------
 let fileName = (configs) => {
