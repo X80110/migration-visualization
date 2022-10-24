@@ -20,11 +20,29 @@ function filterYear(input,year){
     nodes = input
     const selectedMatrix  = nodes.matrix[year]
     let names = nodes.names
+    const allYears = [...new Set(Object.keys(input.matrix))]
+    
+    const  year_datasets = () =>{
+        // 
+        dataset_year = allYears.map((d,i) => {
+            let datasets = input.matrix[d]
+            let dataset = {[d]:datasets[0]}
+
+            return dataset[d]
+        })
+        all_years_array = input.names.map((name,id)=>(d3.max(dataset_year.map(d=> d[id]))))
+
+        return all_years_array
+    } 
+    allyear_data = year_datasets()
+
+
+
     let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
     return result;
 }
 // Get allTime max Values  ------------–––-----------------------------------–--------------------
-function allTimeMax(input){
+/* function allTimeMax(input){
 
     const allYears = [...new Set(Object.keys(input.matrix))]
     
@@ -41,8 +59,9 @@ function allTimeMax(input){
         return all_years_array
     } 
     allyear_data = year_datasets()
-    console.log(allyear_data)
+    return allyear_data
 }
+console.log */
 
 // build the data filename (json) with config values  ------------–––-------------------
 let fileName = (configs) => {
@@ -99,8 +118,8 @@ function dataPrepare(input, config){
     input = input_data.raw_data    
     year = +config.year
     sex = config.sex
-    var data = filterYear(input,year)   
-    maxValues = allTimeMax(input)
+    var data = filterYear(input,year)   /* 
+    maxValues = allTimeMax(input) */
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
