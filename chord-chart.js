@@ -73,9 +73,9 @@ function drawChords(raw,config){
         /* .outerRadius(outerRadius) */
         .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
     var ribbon = d3.ribbonArrow()
-    .sourceRadius(innerRadius)
-    .targetRadius(innerRadius -10) 
-    .headRadius(15)
+        .sourceRadius(innerRadius)
+        .targetRadius(innerRadius -10) 
+        .headRadius(15)
     /* .radius(250) */
     
     // Get metadata given a source/target name
