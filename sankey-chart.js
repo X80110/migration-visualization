@@ -56,7 +56,7 @@ let graph = (data) => {
 
 const sankeyDiagram = d3.select("#sankey-chart")
     .append("svg")
-    .attr("viewBox", [0 , 0, width, height+50])
+    .attr("viewBox", [-(width/5) , -10, width, height+50])
 
 const Links = sankeyDiagram.append("g")
     .attr("class", "links");
@@ -94,12 +94,20 @@ function setData(raw,config){
   
     const sankey = d3.sankey()
         /* .nodeId(d=> d.index) */
-        .nodeWidth(25)
+        // .nodeWidth(25)
         .nodePadding(8) 
-        .nodeAlign(d3.sankeyJustify)
-        .extent([[125, 25],[width-150, height]])
-        // .nodeSort(null)
+        /* .nodeAlign(d3.sankeyJustify) */
+        .size([width-300, height])
+        /* .nodeSort(null) */
         /* .linkSort(null) */
+     /*    .linkSort((a,b) => {
+            if (b.source.sourceLinks.length > 0){
+                return d3.ascending(indexedSource.indexOf(a.name),indexedSource.indexOf(b.name))
+            } 
+            else if (b.target.targetLinks.length > 0){
+                return d3.ascending(indexedTarget.indexOf(a.name),indexedTarget.indexOf(b.name))
+            }
+        }) */
         .nodeSort((a,b) => {
             if (b.sourceLinks.length > 0){
                 return d3.ascending(indexedSource.indexOf(a.name),indexedSource.indexOf(b.name))
@@ -381,10 +389,10 @@ function updateSankey(raw, input, config, graph_data){ */
             
             // highlight links
             sankeyDiagram.selectAll(".link")
+            /*  .transition()
+             .duration("50") */
                 .style("opacity",0.1)
                 .filter(p=> d.targetLinks.length === 0)     // Source
-               /*  .transition()
-                .duration("50") */
                 .style("opacity", p=> p.names[0] === d.name ? 0.8:0.1)
             
             sankeyDiagram.selectAll(".link")

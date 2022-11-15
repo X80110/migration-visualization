@@ -24,6 +24,8 @@ header, footer, article{
 header, footer {
     width: 90%;
     display:inline-block;
+    /* display:inline-flex; */
+    /* position:relative; */
 }
 article {
   background-color:#f4f4f4;
@@ -78,6 +80,7 @@ ul.menu li{
 
 .menu {
     max-height: 0;
+    float:right;
     transition:  .3s ease-out;
     vertical-align: middle;
 }
@@ -366,7 +369,7 @@ img:hover {
 }
 
 /* 48em = 768px */
-@media (max-width: 768px) {
+@media (max-width: 892px) {
     div > button{
         transform: scale(1.4);
     }
@@ -378,7 +381,7 @@ img:hover {
       max-width: 60%;
   }
 }
-@media (min-width: 768px) {
+@media (min-width: 892px) {
   /* .header li {
     float: left;
   }

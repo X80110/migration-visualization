@@ -25,17 +25,25 @@ function filterYear(input,year){
 }
 // Get allTime max Values  ------------–––-----------------------------------–--------------------
 function allTimeMax(input){
-
     const allYears = [...new Set(Object.keys(input.matrix))]
     
     const  year_datasets = () =>{
-        // 
         dataset_year = allYears.map((d,i) => {
             let datasets = input.matrix[d]
-            let dataset = {[d]:datasets[0]}
+            let dataset = {[d]:datasets}
+            // test = dataset[d].map(a=> dataset[d] )
 
+            /* console.log(datasets) */
+            // console.log(test[i].map(a=> a))
+            
+            
+            // console.log(datasets)
+            // console.log(datasets[0])                // horizontal matrix values
+            // console.log(datasets.map(a=> a[0]))     // vertical matrix values
             return dataset[d]
+          /*   return test */
         })
+        
         all_years_array = input.names.map((name,id)=>(d3.max(dataset_year.map(d=> d[id]))))
 
         return all_years_array
@@ -43,6 +51,7 @@ function allTimeMax(input){
     allyear_data = year_datasets()
     return allyear_data
 }
+
 
 // build the data filename (json) with config values  ------------–––-------------------
 let fileName = (configs) => {
@@ -99,8 +108,9 @@ function dataPrepare(input, config){
     input = input_data.raw_data    
     year = +config.year
     sex = config.sex
-    var data = filterYear(input,year)   /* 
-    maxValues = allTimeMax(input) */
+    var data = filterYear(input,year)   
+    maxValues = allTimeMax(input)
+    /* console.log(maxValues) */
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
         const index = new Map(names.map((name, i) => [name, i]));
@@ -215,7 +225,7 @@ function dataPrepare(input, config){
                 regions.push(i)
             }
         })
-        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData, total_flows: total_flows, unfilteredNL: unfilteredNL}
+        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData, total_flows: total_flows, unfilteredNL: unfilteredNL, maxValues: maxValues}
     }
 
     // DEFINE LAYOUT FOR SELECTED REGIONS
@@ -365,5 +375,5 @@ function dataPrepare(input, config){
     }
 
     setSelectors()
-    return {result,total_flows, nldata}
+    return {result,total_flows, nldata,maxValues}
 }

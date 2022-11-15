@@ -46,6 +46,7 @@ function labelPosition(angle) {
 //  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
 function drawChords(raw,config){
     // Get selected dataset
+    console.log(config.max)
     filename = fileName(config).json
     let file_index = files.indexOf(filename)
     let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
@@ -65,16 +66,17 @@ function drawChords(raw,config){
 
     rememberTheChords()
     rememberTheGroups() 
-
+    console.log(preparedData.maxValues)
     // Define svg geometries
     var arc = d3.arc() 
         .innerRadius(innerRadius)
         /* .outerRadius(outerRadius) */
         .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
     var ribbon = d3.ribbonArrow()
-        .sourceRadius(innerRadius)
-        .targetRadius(innerRadius -10) 
-        .headRadius(15)
+    .sourceRadius(innerRadius)
+    .targetRadius(innerRadius -10) 
+    .headRadius(15)
+    /* .radius(250) */
     
     // Get metadata given a source/target name
     function getMeta(name) {
@@ -85,6 +87,7 @@ function drawChords(raw,config){
         const region = getRegion(input.names.indexOf(name))
         const region_name = input.names[region]
         const id = input.names.indexOf(name)
+        
         const outflow = total_flows.filter(d=>d.name.includes(name))[0].outflow
         const inflow = total_flows.filter(d=>d.name.includes(name))[0].inflow
         
@@ -111,6 +114,7 @@ function drawChords(raw,config){
     
     // Append variables to the processed data for d3 chord() data inputs
     function computedChords(data)  {        // data for each arrow
+        /* console.log(data) */
         let chords = chord(data.matrix).map(d=> {
             d.source.name = data.names[d.source.index]
             d.source.region = getMeta(d.source.name).region
@@ -555,8 +559,9 @@ function drawChords(raw,config){
     function mouseout() {
         chordDiagram.selectAll("g")
             .on("mouseout", function (evt, d) {        
-                chords.selectAll(".path-item")
-                    .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1: 0.80)
+                d3.selectAll(".path-item")
+                // chords.selectAll(".path-item")
+                    // .style("opacity",/* d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1:  */0.80)
                 groups.selectAll(".group-arc")
                     .transition()
                     .duration(80)
@@ -605,6 +610,7 @@ function drawChords(raw,config){
         .on("change", function(d) {
             config.previous = data 
             config.max = d3.select(this).property("value")
+            
             update(raw,config)
         })   
 }
