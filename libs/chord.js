@@ -41,7 +41,7 @@ function chord(directed, transpose) {
     }
     k = max(0, tau - padAngle * n) / k;
     dx = k ? padAngle : tau / n;
-
+    /* console.log(padAngle) */
     // Compute the angles for each group and constituent chord.
     {
       let x = 0;

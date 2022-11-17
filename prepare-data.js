@@ -168,7 +168,7 @@ function dataPrepare(input, config){
         let nldata = {nodes: nodes, links:links} 
         let unfilteredNL = {...nldata}
         let names = nldata.nodes.map(d=> d.name)
-        //--
+        // COMPUTE TOTAL OUTFLOWS & INFLOWS BEFORE ANY FILTER
         let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
         let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
         let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 

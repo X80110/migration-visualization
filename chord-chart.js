@@ -57,7 +57,8 @@ function drawChords(raw,config){
     let data = preparedData.result
     let total_flows = preparedData.total_flows
     input = input.raw_data                  // used for metadata
-
+    
+    console.log(data.matrix)
     let previous = config.previous || data  // used to interpolate between layouts
     var aLittleBit = Math.PI / 100000;
     config.initialAngle =  {};
@@ -74,6 +75,8 @@ function drawChords(raw,config){
         .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
     var ribbon = d3.ribbonArrow()
         .sourceRadius(innerRadius)
+            /* .endAngle(d=> d.endAngle*0.05+0.1)
+            .startAngle(d=> d.startAngle*0.05+0.1) */
         .targetRadius(innerRadius -10) 
         .headRadius(15)
     /* .radius(250) */
@@ -114,7 +117,6 @@ function drawChords(raw,config){
     
     // Append variables to the processed data for d3 chord() data inputs
     function computedChords(data)  {        // data for each arrow
-        /* console.log(data) */
         let chords = chord(data.matrix).map(d=> {
             d.source.name = data.names[d.source.index]
             d.source.region = getMeta(d.source.name).region
@@ -349,6 +351,7 @@ function drawChords(raw,config){
         .filter(d=> isRegion(d.name))
         .append("textPath")
         .attr("font-size",11.5)
+        .attr("font-weight",600)
         .attr("fill", d => getRegionColor(d.name))
         .attr("xlink:href", function(d, i) {
             return "#region_label_" + i;
