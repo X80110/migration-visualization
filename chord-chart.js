@@ -41,24 +41,38 @@ function labelPosition(angle) {
         r: angle > Math.PI ? (temp + Math.PI / 2) * 180 / Math.PI : (temp - Math.PI / 2) * 180 / Math.PI
       };
     }
-
-// ##########################################################
-//  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
+    // ##########################################################
+    //  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
 function drawChords(raw,config){
+    allYears = Object.keys(raw.raw_data[0].matrix)
+   
+
     // Get selected dataset
-    console.log(config.max)
+    /* console.log(config.max) */
     filename = fileName(config).json
     let file_index = files.indexOf(filename)
-    let input = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}
+    let raw_data = raw.raw_data[file_index]
+    let input = {raw_data: raw_data, metadata: raw.metadata}
 
 
     // Set context
+  /*   preparedDataArrays = allYears.map(d=>{
+        config.year = d
+        test = dataPrepare(input,config)
+        flows = test.total_flows.map(d=> {
+            flow = d.outflow + d.inflow
+            return {
+                flow
+            }})
+        return flows
+
+    }) */
     preparedData =  dataPrepare(input,config)
     let data = preparedData.result
     let total_flows = preparedData.total_flows
     input = input.raw_data                  // used for metadata
     
-    console.log(data.matrix)
+
     let previous = config.previous || data  // used to interpolate between layouts
     var aLittleBit = Math.PI / 100000;
     config.initialAngle =  {};
@@ -67,7 +81,10 @@ function drawChords(raw,config){
 
     rememberTheChords()
     rememberTheGroups() 
-    console.log(preparedData.maxValues)
+
+   
+
+    /* console.log(preparedData.maxValues) */
     // Define svg geometries
     var arc = d3.arc() 
         .innerRadius(innerRadius)
@@ -563,8 +580,8 @@ function drawChords(raw,config){
         chordDiagram.selectAll("g")
             .on("mouseout", function (evt, d) {        
                 d3.selectAll(".path-item")
-                // chords.selectAll(".path-item")
-                    // .style("opacity",/* d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1:  */0.80)
+                /* chords.selectAll(".path-item") */
+                    .style("opacity",0.80)
                 groups.selectAll(".group-arc")
                     .transition()
                     .duration(80)

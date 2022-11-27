@@ -100,6 +100,7 @@ d3.select("#selectMethod")                                    // populate html
 // #########################################################################################
 //  DATA PREPARE
 function dataPrepare(input, config){
+    console.log
     var input_data = {...input}
     meta = input_data.metadata 
     threshold = input_data.raw_data.threshold

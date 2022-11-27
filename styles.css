@@ -416,7 +416,7 @@ li:hover{
     position:absolute;
     visibility: hidden;
     width:150px;
-    transition:all 0.3s ease;
+    transition:all 0.3s ease-out;
     cursor: default;
   }
   
@@ -439,7 +439,7 @@ li:hover{
     /* margin-left: 1.5em ;  */
     background-color:#fff;
 
-    transition:all 0.3s;
+    transition:all 0.2s ease-out;
 
   }
   .dropdown  p{
@@ -559,3 +559,6 @@ select {
   cursor:pointer;
 }
 
+.country-label{
+  cursor:pointer;
+}
