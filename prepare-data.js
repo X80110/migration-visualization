@@ -15,9 +15,51 @@ config.type
 config.regions = []
 config.maxRegionsOpen = 2 // config.regions = region || config.regions
 
+// build the data filename (json) with config values  ------------–––-------------------
+let fileName = (configs) => {
+    configs = {...config}
+    // build filename hierarchy
+    let stockflow = config.stockflow 
+    sex = config.sex === "all" || ""  
+        ? ""
+        : "_"+config.sex
+    type = config.type+"_"
+    method = stockflow === "stock" 
+        ? ""
+        : "_"+config.method || "_da_pb_closed"
+    let json = 'json/'+stockflow+'_'+sex+type+method+'.json'
+    // clean non-lineal irregularities
+    json = json.replace("__","_").replace("_.",".").replace("__","_").replace("__","_")
+    // console.log( config.method, config.stockflow) 
+    return {
+        json:json,
+        values: stockflow, sex, type, method,
+        type: config.type
+    }
+}
+let filename = fileName(config).json
+// Method labels ------------–––------------------------------------------------------
+let methods_indexed = ["sd_drop_neg" , "sd_rev_neg" , "mig_rate" , "da_min_open" , "da_min_closed" , "da_pb_closed"]
+let methods_labels_indexed = ["Stock Difference Drop Negative", "Stock Differencing Reverse Negative", "Migration Rates", "Open Demographic Accounting Minimisation", "Closed Demographic Accounting Minimisation", "Closed Demographic Accounting Pseudo-Bayesian"]
 
+let methods = methods_indexed.map((d,i)=>{ 
+    id = d
+    label = methods_labels_indexed[i]
+    return {id, label}
+})
 
-// Get all-time maximum total flows (outflows and inflows) 
+if (allMethods.length < methods_indexed.length){              // Flows by type only has 3 methods, list only those id is specified
+    methods = methods.filter(d=> allMethods.includes(d.id))   // in the var allMethods in the .html and specify
+}   
+
+d3.select("#selectMethod")                                    // populate html
+    .selectAll('myOptions')
+    .data(methods)
+    .enter()
+        .append('option')
+        .attr("value",d=> d.id) 
+        .attr("label",d=> d.label) 
+        .attr("selected", d=> d.id === "da_pb_closed" ? "selected": null)   // 
 
 
 // Get year data  ------------–––-----------------------------------–--------------------
@@ -31,9 +73,10 @@ function filterYear(input,year){
 }
 // Get allTime max Values  ------------–––-----------------------------------–--------------------
 function allTimeMax(input){
-
     const allYears = [...new Set(Object.keys(input.matrix))]
-    
+    const isRegion = (name) => {
+        return input.regions.includes(input.names.indexOf(name))
+    } 
     const getRegion = (index) => {
         var r = 0;
         for (var i = 0; i < input.regions.length; i++) {
@@ -44,9 +87,8 @@ function allTimeMax(input){
         }
         return input.regions[r];
     }
-
     const  year_datasets = () =>{
-        // Get all datasets
+        // for each year process dataset flows
         dataset_year = allYears.map((d,i) => {
             let datasets = input.matrix[d]   //
             let dataset = {[d]:datasets}
@@ -80,72 +122,45 @@ function allTimeMax(input){
             }
             // GRAPH STRUCTURE
             let nldata = {nodes: nodes, links:links} 
-            console.log(nldata)
-
-            
-            return year_dataset
-          /*   return test */
+            let names = nldata.nodes.map(d=> d.name)
+            // COMPUTE OUTFLOWS, INFLOWS & TOTAL FLOWS FOR EACH YEAR
+            let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
+            let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
+            let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
+            //--
+            let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
+            let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source) 
+            let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target) 
+            //--
+            let outflows = region_outflows.concat(country_outflows)
+            let inflows = region_inflows.concat(country_inflows)
+            let total_flows = names.map(name=> {
+                let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
+                let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
+                let total_flow = outflow + inflow
+                {return total_flow}
+            })
+            return total_flows.flat()
         })
-        //  Go through names (indexes) for each year and obtain max
-        all_years_array = input.names.map((name,id)=>{
-            /* d3.max( */dataset_year.map(d=>{
-                /* console.log(d) */
-                id_outflows = d[id]
-                
-            })/* ) */
+        
+        //  Go through names (indexes) for each year and obtain max for each index
+        countryTotalFlows = input.names.map((name,id)=>{
+            countryTotalFlows = allYears.map((year,index)=> {
+                year_dataset = dataset_year[index][id]                
+                return year_dataset
+            })
+            let max = d3.max(countryTotalFlows)
+            return {[name]:max}
         })
-
-        return all_years_array
+        return countryTotalFlows
     } 
-    allyear_data = year_datasets()
-    return allyear_data
+    allyear_totals = year_datasets()
+    return allyear_totals
 }
 
 
-// build the data filename (json) with config values  ------------–––-------------------
-let fileName = (configs) => {
-    configs = {...config}
-    // build filename hierarchy
-    let stockflow = config.stockflow 
-    sex = config.sex === "all" || ""  
-        ? ""
-        : "_"+config.sex
-    type = config.type+"_"
-    method = stockflow === "stock" 
-        ? ""
-        : "_"+config.method || "_da_pb_closed"
-    let json = 'json/'+stockflow+'_'+sex+type+method+'.json'
-    // clean non-lineal irregularities
-    json = json.replace("__","_").replace("_.",".").replace("__","_").replace("__","_")
-    // console.log( config.method, config.stockflow) 
-    return {
-        json:json,
-        values: stockflow, sex, type, method,
-        type: config.type
-    }
-}
-let filename = fileName(config).json
-// Method labels ------------–––------------------------------------------------------
-let methods_indexed = ["sd_drop_neg" , "sd_rev_neg" , "mig_rate" , "da_min_open" , "da_min_closed" , "da_pb_closed"]
-let methods_labels_indexed = ["Stock Difference Drop Negative", "Stock Differencing Reverse Negative", "Migration Rates", "Open Demographic Accounting Minimisation", "Closed Demographic Accounting Minimisation", "Closed Demographic Accounting Pseudo-Bayesian"] 
-let methods = methods_indexed.map((d,i)=>{ 
-    id = d
-    label = methods_labels_indexed[i]
-    return {id, label}
-})
-if (allMethods.length < methods_indexed.length){              // Flows by type only has 3 methods, list only those id is specified
-    methods = methods.filter(d=> allMethods.includes(d.id))   // in the var allMethods in the .html and specify
-}   
-d3.select("#selectMethod")                                    // populate html
-    .selectAll('myOptions')
-    .data(methods)
-    .enter()
-        .append('option')
-        .attr("value",d=> d.id) 
-        .attr("label",d=> d.label) 
-        .attr("selected", d=> d.id === "da_pb_closed" ? "selected": null)   // 
 
-
+// #########################################################################################
 // #########################################################################################
 //  DATA PREPARE
 function dataPrepare(input, config){
@@ -277,7 +292,7 @@ function dataPrepare(input, config){
                 regions.push(i)
             }
         })
-        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData, total_flows: total_flows, unfilteredNL: unfilteredNL, maxValues: maxValues}
+        return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData, total_flows: total_flows,  unfilteredNL: unfilteredNL}
     }
 
     // DEFINE LAYOUT FOR SELECTED REGIONS
