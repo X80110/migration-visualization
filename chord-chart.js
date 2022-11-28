@@ -579,9 +579,9 @@ function drawChords(raw,config){
     function mouseout() {
         chordDiagram.selectAll("g")
             .on("mouseout", function (evt, d) {        
-                d3.selectAll(".path-item")
-                /* chords.selectAll(".path-item") */
-                    .style("opacity",0.80)
+                
+                chords.selectAll(".path-item .group-arc")
+                    .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1: 0.80)
                 groups.selectAll(".group-arc")
                     .transition()
                     .duration(80)

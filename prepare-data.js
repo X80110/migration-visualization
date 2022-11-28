@@ -14,6 +14,13 @@ config.sex
 config.type 
 config.regions = []
 config.maxRegionsOpen = 2 // config.regions = region || config.regions
+
+
+// Get nldata
+
+// Get all-time maximum total flows (outflows and inflows) 
+
+
 // Get year data  ------------–––-----------------------------------–--------------------
 function filterYear(input,year){
     year = +year || 1990
