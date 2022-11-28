@@ -288,7 +288,7 @@ img:hover {
     font-weight: 300;
     font-size: 80%;
     /* color:#777; */
-    transition: resize .2s;
+    /* transition: resize .2s; */
 }
 
 /*------ SLIDER FOR STOCKS (specific to 1 year not ranges) -----------------*/
@@ -411,10 +411,18 @@ li:hover{
     cursor:pointer;
 }
 .dropdown{
+    background-color:#e7e7e7;
+    
+    margin:0 0 1em; 
+    padding: 0 0 1em; 
+    border: 1px solid #c9c9c9;
+    -webkit-box-shadow: 0 0 25px #bebebe;
+    box-shadow: 0 0 25px #bebebe;
     z-index: 1;
     display:block;
     position:absolute;
     visibility: hidden;
+    
     width:150px;
     transition:all 0.3s ease-out;
     cursor: default;
@@ -439,7 +447,7 @@ li:hover{
     /* margin-left: 1.5em ;  */
     background-color:#fff;
 
-    transition:all 0.2s ease-out;
+    transition:all 0.3s ease-out;
 
   }
   .dropdown  p{

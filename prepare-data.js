@@ -16,7 +16,6 @@ config.regions = []
 config.maxRegionsOpen = 2 // config.regions = region || config.regions
 
 
-// Get nldata
 
 // Get all-time maximum total flows (outflows and inflows) 
 
@@ -25,33 +24,76 @@ config.maxRegionsOpen = 2 // config.regions = region || config.regions
 function filterYear(input,year){
     year = +year || 1990
     nodes = input
-    const selectedMatrix  = nodes.matrix[year]
+    const selectedMatrix = nodes.matrix[year]
     let names = nodes.names
     let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
     return result;
 }
 // Get allTime max Values  ------------–––-----------------------------------–--------------------
 function allTimeMax(input){
+
     const allYears = [...new Set(Object.keys(input.matrix))]
     
-    const  year_datasets = () =>{
-        dataset_year = allYears.map((d,i) => {
-            let datasets = input.matrix[d]
-            let dataset = {[d]:datasets}
-            // test = dataset[d].map(a=> dataset[d] )
+    const getRegion = (index) => {
+        var r = 0;
+        for (var i = 0; i < input.regions.length; i++) {
+            if (input.regions[i] > index) {
+                break;
+            }
+            r = i;
+        }
+        return input.regions[r];
+    }
 
-            /* console.log(datasets) */
-            // console.log(test[i].map(a=> a))
+    const  year_datasets = () =>{
+        // Get all datasets
+        dataset_year = allYears.map((d,i) => {
+            let datasets = input.matrix[d]   //
+            let dataset = {[d]:datasets}
+            let year_dataset = dataset[d]
+            let countryNames = input.names
+            // GET SOURCE-TARGET STRUCTURE 
+            // Create array of name & connections objects
+            let matrix = countryNames.map((d,i)=> {
+                    let name = d
+                    let regionName = countryNames[getRegion(i)]
+                    let matrix = year_dataset.map(a=>a[i])
+                    return{ name:name,
+                            region: regionName,
+                            connections:matrix }
+            })
+            let nodes = matrix 
+            // Create object to push links during loop
+            let links = []
+            let l = 0 // <- iterator         
+            for (let j in matrix){
+                let target_region = matrix[j].region    // <- include region why not
+                let target = matrix[j].name
+                // loop (into each 1st level array)
+                for (let k in matrix[j].connections){
+                    let source = matrix[k].name
+                    let source_region = matrix[k].region    // <- include region why not
+                    let value = matrix[j].connections[k]
+                    links[l] = {source_region,source,target_region,target,value}
+                    l = l+1 
+                }
+            }
+            // GRAPH STRUCTURE
+            let nldata = {nodes: nodes, links:links} 
+            console.log(nldata)
+
             
-            
-            // console.log(datasets)
-            // console.log(datasets[0])                // horizontal matrix values
-            // console.log(datasets.map(a=> a[0]))     // vertical matrix values
-            return dataset[d]
+            return year_dataset
           /*   return test */
         })
-        
-        all_years_array = input.names.map((name,id)=>(d3.max(dataset_year.map(d=> d[id]))))
+        //  Go through names (indexes) for each year and obtain max
+        all_years_array = input.names.map((name,id)=>{
+            /* d3.max( */dataset_year.map(d=>{
+                /* console.log(d) */
+                id_outflows = d[id]
+                
+            })/* ) */
+        })
 
         return all_years_array
     } 
@@ -142,6 +184,7 @@ function dataPrepare(input, config){
     const isRegion = (name) => {
         return input.regions.includes(input.names.indexOf(name))
     } 
+
     // APPLY FILTERS ------------------------------------------------------------
     function filteredMatrix(input){
         data = input
@@ -174,6 +217,7 @@ function dataPrepare(input, config){
         }
         // GRAPH STRUCTURE
         let nldata = {nodes: nodes, links:links} 
+        
         let unfilteredNL = {...nldata}
         let names = nldata.nodes.map(d=> d.name)
         // COMPUTE TOTAL OUTFLOWS & INFLOWS BEFORE ANY FILTER
