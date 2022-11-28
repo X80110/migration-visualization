@@ -54,20 +54,9 @@ function drawChords(raw,config){
     let raw_data = raw.raw_data[file_index]
     let input = {raw_data: raw_data, metadata: raw.metadata}
 
-
-    // Set context
-  /*   preparedDataArrays = allYears.map(d=>{
-        config.year = d
-        test = dataPrepare(input,config)
-        flows = test.total_flows.map(d=> {
-            flow = d.outflow + d.inflow
-            return {
-                flow
-            }})
-        return flows
-
-    }) */
     preparedData =  dataPrepare(input,config)
+    maxValues = dataPrepare(input,config).maxValues
+
     let data = preparedData.result
     let total_flows = preparedData.total_flows
     input = input.raw_data                  // used for metadata
@@ -134,6 +123,7 @@ function drawChords(raw,config){
     
     // Append variables to the processed data for d3 chord() data inputs
     function computedChords(data)  {        // data for each arrow
+        
         let chords = chord(data.matrix).map(d=> {
             d.source.name = data.names[d.source.index]
             d.source.region = getMeta(d.source.name).region
@@ -148,7 +138,8 @@ function drawChords(raw,config){
             let result = {id:d.id, source: d.source, target:d.target}
             return result  
         })
-    return chords
+        
+        return chords
     }
 
     function computedGroups(data)  {            // data for each arc
