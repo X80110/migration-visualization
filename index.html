@@ -172,6 +172,7 @@
     </footer>
   <script src="https://d3js.org/d3.v7.min.js"></script>
    <script src="libs/chord.js"></script>
+   <script src="libs/parsemd.js"></script>
    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 
 
@@ -195,7 +196,6 @@
 	</script>
 
 	<!-- CHART -->
-	<script src="parsemd.js"></script>
 	<script src="prepare-data.js"></script>
 	<script src="chord-chart.js"></script>
 	<script src="sankey-chart.js"></script>	
@@ -224,8 +224,8 @@
 					raw.push(dataset)
 				}
 				const metadata = d3.csv("data/country-metadata-flags.csv")
-				const settings = d3.json('config.json')
-				return {raw_data:await Promise.all(raw), metadata: await metadata, settings:await settings}
+
+				return {raw_data:await Promise.all(raw), metadata: await metadata}
 			};
 			function getAnchor() {
 				return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;

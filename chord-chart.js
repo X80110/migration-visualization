@@ -11,7 +11,7 @@ var labelRadius = labelRadius || (outerRadius + 10);
 
 // Configure d3 chord 
 var chord = chord(true,false)
-        .padAngle(0.05)
+        .padAngle(0.03)
         .sortSubgroups(d3.descending)
       
 // Utils: Format values
@@ -55,7 +55,7 @@ function drawChords(raw,config){
     let input = {raw_data: raw_data, metadata: raw.metadata}
 
     preparedData =  dataPrepare(input,config)
-    maxValues = dataPrepare(input,config).maxValues
+    let maxValues = dataPrepare(input,config).maxValues
 
     let data = preparedData.result
     let total_flows = preparedData.total_flows
@@ -78,14 +78,17 @@ function drawChords(raw,config){
     var arc = d3.arc() 
         .innerRadius(innerRadius)
         /* .outerRadius(outerRadius) */
+        
         .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
     var ribbon = d3.ribbonArrow()
         .sourceRadius(innerRadius)
-            /* .endAngle(d=> d.endAngle*0.05+0.1)
+          /*   .endAngle(d=> d.endAngle*0.05+0.1)
             .startAngle(d=> d.startAngle*0.05+0.1) */
         .targetRadius(innerRadius -10) 
         .headRadius(15)
     /* .radius(250) */
+
+    
     
     // Get metadata given a source/target name
     function getMeta(name) {
@@ -99,8 +102,10 @@ function drawChords(raw,config){
         
         const outflow = total_flows.filter(d=>d.name.includes(name))[0].outflow
         const inflow = total_flows.filter(d=>d.name.includes(name))[0].inflow
-        
-        return {flag: flag(name), region,region_name,id,outflow,inflow}
+        const total_flow = outflow + inflow
+        const allTimeMaxFlow = maxValues[id][name]
+        const isMax = total_flow === allTimeMaxFlow ? true: false
+        return {flag: flag(name), region,region_name,id,outflow,inflow,total_flow,allTimeMaxFlow, isMax}
     }
     /* console.log(getMeta("Austria")) */
     
@@ -120,10 +125,9 @@ function drawChords(raw,config){
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
-    
+    console.log(data.names.map(d=>getMeta(d)))
     // Append variables to the processed data for d3 chord() data inputs
     function computedChords(data)  {        // data for each arrow
-        
         let chords = chord(data.matrix).map(d=> {
             d.source.name = data.names[d.source.index]
             d.source.region = getMeta(d.source.name).region
@@ -255,7 +259,8 @@ function drawChords(raw,config){
 
     groups.append("path")
         .attr("class","group-arc")
-        .attr("d", arc) 
+        /* .attr("d", arc)  */
+        .attr("d", d=> console.log(d)) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity",/* d=> isRegion(d.name) && config.regions.length > 0 ? 0.1:  */0.80)
