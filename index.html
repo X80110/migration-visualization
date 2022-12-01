@@ -74,16 +74,13 @@
 
   <div id="main">
         <div class="selectors">
-          
-
           <div class="range">
             <div ><span>Year:</span></div>
-            <!-- <br> -->
+            
             <label for="range" id="start-value"></label>
             <label for="range" id="end-value"></label>
             <input class="slider-stock" type="range" list="tickmarks" id="selectYear" oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=1990 >
             <div class="sliderticks" id="sliderticks"></div>
-            
           </div>
        
 		  <div class="form">
@@ -187,8 +184,6 @@
 		const allSexes = ['male', 'female'].reverse()
 		const allTypes = ""
 		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
-		let svg
-		let preparedData
 		let files = [
 			"json/stock.json"
 			]

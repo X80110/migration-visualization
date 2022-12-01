@@ -249,7 +249,8 @@ function dataPrepare(input, config){
         let total_flows = names.map(name=> {
             let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
             let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
-            {return {name, outflow,inflow}}
+            let total_flow = outflow - inflow 
+            {return {name, outflow,inflow,total_flow}}
         })
         // FILTER BY THRESHOLD
         let filteredData = nldata.links

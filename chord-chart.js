@@ -71,7 +71,7 @@ function drawChords(raw,config){
     rememberTheChords()
     rememberTheGroups() 
 
-   
+   console.log(chord(data.matrix))
 
     /* console.log(preparedData.maxValues) */
     // Define svg geometries
@@ -82,6 +82,7 @@ function drawChords(raw,config){
         .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
     var ribbon = d3.ribbonArrow()
         .sourceRadius(innerRadius)
+        
           /*   .endAngle(d=> d.endAngle*0.05+0.1)
             .startAngle(d=> d.startAngle*0.05+0.1) */
         .targetRadius(innerRadius -10) 
@@ -260,7 +261,6 @@ function drawChords(raw,config){
     groups.append("path")
         .attr("class","group-arc")
         /* .attr("d", arc)  */
-        .attr("d", d=> console.log(d)) 
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity",/* d=> isRegion(d.name) && config.regions.length > 0 ? 0.1:  */0.80)
