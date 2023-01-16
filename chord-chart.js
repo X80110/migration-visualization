@@ -55,7 +55,7 @@ function drawChords(raw,config){
     let input = {raw_data: raw_data, metadata: raw.metadata}
 
     preparedData =  dataPrepare(input,config)
-    let maxValues = dataPrepare(input,config).maxValues
+    /* let maxValues = dataPrepare(input,config).maxValues */
 
     let data = preparedData.result
     let total_flows = preparedData.total_flows
@@ -71,7 +71,7 @@ function drawChords(raw,config){
     rememberTheChords()
     rememberTheGroups() 
 
-   console.log(chord(data.matrix))
+   /* console.log(chord(data.matrix)) */
 
     /* console.log(preparedData.maxValues) */
     // Define svg geometries
@@ -104,9 +104,9 @@ function drawChords(raw,config){
         const outflow = total_flows.filter(d=>d.name.includes(name))[0].outflow
         const inflow = total_flows.filter(d=>d.name.includes(name))[0].inflow
         const total_flow = outflow + inflow
-        const allTimeMaxFlow = maxValues[id][name]
-        const isMax = total_flow === allTimeMaxFlow ? true: false
-        return {flag: flag(name), region,region_name,id,outflow,inflow,total_flow,allTimeMaxFlow, isMax}
+        /* const allTimeMaxFlow = maxValues[id][name]
+        const isMax = total_flow === allTimeMaxFlow ? true: false */
+        return {flag: flag(name), region,region_name,id,outflow,inflow,total_flow/* ,allTimeMaxFlow, isMax */}
     }
     /* console.log(getMeta("Austria")) */
     
@@ -126,7 +126,7 @@ function drawChords(raw,config){
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
-    console.log(data.names.map(d=>getMeta(d)))
+    /* console.log(data.names.map(d=>getMeta(d))) */
     // Append variables to the processed data for d3 chord() data inputs
     function computedChords(data)  {        // data for each arrow
         let chords = chord(data.matrix).map(d=> {
@@ -277,7 +277,7 @@ function drawChords(raw,config){
         .attr("id", textId)
         .attr("class", "text-path")
         .attr("fill", "none")
-        .attr("d", d3.arc()({ outerRadius:outerRadius   , startAngle: 0, endAngle:   2 * Math.PI  }));
+        /* .attr("d", d3.arc()({ outerRadius:outerRadius, startAngle: 0, endAngle:   2 * Math.PI  })); */
 
     const chords = container.append("g")
         .selectAll("g")
@@ -622,13 +622,13 @@ function drawChords(raw,config){
             config.type = d3.select(this).property("value")
             update(raw,config)
         })   
-    d3.selectAll(".maxValues")
+    /* d3.selectAll(".maxValues")
         .on("change", function(d) {
             config.previous = data 
             config.max = d3.select(this).property("value")
             
             update(raw,config)
-        })   
+        })    */
 }
 
 

@@ -25,17 +25,17 @@
 				  <li>
 					  Data
 					  <div class='dropdown' >
-					  <p>Migrant Populations</p>
-					  <p style="background-color:#e7e7e7;margin:0 0 1em; padding: 1em; ">
-						  <a class='drop-link' href='index.html'>total</a>
-						  <a class='drop-link' href='stocks_by_sex.html'>by sex</a>
-					  </p>
-					  <p>Migrant Flows</p>
-					  <p style="background-color:#e7e7e7;margin:0 0 1em; padding: 1em; ">
-						  <a class='drop-link' href='flows.html'>total</a>
-						  <a class='drop-link' href='flows_by_sex.html'>by sex</a>
-						  <a class='drop-link' href='flows_by_type.html'>by type</a>
-					  </p>
+						<p>Migrant Flows</p>
+						<p style="background-color:#e7e7e7;margin:0 0 1em; padding: 1em; ">
+							<a class='drop-link' href='index.html'>total</a>
+							<a class='drop-link' href='flows_by_sex.html'>by sex</a>
+							<!-- <a class='drop-link' href='flows_by_type.html'>by type</a> -->
+						</p>
+						<p>Migrant Populations</p>
+						<p style="background-color:#e7e7e7;margin:0 0 1em; padding: 1em; ">
+							<a class='drop-link' href='stocks.html'>total</a>
+							<a class='drop-link' href='stocks_by_sex.html'>by sex</a>
+						</p>
 					  </div>
 				  </li>
 				  <li>
@@ -142,13 +142,13 @@
 			<div class="options">
 				<h2>Migration Data</h2>
 				<hr>
-					<h4>Migrant <b>Populations</b></h4>
-					<a class='drop-link' href='index.html'>total</a>
-					<a class='drop-link' href='stocks_by_sex.html'>by sex</a>
 					<h4>Migrant <b>Flows</b></h4>
-					<a class='drop-link' href='flows.html'>total</a>
+					<a class='drop-link' href='index.html'>total</a>
 					<a class='drop-link' href='flows_by_sex.html'>by sex</a>
-					<a class='drop-link' href='flows_by_type.html'>by type</a>
+					<h4>Migrant <b>Populations</b></h4>
+					<a class='drop-link' href='stocks.html'>total</a>
+					<a class='drop-link' href='stocks_by_sex.html'>by sex</a>
+					<!-- <a class='drop-link' href='flows_by_type.html'>by type</a> -->
 			</div>
 			<div class="options">
 				<h2>Visualization</h2>
@@ -223,15 +223,6 @@
 
 			let file_index = files.indexOf(filename)
 			
-			// Data details static/texts/*.md - parse to html 
-			async function getMarkdown(){							
-				const about_data = d3.text(markdown_file)			
-				return await about_data								
-			}
-			getMarkdown().then(text => {
-				parsed_text = parseMarkdown(text)
-				document.getElementById("markdown_text").innerHTML = parsed_text
-			})
 			// Load site data
 			async function getDataNDraw() {      
 				let raw  = []
@@ -253,6 +244,7 @@
 				document.getElementById(selectedViz).style.display = ''
 				config.regions = []
 				getDataNDraw().then(raw=> {
+					config.threshold = raw.raw_data[0].threshold
 					update(raw,config)
 				})
 			}
@@ -278,6 +270,49 @@
 				drawChords(raw,config)
 				setData(raw,config)
 			}
+
+			// Data details static/texts/*.md - parse to html 
+			async function getMarkdown(){							
+				const about_data = d3.text(markdown_file)			
+				return await about_data								
+			}
+			getMarkdown().then(text => {
+				parsed_text = parseMarkdown(text)
+					// Restructure last paragraph to style as a button
+					.replace(" - See file","</p><p>See file")
+				
+				element = parsed_text
+				// Set threshold population and replace in text
+				let threshold = d3.format(",.2r")(config.threshold)
+				output_text = parsed_text.replace("X???",threshold)
+
+				// Print on DOM
+				document.getElementById("markdown_text").innerHTML = output_text
+				
+				//Style download link as a button
+				document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
+			})
+			// Data details static/texts/*.md - parse to html 
+			async function getMarkdown(){							
+				const about_data = d3.text(markdown_file)			
+				return await about_data								
+			}
+			getMarkdown().then(text => {
+				parsed_text = parseMarkdown(text)
+					// Restructure last paragraph to style as a button
+					.replace(" - See file","</p><p>See file")
+				
+				element = parsed_text
+				// Set threshold population and replace in text
+				let threshold = d3.format(",.2r")(config.threshold)
+				output_text = parsed_text.replace("X???",threshold)
+
+				// Print on DOM
+				document.getElementById("markdown_text").innerHTML = output_text
+				
+				//Style download link as a button
+				document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
+			})
 	
    </script>
 

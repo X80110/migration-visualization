@@ -71,92 +71,92 @@ function filterYear(input,year){
     let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
     return result;
 }
-// Get allTime max Values  ------------–––-----------------------------------–--------------------
-function allTimeMax(input){
-    const allYears = [...new Set(Object.keys(input.matrix))]
-    const isRegion = (name) => {
-        return input.regions.includes(input.names.indexOf(name))
-    } 
-    const getRegion = (index) => {
-        var r = 0;
-        for (var i = 0; i < input.regions.length; i++) {
-            if (input.regions[i] > index) {
-                break;
-            }
-            r = i;
-        }
-        return input.regions[r];
-    }
-    const  year_datasets = () =>{
-        // for each year process dataset flows
-        dataset_year = allYears.map((d,i) => {
-            let datasets = input.matrix[d]   //
-            let dataset = {[d]:datasets}
-            let year_dataset = dataset[d]
-            let countryNames = input.names
-            // GET SOURCE-TARGET STRUCTURE 
-            // Create array of name & connections objects
-            let matrix = countryNames.map((d,i)=> {
-                    let name = d
-                    let regionName = countryNames[getRegion(i)]
-                    let matrix = year_dataset.map(a=>a[i])
-                    return{ name:name,
-                            region: regionName,
-                            connections:matrix }
-            })
-            let nodes = matrix 
-            // Create object to push links during loop
-            let links = []
-            let l = 0 // <- iterator         
-            for (let j in matrix){
-                let target_region = matrix[j].region    // <- include region why not
-                let target = matrix[j].name
-                // loop (into each 1st level array)
-                for (let k in matrix[j].connections){
-                    let source = matrix[k].name
-                    let source_region = matrix[k].region    // <- include region why not
-                    let value = matrix[j].connections[k]
-                    links[l] = {source_region,source,target_region,target,value}
-                    l = l+1 
-                }
-            }
-            // GRAPH STRUCTURE
-            let nldata = {nodes: nodes, links:links} 
-            let names = nldata.nodes.map(d=> d.name)
-            // COMPUTE OUTFLOWS, INFLOWS & TOTAL FLOWS FOR EACH YEAR
-            let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
-            let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
-            let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
-            //--
-            let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
-            let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source) 
-            let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target) 
-            //--
-            let outflows = region_outflows.concat(country_outflows)
-            let inflows = region_inflows.concat(country_inflows)
-            let total_flows = names.map(name=> {
-                let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
-                let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
-                let total_flow = outflow + inflow
-                {return total_flow}
-            })
-            return total_flows.flat()
-        })
+// // Get allTime max Values  ------------–––-----------------------------------–--------------------
+// function allTimeMax(input){
+//     const allYears = [...new Set(Object.keys(input.matrix))]
+//     const isRegion = (name) => {
+//         return input.regions.includes(input.names.indexOf(name))
+//     } 
+//     const getRegion = (index) => {
+//         var r = 0;
+//         for (var i = 0; i < input.regions.length; i++) {
+//             if (input.regions[i] > index) {
+//                 break;
+//             }
+//             r = i;
+//         }
+//         return input.regions[r];
+//     }
+//     const  year_datasets = () =>{
+//         // for each year process dataset flows
+//         dataset_year = allYears.map((d,i) => {
+//             let datasets = input.matrix[d]   //
+//             let dataset = {[d]:datasets}
+//             let year_dataset = dataset[d]
+//             let countryNames = input.names
+//             // GET SOURCE-TARGET STRUCTURE 
+//             // Create array of name & connections objects
+//             let matrix = countryNames.map((d,i)=> {
+//                     let name = d
+//                     let regionName = countryNames[getRegion(i)]
+//                     let matrix = year_dataset.map(a=>a[i])
+//                     return{ name:name,
+//                             region: regionName,
+//                             connections:matrix }
+//             })
+//             let nodes = matrix 
+//             // Create object to push links during loop
+//             let links = []
+//             let l = 0 // <- iterator         
+//             for (let j in matrix){
+//                 let target_region = matrix[j].region    // <- include region why not
+//                 let target = matrix[j].name
+//                 // loop (into each 1st level array)
+//                 for (let k in matrix[j].connections){
+//                     let source = matrix[k].name
+//                     let source_region = matrix[k].region    // <- include region why not
+//                     let value = matrix[j].connections[k]
+//                     links[l] = {source_region,source,target_region,target,value}
+//                     l = l+1 
+//                 }
+//             }
+//             // GRAPH STRUCTURE
+//             let nldata = {nodes: nodes, links:links} 
+//             let names = nldata.nodes.map(d=> d.name)
+//             // COMPUTE OUTFLOWS, INFLOWS & TOTAL FLOWS FOR EACH YEAR
+//             let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
+//             let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
+//             let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
+//             //--
+//             let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
+//             let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source) 
+//             let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target) 
+//             //--
+//             let outflows = region_outflows.concat(country_outflows)
+//             let inflows = region_inflows.concat(country_inflows)
+//             let total_flows = names.map(name=> {
+//                 let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
+//                 let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
+//                 let total_flow = outflow + inflow
+//                 {return total_flow}
+//             })
+//             return total_flows.flat()
+//         })
         
-        //  Go through names (indexes) for each year and obtain max for each index
-        countryTotalFlows = input.names.map((name,id)=>{
-            countryTotalFlows = allYears.map((year,index)=> {
-                year_dataset = dataset_year[index][id]                
-                return year_dataset
-            })
-            let max = d3.max(countryTotalFlows)
-            return {[name]:max}
-        })
-        return countryTotalFlows
-    } 
-    allyear_totals = year_datasets()
-    return allyear_totals
-}
+//         //  Go through names (indexes) for each year and obtain max for each index
+//         countryTotalFlows = input.names.map((name,id)=>{
+//             countryTotalFlows = allYears.map((year,index)=> {
+//                 year_dataset = dataset_year[index][id]                
+//                 return year_dataset
+//             })
+//             let max = d3.max(countryTotalFlows)
+//             return {[name]:max}
+//         })
+//         return countryTotalFlows
+//     } 
+//     allyear_totals = year_datasets()
+//     return allyear_totals
+// }
 
 
 
@@ -164,7 +164,7 @@ function allTimeMax(input){
 // #########################################################################################
 //  DATA PREPARE
 function dataPrepare(input, config){
-    console.log
+
     var input_data = {...input}
     meta = input_data.metadata 
     threshold = input_data.raw_data.threshold
@@ -174,7 +174,7 @@ function dataPrepare(input, config){
     year = +config.year
     sex = config.sex
     var data = filterYear(input,year)   
-    maxValues = allTimeMax(input)
+    /* maxValues = allTimeMax(input) */
     /* console.log(maxValues) */
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names,data) {
@@ -443,5 +443,5 @@ function dataPrepare(input, config){
     }
 
     setSelectors()
-    return {result,total_flows, nldata,maxValues}
+    return {result,total_flows, nldata/* ,maxValues */}
 }
