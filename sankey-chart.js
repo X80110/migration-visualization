@@ -221,7 +221,10 @@ function updateSankey(raw, input, config, graph_data){ */
 
     nodeEnter.append("rect")
         .attr("class", "node")
-        .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
+        .attr("x", d => d.x0 < width / 2 
+            ? d.x0-3
+            : d.x0+3 
+            )
         .attr("y", d=> d.y0)
         .attr("height", d=> d.y1 - d.y0 )
         .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
@@ -241,7 +244,9 @@ function updateSankey(raw, input, config, graph_data){ */
         .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
 
     nodeEnter.append("text")
-        .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+        .attr("x", d => d.x0 < width / 2 
+            ? d.x1 + 6 
+            : d.x0 - 6)
         .attr("y", d => (d.y1 + d.y0) / 2 - 6)
         .attr("font-size", d=> isRegion(d.name) ? "85%": "65%")
         .attr("font-weight", d=> isRegion(d.name) ? "600": "400")
@@ -249,7 +254,7 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("dy", "0.6em")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
         .text(d => d.sourceLinks.length > 0
-            ? getMeta(d.name).flag+ " "+  d.name
+            ?  getMeta(d.name).flag+ " "+  d.name
             :  d.name+ " "+ getMeta(d.name).flag
         )
 
@@ -263,7 +268,7 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("dy", "0.6em")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
         .text(d => d.sourceLinks.length > 0
-            ? getMeta(d.name).flag+ " "+  d.name
+            ?  getMeta(d.name).flag+ " "+  d.name
             :  d.name+ " "+ getMeta(d.name).flag
         )
     node.exit().remove();
@@ -328,8 +333,8 @@ function updateSankey(raw, input, config, graph_data){ */
             .duration(50)
             .style('background-color','#ffffff')
             .style('padding','1em')
-            .style("top", (evt.pageY-10)+"px")
-            .style("left", (evt.pageX+10)+"px")
+            .style("top", (evt.pageY+20)+"px")
+            .style("left", (evt.pageX+30)+"px")
             .style("visibility", "visible")       
     }
     function tooltipRegion(evt,d) {
@@ -349,8 +354,8 @@ function updateSankey(raw, input, config, graph_data){ */
                         Total emigrants: <b> ${outflow}</b> </br>
                         Total immigrants: <b> ${inflow} </b> </span>`)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
-                .style("top", (evt.pageY-10)+"px")
-                .style("left", (evt.pageX+10)+"px")
+                .style("top", (evt.pageY+20)+"px")
+                .style("left", (evt.pageX+30)+"px")
                 .style("visibility", "visible")
         }
         else {
@@ -359,8 +364,8 @@ function updateSankey(raw, input, config, graph_data){ */
                         Total Out: <b> ${outflow}</b> </br>
                         Total In: <b> ${inflow} </b> </span>`)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
-                .style("top", (evt.pageY-10)+"px")
-                .style("left", (evt.pageX+10)+"px")
+                .style("top", (evt.pageY+20)+"px")
+                .style("left", (evt.pageX+30)+"px")
                 .style("visibility", "visible")
             }
         
@@ -374,7 +379,7 @@ function updateSankey(raw, input, config, graph_data){ */
     
     nodeEnter
         .on("mousemove", tooltipRegion)
-        .on("mouseout", d=> tooltip.style("visibility", "hidden"))
+        .on("mouseout", d=> d3.selectAll("g#tooltip").style("visibility", "hidden"))
 
         
     // Hover highlighting    
@@ -419,6 +424,7 @@ function updateSankey(raw, input, config, graph_data){ */
         })
     sankeyDiagram
         .on('mouseout', function () {
+            sankeyDiagram.select("g#tooltip").remove()
             sankeyDiagram.selectAll(".link")
                 .style("opacity",d=> isRegion(d.source.name) && isRegion(d.target.name) && config.regions.length > 0 ? 0.1: 0.7)
             sankeyDiagram.selectAll(".node")
