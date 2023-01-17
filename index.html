@@ -147,7 +147,7 @@
 	   This work is licensed under a <a href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons Attribution-NonCommercial 3.0 Unported License.</a>
 	   <a  href="http://creativecommons.org/licenses/by-nc/3.0/"><!-- <img vertical-align="middle"width="60px" src="static/by-nc.png"> --></a>
 	   <br>
-	   <span class="version"> Version 1.0.0 (July 2022). </span>
+	   <span class="version"> Version 1.0.0 (December 2022). </span>
 
     </footer>
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -270,7 +270,12 @@
 				document.getElementById("markdown_text").innerHTML = output_text
 				
 				//Style download link as a button
-				document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
+				if (filename.includes("flow")){
+					document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
+				} 
+				else if (filename.includes("stock")) {
+					document.getElementById("markdown_text").querySelector("p:nth-last-child(1)").className = "drop-link"
+				}
 			})
 		
 	
