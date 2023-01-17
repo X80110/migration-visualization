@@ -264,7 +264,9 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("font-size", d=> isRegion(d.name) ? "85%": "65%")
         .attr("font-weight", d=> isRegion(d.name) ? "600": "400")
         .attr("y", d => (d.y1 + d.y0) / 2 - 6)
-        .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+        .attr("x", d => d.x0 < width / 2 
+            ? d.x1 + 6 
+            : d.x0 - 6)
         .attr("dy", "0.6em")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
         .text(d => d.sourceLinks.length > 0

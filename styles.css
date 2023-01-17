@@ -49,14 +49,7 @@ h1 {
 }
 h1 a { color : black !important}
 
-.logo h2{
-  font-size:120%;
-  margin-top:2em;
-  line-height: 1.3em;
-  /* max-width: 70%; */
-  color: #474747;
-  font-weight: 400;
-}
+
 .options h4 {
   margin:1.2em 0 0 0.3em;
   color: #6c6c6c;
@@ -94,9 +87,7 @@ ul.menu li{
     /* vertical-align: middle; */
 }
 
-.subtitle{
-  display:flex;
-}
+
 img {
   filter: gray; /* IE6-9 */
   -webkit-filter: grayscale(.8); /* Google Chrome, Safari 6+ & Opera 15+ */
@@ -107,12 +98,21 @@ img:hover {
   -webkit-filter: grayscale(0);
   filter: none;
 }
-.credits  {
-    text-decoration: none;
-    /* line-height: 1.6em; */
-    margin-top:0.5em;
-    color: #6D6B6B;
-    margin-left:0.2em;
+.subtitle  {
+    /* color: #000; */
+    font-size:90%;
+    margin-top:1.4em;
+    margin-bottom:1.4em;
+    line-height: 2.2em;
+    color: #474747;
+    
+    text-align: center;
+    display: inline-block;
+    
+    /* vertical-align: middle; */
+}
+.subtitle h2{
+  font-weight: 400;
 }
 /* menu icon*/
 .header .menu-icon {

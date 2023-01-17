@@ -1,4 +1,6 @@
 {
     "liveServer.settings.port": 5501,
-    "vscode_vibrancy.theme": "Default Dark"
+    "vscode_vibrancy.theme": "Dark (Only Subbar)",
+    "vscode_vibrancy.opacity": -0.8,
+    "vscode_vibrancy.type": "auto"
 }
