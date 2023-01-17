@@ -102,8 +102,8 @@ img:hover {
     /* color: #000; */
     font-size:90%;
     margin-top:1.4em;
-    margin-bottom:1.4em;
-    line-height: 2.2em;
+    margin-bottom:1.8em;
+    line-height: 1.5em;
     color: #474747;
     
     text-align: center;
@@ -188,9 +188,6 @@ img:hover {
 .version{
   opacity:0.7;
 }
-.selectors > div{
-  z-index: 1;
-}
 .selectors{  
     -ms-box-orient: horizontal;
     display: -webkit-box;
@@ -211,6 +208,7 @@ img:hover {
     border-radius: 20px;    
 }
 .selectors > div{
+    z-index: 1;
     border-radius: 15px;
     margin-top:1em;
     /* background-color: #fff; */
@@ -220,6 +218,7 @@ img:hover {
     transition:  .3s ease-in-out; 
 }
 .selectors  input{
+    -webkit-filter:  drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.2));
     filter:  drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.2));
 }
 .selectors:hover > div {
