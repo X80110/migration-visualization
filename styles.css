@@ -214,9 +214,9 @@ img:hover {
     margin-top:1em;
     /* background-color: #fff; */
     /* outline:dashed; */
-    padding:0px 20px 0 20px ;    
-    -webkit-transition:  .3s ease-in-out; 
-    transition:  .3s ease-in-out; 
+    padding:0px 17px 0 17px ;    
+   /*  -webkit-transition:  .3s ease-in-out; 
+    transition:  .3s ease-in-out;  */
 }
 .selectors  input{
     -webkit-filter:  drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.2));
@@ -553,10 +553,7 @@ select {
   
 }
 
-.range{
-  display:block;
-  
-}
+
 
 #sankey-visualization {
   -webkit-transition: all 0.3s;
