@@ -34,6 +34,7 @@ BVT,Bouvet Island,🇧🇻,none
 BRA,Brazil,🇧🇷,Latin America
 IOT,British Indian Ocean Territory,🇮🇴,none
 BRN,Brunei Darussalam,🇧🇳,South-East Asia
+BRN,Brunei,🇧🇳,South-East Asia
 BGR,Bulgaria,🇧🇬,Europe
 BFA,Burkina Faso,🇧🇫,Africa
 BDI,Burundi,🇧🇮,Africa
@@ -106,6 +107,7 @@ VAT,Holy See,🇻🇦,none
 HND,Honduras,🇭🇳,Latin America
 HKG,Hong Kong,🇭🇰,East Asia
 HKG,"China, Hong Kong SAR",🇭🇰,East Asia
+HKG,Hong Kong SAR,🇭🇰,East Asia
 HUN,Hungary,🇭🇺,Europe
 ISL,Iceland,🇮🇸,Europe
 IND,India,🇮🇳,South Asia
@@ -127,11 +129,14 @@ KEN,Kenya,🇰🇪,Africa
 KIR,Kiribati,🇰🇮,none
 PRK,Democratic People`s Republic of Korea,🇰🇵,East Asia
 PRK,Dem. People's Republic of Korea,🇰🇵,East Asia
+PRK,North Korea,🇰🇵,East Asia
+KOR,South Korea,🇰🇷,East Asia
 KOR,Republic of Korea,🇰🇷,East Asia
 KWT,Kuwait,🇰🇼,West Asia
 KGZ,Kyrgyzstan,🇰🇬,Fmr Soviet Union
 LAO,People`s Democratic Republic of Lao,🇱🇦,South-East Asia
 LAO,Lao People's Democratic Republic,🇱🇦,South-East Asia
+LAO,Laos,🇱🇦,South-East Asia
 LVA,Latvia,🇱🇻,Fmr Soviet Union
 LBN,Lebanon,🇱🇧,West Asia
 LSO,Lesotho,🇱🇸,Africa
@@ -141,6 +146,7 @@ LIE,Liechtenstein,🇱🇮,none
 LTU,Lithuania,🇱🇹,Fmr Soviet Union
 LUX,Luxembourg,🇱🇺,Europe
 MAC,Macao,🇲🇴,East Asia
+MAC,Macao SAR,🇲🇴,East Asia
 MAC,"China, Macao SAR",🇲🇴,East Asia
 MDG,Madagascar,🇲🇬,Africa
 MWI,Malawi,🇲🇼,Africa
@@ -271,6 +277,7 @@ VUT,Vanuatu,🇻🇺,Oceania
 VEN,Venezuela,🇻🇪,Latin America
 VEN,Venezuela (Bolivarian Republic of),🇻🇪,Latin America
 VNM,Viet Nam,🇻🇳,South-East Asia
+VNM,Vietnam,🇻🇳,South-East Asia
 VGB,British Virgin Islands,🇻🇬,none
 VIR,US Virgin Islands,🇻🇮,Latin America
 VIR,United States Virgin Islands,🇻🇮,Latin America
