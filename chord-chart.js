@@ -493,8 +493,8 @@ function drawChords(raw,config){
         else {
             return tooltip
                 .html(`\ ${source} </br>
-                        Total Out: <b> ${outflow}</b> </br>
-                        Total In: <b> ${inflow} </b> `)
+                        Total Outflow: <b> ${outflow}</b> </br>
+                        Total Inflow: <b> ${inflow} </b> `)
                 .transition('tooltip')
                 .duration(50)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))

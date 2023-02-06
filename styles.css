@@ -262,7 +262,7 @@ img:hover {
 }
 .slider:hover {
     opacity: 1;
-    background: #bee0f290;
+    /* background: #bee0f290; */
 }
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -321,7 +321,7 @@ img:hover {
 }
 .slider-stock:hover {
     opacity: 1;
-    background: #bee0f290;
+    /* background: #f3fbff90; */
 }
 .slider-stock::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -356,7 +356,7 @@ img:hover {
 .box p  {
   line-height: 1.6em;
   color: #656565;
-  font-size: 80%;
+  font-size: 95%;
 }
 
 .box >  .about{
@@ -366,6 +366,7 @@ img:hover {
   /* flex: 1ch 0 var(--min) ; */
 }
 .options > div {
+  line-height: 1em;
   justify-content: center;
   margin-left:2em;
   /* margin-bottom: 3em; */
@@ -373,9 +374,19 @@ img:hover {
   
 }
 .options h2  {
+  line-height: 1em;
   /* font-weight: 400; */
   margin-bottom: -.1em;
   font-size: 1.2em;
+}
+
+
+
+.options-viz a{
+  line-height: 1em;
+  min-width: 115px;
+  padding: 1em;
+
 }
 
 .box  .drop-link {
@@ -389,22 +400,22 @@ img:hover {
   }
 
   .subtitle{
-    margin:0;
+    top:0;
     max-width:100%;
   }
     div > button{
         transform: scale(1.4);
     }
-    ul.menu li{
-
-      padding:0.1em;
-      
-      display:block;
+    ul.menu{
+      top:6em;
+      justify-content:flex-start;
+      position: absolute;
+      display:inline-block;
       max-width: 60%;
   }
   
   #chord {
-    transform: scale(1.2);
+    transform: scale(1.1);
   }
 }
 @media (min-width: 892px) {
