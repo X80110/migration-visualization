@@ -316,8 +316,8 @@ function drawChords(raw,config){
             ${d.angle > Math.PI ? "rotate(180)" : ""}
         `)
         .text(d => d.angle > Math.PI
-                ? d.name+ " "+  "<p class='flag'>"+getMeta(d.name).flag+"</p>"
-                :  "<p class='flag'>"+getMeta(d.name).flag+"</p>"+" "+  d.name
+                ? d.name+ " "+ getMeta(d.name).flag
+                :  getMeta(d.name).flag+ " "+  d.name
             )
         .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
         .transition('country-label')
