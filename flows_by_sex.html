@@ -75,7 +75,7 @@
   <div id="main">
         <div class="selectors">
           <div class="form">
-              <div ><span>Select sex</span></div>
+              <div ><span>Sex:</span></div>
               <div class="field collection">
                 <input checked="" class="selectSex" id="female" name="selectSex" type="radio" value="female" />
                 <label for="female">
@@ -93,7 +93,7 @@
             </div>
 
           <div class="range">
-            <div ><span>Select year</span></div>
+            <div ><span>Year:</span></div>
             <!-- <br> -->
             <label for="range" id="start-value"></label>
             <label for="range" id="end-value"></label>
@@ -102,7 +102,7 @@
             
           </div>
           <div class="method">
-            <div ><span>Estimation method</span></div>
+            <div ><span>Estimation method:</span></div>
             <select value="da_pb_open" id="selectMethod">
             </select>
           </div>
@@ -110,12 +110,12 @@
         </div>
 		
             
-		<div style="display:none" id="reset" class="drop-link">
-			<a name="resetButton" type="button" onclick="resetData()">
-				Reset selection
-			</a>
-		</div>
 		<div  id="chord">
+			<div style="display:none" id="reset" class="drop-link">
+				<a name="resetButton" type="button" onclick="resetData()">
+					Reset selection
+				</a>
+			</div>
 		<!-- 	<div class="selectors" style="opacity:65%; margin-top:1em">
 				<p> Click on the outer arc of a region to explore it at a country level</p>
 			</div> -->
@@ -268,6 +268,29 @@
 					.remove()    
 				drawChords(raw,config)
 				setData(raw,config)
+
+				getMarkdown().then(text => {
+					parsed_text = parseMarkdown(text)
+						// Restructure last paragraph to style as a button
+						.replace(" - See file","</p><p>See file")
+					
+					element = parsed_text
+					// Set threshold population and replace in text
+					console.log(config.threshold)
+					let threshold = d3.format(",.2r")(config.threshold)
+					output_text = parsed_text.replace("X???",threshold)
+
+					// Print on DOM
+					document.getElementById("markdown_text").innerHTML = output_text
+					
+					//Style download link as a button
+					if (filename.includes("flow")){
+						document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
+					} 
+					else if (filename.includes("stock")) {
+						document.getElementById("markdown_text").querySelector("p:nth-last-child(1)").className = "drop-link"
+					}
+				})
 			}
 
 			// Data details static/texts/*.md - parse to html 
@@ -275,28 +298,7 @@
 				const about_data = d3.text(markdown_file)			
 				return await about_data								
 			}
-			getMarkdown().then(text => {
-				parsed_text = parseMarkdown(text)
-					// Restructure last paragraph to style as a button
-					.replace(" - See file","</p><p>See file")
-				
-				element = parsed_text
-				// Set threshold population and replace in text
-				let threshold = d3.format(",.2r")(config.threshold)
-				output_text = parsed_text.replace("X???",threshold)
-
-				// Print on DOM
-				document.getElementById("markdown_text").innerHTML = output_text
-				
-				//Style download link as a button
-				//Style download link as a button
-				if (filename.includes("flow")){
-					document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
-				} 
-				else if (filename.includes("stock")) {
-					document.getElementById("markdown_text").querySelector("p:nth-last-child(1)").className = "drop-link"
-				}
-			})
+			
 	
    </script>
 

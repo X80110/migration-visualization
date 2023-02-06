@@ -182,6 +182,7 @@
 		config.type = ""
 		config.method = ""
 		config.max = "off"
+		config.threshold = ""
 		const allSexes = ['male', 'female'].reverse()
 		const allTypes = ""
 		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
@@ -228,6 +229,7 @@
 				document.getElementById(selectedViz).style.display = ''
 				config.regions = []
 				getDataNDraw().then(raw=> {
+					config.threshold = raw.raw_data[0].threshold
 					update(raw,config)
 				})
 			}
@@ -238,7 +240,6 @@
 			function resetData(){
 				config.regions = []
 				getDataNDraw().then(raw=> {
-					config.threshold = raw.raw_data[0].threshold
 					update(raw,config)
 				})
 			}
@@ -253,6 +254,29 @@
 					.remove()    
 				drawChords(raw,config)
 				setData(raw,config)
+
+				getMarkdown().then(text => {
+					parsed_text = parseMarkdown(text)
+						// Restructure last paragraph to style as a button
+						.replace(" - See file","</p><p>See file")
+					
+					element = parsed_text
+					// Set threshold population and replace in text
+					console.log(config.threshold)
+					let threshold = d3.format(",.2r")(config.threshold)
+					output_text = parsed_text.replace("X???",threshold)
+
+					// Print on DOM
+					document.getElementById("markdown_text").innerHTML = output_text
+					
+					//Style download link as a button
+					if (filename.includes("flow")){
+						document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
+					} 
+					else if (filename.includes("stock")) {
+						document.getElementById("markdown_text").querySelector("p:nth-last-child(1)").className = "drop-link"
+					}
+				})
 			}
 
 			// Data details static/texts/*.md - parse to html 
@@ -261,28 +285,7 @@
 				return await about_data								
 			}
 			
-			getMarkdown().then(text => {
-				parsed_text = parseMarkdown(text)
-					.replace(" - See file","</p><p>See file")	 // Restructure last paragraph to style as a button// Restructure last paragraph to style as a button
-				
-				element = parsed_text
-				// Set threshold population and replace in text
-				console.log(config.threshold)
-				let threshold = d3.format(",.2r")(config.threshold)
-				output_text = parsed_text.replace("X???",threshold)
-
-				// Print on DOM
-				document.getElementById("markdown_text").innerHTML = output_text
-				
-				//Style download link as a button
-				//Style download link as a button
-				if (filename.includes("flow")){
-					document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
-				} 
-				else if (filename.includes("stock")) {
-					document.getElementById("markdown_text").querySelector("p:nth-last-child(1)").className = "drop-link"
-				}
-			})
+		
 	
    </script>
 

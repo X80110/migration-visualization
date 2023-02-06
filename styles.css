@@ -547,7 +547,7 @@ select {
     background: rgba(255, 255, 255, 0.9);
     border: 0;
     z-index: 0;
-    max-width: 220px; /* Set the maximum width */
+    max-width: 230px; /* Set the maximum width */
     text-overflow: ellipsis; /* Add an ellipsis */
     white-space: nowrap; /* Prevent text from wrapping */ 
   
@@ -578,10 +578,11 @@ select {
 }
 
 #reset {
-  display:contents;
+ /*  display:contents; */
   text-align: left;
-  float:inline-start;
+  
   position:absolute;
+  display:block;
   /* margin-top: 1em; */
   cursor:pointer;
 } 
