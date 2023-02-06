@@ -84,6 +84,7 @@ ul.menu li{
     text-align: left;
     float:left;
     padding-bottom:0;
+    
     /* vertical-align: middle; */
 }
 
@@ -106,8 +107,8 @@ img:hover {
     line-height: 1.5em;
     color: #474747;
     
-    text-align: center;
-    display: inline-block;
+    text-align: left;
+    display:inline-block;
     
     /* vertical-align: middle; */
 }

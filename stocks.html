@@ -57,11 +57,11 @@
 					</a>
 				</li>
 			
-				<li>
+		<!-- 		<li>
 					<a target="_blank" href = "https://twitter.com/share?url=<URL>&text=<TEXT>via=<USERNAME>">
 						<img src="static/share-icon.svg" alt="share on twitter"/>
 					</a>
-				</li>
+				</li> -->
 			</ul>
 		</div>
 		<div class="credits subtitle">
@@ -260,12 +260,14 @@
 				const about_data = d3.text(markdown_file)			
 				return await about_data								
 			}
+			
 			getMarkdown().then(text => {
 				parsed_text = parseMarkdown(text)
 					.replace(" - See file","</p><p>See file")	 // Restructure last paragraph to style as a button// Restructure last paragraph to style as a button
 				
 				element = parsed_text
 				// Set threshold population and replace in text
+				console.log(config.threshold)
 				let threshold = d3.format(",.2r")(config.threshold)
 				output_text = parsed_text.replace("X???",threshold)
 

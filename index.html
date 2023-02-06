@@ -16,7 +16,6 @@
 		  <a href="http://www.guyabel.com">Guy J. Abel</a> 
 		  &amp; 
 		  <a href="http://X80110.github.io/about-me">Xavier Bolló</a>             
-
 	  </div>
 	  <div>
 		  <input class="menu-btn" type="checkbox" id="menu-btn" />
@@ -57,17 +56,18 @@
 					  </a>
 				  </li>
 			  
-				  <li>
+				<!--   <li>
 					  <a target="_blank" href = "https://twitter.com/share?url=<URL>&text=<TEXT>via=<USERNAME>">
 						  <img src="static/share-icon.svg" alt="share on twitter"/>
 					  </a>
-				  </li>
-			  </ul>
+				  </li> -->
+				  
+				</ul>
+				<div class="logo subtitle">
+					<h2>Explore the change in global migrant populations over the past 30 years. <!-- Click on a region to explore it at a country level. --></h2>
+					<p style="opacity:65%;font-size: 1em"> Click on a region to explore it at a country level</p>
+				</div> 
 		
-		  <div class="credits subtitle">
-			  <h2>Explore the change in global migrant populations over the past 30 years. <!-- Click on a region to explore it at a country level. --></h2>
-			  <p style="opacity:65%;font-size: 1em"> Click on a region to explore it at a country level</p>
-		  </div> 
 	  </header>
 <body>
 
@@ -256,6 +256,7 @@
 				const about_data = d3.text(markdown_file)			
 				return await about_data								
 			}
+			
 			getMarkdown().then(text => {
 				parsed_text = parseMarkdown(text)
 					// Restructure last paragraph to style as a button
@@ -263,6 +264,7 @@
 				
 				element = parsed_text
 				// Set threshold population and replace in text
+				
 				let threshold = d3.format(",.2r")(config.threshold)
 				output_text = parsed_text.replace("X???",threshold)
 
