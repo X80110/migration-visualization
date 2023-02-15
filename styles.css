@@ -1,10 +1,18 @@
 @import url(//fonts.googleapis.com/css?family=Jost:400,600,700,300);
 
+
+@font-face {
+  font-family: NotoColorEmojiLimited;
+  unicode-range: U+1F1E6-1F1FF;
+  src: url(https://raw.githack.com/googlefonts/noto-emoji/main/fonts/NotoColorEmoji.ttf);
+}
+
 * {
     box-sizing: border-box; 
     border-radius: 12px;
-
-    font-family:  'Jost', sans-serif !important;
+    font-family:  'Jost',  'NotoColorEmojiLimited', -apple-system, BlinkMacSystemFont, 
+    'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 
+    'Segoe UI Emoji', 'Segoe UI Symbol' !important;
 }
 body {
     background:#e7e7e7;
