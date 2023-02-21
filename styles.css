@@ -382,15 +382,14 @@ img:hover {
 
 .options > div {
   line-height: 1em;
-  justify-content: center;
-  margin-left:2em;
-  /* margin-bottom: 3em; */
-  padding: 2em;
+  /* justify-content: center; */
+  /* margin-left:2em; */
+  margin-top: 3em;
+  /* padding: 2em; */
   
 }
 .options h2  {
   line-height: 1em;
-  /* font-weight: 400; */
   margin-bottom: -.1em;
   font-size: 1.2em;
 }
