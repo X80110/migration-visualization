@@ -188,7 +188,7 @@
 		let files = [
 			"json/stock.json"
 			]
-		let markdown_file  = 'static/texts/stock-data-text.md'
+		let markdown_file  = 'static/texts/stock-total-text.md'
 	</script>
 
 	<!-- CHART -->
@@ -270,10 +270,11 @@
 					
 					//Style download link as a button
 					if (filename.includes("flow")){
-						document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
+
+						document.getElementById("markdown_text").querySelectorAll('a')[3].className = 'drop-link'
 					} 
 					else if (filename.includes("stock")) {
-						document.getElementById("markdown_text").querySelector("p:nth-last-child(1)").className = "drop-link"
+						document.getElementById("markdown_text").querySelectorAll('a')[2].className = 'drop-link'
 					}
 				})
 			}

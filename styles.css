@@ -373,6 +373,13 @@ img:hover {
   flex: 2 0 var(--min);
   /* flex: 1ch 0 var(--min) ; */
 }
+
+.about h4 {
+  margin:1.2em 0 0 ;
+  color: #6c6c6c;
+  font-weight: 600;
+}
+
 .options > div {
   line-height: 1em;
   justify-content: center;
