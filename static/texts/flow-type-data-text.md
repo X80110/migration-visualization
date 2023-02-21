@@ -1,9 +1,0 @@
-Migrant flow data measure the number of persons migrating between an origin and destination country over a given period of time.
-
-A migration flow can be categroised as an outward migration, return migration or transit migration. Outward migrants move away from their country of birth. Return migrants move to their country of birth. Transit migrants move from and to countries, neither of which is their country of birth.
-
-In the plot above we filter to show only estimated migrant flows above X??? persons. Values are based on estimates of migrant flows from three different estimation methods presented in [Abel and Cohen (2019)](https://www.nature.com/articles/s41597-019-0089-3). All estimation method are based on changes in migrant population data published by the [Population Division](https://www.un.org/development/desa/pd/content/international-migrant-stock) in five-year intervals between 1990 and 2020. The six estimation methods can be categorized into three groups. The first group includes two methods that estimate flows by differencing the migrant population data using different approaches for handling negative differences. The second group is a single method based on approximated migration rates. The third group includes three methods that estimate flows in a demographic accounting framework. [Validation exercises](https://www.nature.com/articles/s41597-019-0089-3#Sec13) based on comparisons to reported flow data published by have shown that methods based on a closed demographic accounting framework perform consistently better the four other estimation approaches.
-
-Data Reference: Abel, G.J., Cohen, J.E. (2019). Bilateral international migration flow estimates for 200 countries. *Sci Data* **6** 82 <https://doi.org/10.1038/s41597-019-0089-3>
-
-Data: [Download](https://ndownloader.figshare.com/files/27982182) - See data [notes](https://doi.org/10.6084/m9.figshare.12845726) for further details.

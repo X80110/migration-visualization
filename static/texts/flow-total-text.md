@@ -6,5 +6,5 @@ Values are based on estimates of migrant flows from one of six different estimat
 
 [Download](https://doi.org/10.6084/m9.figshare.7731233) 
 
-#### Citation
-Abel, G.J., Cohen, J.E. (2019). Bilateral international migration flow estimates for 200 countries. *Sci Data* **6** 82
+#### Reference
+Abel, G.J., Cohen, J.E. (2019). Bilateral international migration flow estimates for 200 countries. *[Sci Data](https://www.nature.com/articles/s41597-019-0089-3)* **6** 82
