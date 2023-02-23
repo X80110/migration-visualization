@@ -120,7 +120,7 @@ img:hover {
     color: #474747;
     
     text-align: left;
-    display:inline-block;
+    /* display:inline-block; */
     
     /* vertical-align: middle; */
 }
