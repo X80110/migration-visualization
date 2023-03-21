@@ -460,7 +460,7 @@ function drawChords(raw,config){
                         ${value} 
                         ${target}  `)
             .transition('tooltip')
-            .duration(50)
+            .duration(20)
             .style('background-color','#ffffff')
             .style('padding','1em')
             .style("top", (evt.pageY+20)+"px")
@@ -484,7 +484,7 @@ function drawChords(raw,config){
                         Total emigrants: <b> ${outflow}</b> </br>
                         Total immigrants: <b> ${inflow} </b> `)
                 .transition('tooltip')
-                .duration(50)
+                .duration(10)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
@@ -496,7 +496,7 @@ function drawChords(raw,config){
                         Total Outflow: <b> ${outflow}</b> </br>
                         Total Inflow: <b> ${inflow} </b> `)
                 .transition('tooltip')
-                .duration(50)
+                .duration(20)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
@@ -537,6 +537,41 @@ function drawChords(raw,config){
                         .remove()    
             update(raw,config)
         })
+    
+    // INTERACTIONS: Click
+    config.maxRegionsOpen = 2 
+    
+    // Open regions
+    groups.on('click', function(evt, d) {
+            if (config.regions.length + 1 > config.maxRegionsOpen) {
+                config.regions.shift();       
+            }
+            config.regions.push(d.name) 
+            d3.selectAll("g#tooltip")
+                .remove()    
+            update(raw,config)
+        })
+    /// CLOSE REGIONS
+    groups
+        .filter(function(d) {
+            return d.id !== d.region;
+        })
+        .on('click', function(evt, d) {
+            config.regions.splice( config.regions.indexOf( getMeta(d.name).region_name ), 1);
+            
+            d3.selectAll("g#tooltip")
+                .remove()    
+            update(raw,config)
+        });
+
+    chordDiagram.selectAll(".group-arc")
+        .on("click", function (evt, d) {                    
+            config.previous = data 
+            d3.selectAll("g#tooltip")
+                        .remove()    
+            update(raw,config)
+        })
+    
     // INTERACTIONS: Mouseover
     // chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
     chordDiagram.selectAll(".group-arc, .path-item")
@@ -547,13 +582,13 @@ function drawChords(raw,config){
                         // .selectAll(".path-item, .group-arc")
                         .selectAll(".path-item")
                         .transition()
-                        .duration(10)
+                        .duration(50)
                         .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
                     /* arcs.selectAll(".group-arc")
                     .style("opacity",d=> isRegion(d.name) ? 0.03: 0.80) */
                     d3.select(this)
                         .transition()
-                        .duration(10)
+                        .duration(40)
                         .style("opacity", 0.80)
                             
                 }
@@ -562,11 +597,11 @@ function drawChords(raw,config){
                         // .selectAll(".path-item, .group-arc")
                         .selectAll(".path-item")
                         .transition()
-                        .duration(10)
+                        .duration(50)
                         .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
                     d3.select(this)
                         .transition()
-                        .duration(10)
+                        .duration(40)
                         .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
                     }
                 }
@@ -648,7 +683,7 @@ function drawChords(raw,config){
     //         .on("mouseover", function(evt,d){
     //             chords.selectAll(".path-item, .group-arc")
     //                         .transition('mouseover')
-    //                         .duration(0)
+    //                         .duration(80)
     //                         .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
     //                     d3.select(this)
     //                         .transition('mouseover-this')
@@ -701,19 +736,16 @@ function drawChords(raw,config){
     //                 .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
     //     })  
     // }
-    // chordDiagram.selectAll(".path-item, .country-label-text")
-    //     .on("mousemove", tooltipCountry)
-    //     /* .on("mouseout", d=> tooltip.style("visibility", "hidden")) */
+    chordDiagram.selectAll(".path-item, .country-label-text")
+        .on("mousemove", tooltipCountry)
+        /* .on("mouseout", d=> tooltip.style("visibility", "hidden")) */
 
-    // chordDiagram.selectAll(".group-arc,  .region-label-text")
-    //     .on("mousemove", tooltipRegion)
-    //     /* .on("mouseout", d=> tooltip.style("visibility", "hidden")) */
-    // chordDiagram
-    //     .on("mouseout", d=> tooltip.style("visibility", "hidden"))
+    chordDiagram.selectAll(".group-arc,  .region-label-text")
+        .on("mousemove", tooltipRegion)
+        /* .on("mouseout", d=> tooltip.style("visibility", "hidden")) */
+    chordDiagram
+        .on("mouseout", d=> tooltip.style("visibility", "hidden"))
     
-
-
-        
     d3.selectAll("#selectYear")
         .on("input", function(d) {
             config.previous = data 
