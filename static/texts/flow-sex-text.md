@@ -7,4 +7,4 @@ Values are based on estimates of migrant flows from one of six different estimat
 [Download](https://doi.org/10.6084/m9.figshare.12845711) 
 
 #### Reference
-[Abel, G.J., Cohen, J.E. (2022) Bilateral international migration flow estimates updated and refined by sex. *Sci Data* **9**, 173.](https://www.nature.com/articles/s41597-022-01271-z)
+Abel, G.J., Cohen, J.E. (2022). [(2022) Bilateral international migration flow estimates updated and refined by sex.](https://www.nature.com/articles/s41597-022-01271-z) *Sci Data* **9** 173

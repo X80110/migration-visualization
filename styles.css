@@ -628,7 +628,7 @@ select {
 #reset {
  /*  display:contents; */
   font-size:70%;
-
+display:inline-block;
   position:absolute;
 
   
