@@ -460,7 +460,7 @@ function drawChords(raw,config){
                         ${value} 
                         ${target}  `)
             .transition('tooltip')
-            .duration(20)
+            .duration(15)
             .style('background-color','#ffffff')
             .style('padding','1em')
             .style("top", (evt.pageY+20)+"px")
@@ -484,7 +484,7 @@ function drawChords(raw,config){
                         Total emigrants: <b> ${outflow}</b> </br>
                         Total immigrants: <b> ${inflow} </b> `)
                 .transition('tooltip')
-                .duration(10)
+                .duration(15)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
@@ -496,7 +496,7 @@ function drawChords(raw,config){
                         Total Outflow: <b> ${outflow}</b> </br>
                         Total Inflow: <b> ${inflow} </b> `)
                 .transition('tooltip')
-                .duration(20)
+                .duration(15)
                 .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
@@ -581,14 +581,14 @@ function drawChords(raw,config){
                     chords
                         // .selectAll(".path-item, .group-arc")
                         .selectAll(".path-item")
-                        .transition()
-                        .duration(50)
+                        .transition('hover-arc')
+                        .duration(30)
                         .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
                     /* arcs.selectAll(".group-arc")
                     .style("opacity",d=> isRegion(d.name) ? 0.03: 0.80) */
                     d3.select(this)
-                        .transition()
-                        .duration(40)
+                        .transition('hover-arc')
+                        .duration(30)
                         .style("opacity", 0.80)
                             
                 }
@@ -596,12 +596,12 @@ function drawChords(raw,config){
                     chords
                         // .selectAll(".path-item, .group-arc")
                         .selectAll(".path-item")
-                        .transition()
-                        .duration(50)
+                        .transition('hover')
+                        .duration(30)
                         .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
                     d3.select(this)
-                        .transition()
-                        .duration(40)
+                        .transition('hover')
+                        .duration(30)
                         .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
                     }
                 }
@@ -672,7 +672,7 @@ function drawChords(raw,config){
             .on("mouseout", function(evt,d) {
                 d3.selectAll(".group-arc, .region-label-text")
                     .transition("mouseout")
-                    .duration(80)
+                    .duration(10)
                     .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
             })
     // // INTERACTIONS: Mouseover
