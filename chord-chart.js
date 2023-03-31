@@ -85,7 +85,7 @@ function drawChords(raw,config){
         
           /*   .endAngle(d=> d.endAngle*0.05+0.1)
             .startAngle(d=> d.startAngle*0.05+0.1) */
-        .targetRadius(innerRadius -10) 
+        .targetRadius(innerRadius -5) 
         .headRadius(15)
     /* .radius(250) */
 
@@ -408,7 +408,7 @@ function drawChords(raw,config){
             dy = 0,
             tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
             arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
-            paddedArcLength = arcLength - 12;
+            paddedArcLength = arcLength + 12;
             while (word = words.pop()) {
                 line.push(word);
                 tspan.text(line.join(" "));
@@ -426,7 +426,7 @@ function drawChords(raw,config){
             }}
         })
         // Fix specific labels 
-        .filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0); 
+        // .filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0); 
     }
     const tooltip = d3.select('body').append('g')
         .attr('id', 'tooltip')

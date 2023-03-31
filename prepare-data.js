@@ -268,9 +268,9 @@ function dataPrepare(input, config){
             let innerjoin = common(names_source, names_target)
             // Repeat filtering
             // --- beware that i.e: countryA targeted countryB and countryC targeted countryA, after deleting countryB, countryA now shows no outflow, but it is still accounted
-            filteredData = dataSelect.filter(d=> 
-                innerjoin.includes(d.source) && innerjoin.includes(d.target)
-            )
+            // filteredData = dataSelect.filter(d=> 
+            //     innerjoin.includes(d.source) && innerjoin.includes(d.target)
+            // )
             let sources = Array.from(new Set(filteredData.flatMap(d=> d.source)))
             let targets = Array.from(new Set(filteredData.flatMap(d=> d.target)))            
             innerjoin = common(sources,targets)
