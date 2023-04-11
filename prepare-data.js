@@ -240,16 +240,20 @@ function dataPrepare(input, config){
         let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
         let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
         //--
+        // let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
         let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
-        let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source) 
-        let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target) 
-        //--
+        let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
+        let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
+        console.log(region_outflows)
+        //--ss
+        
         let outflows = region_outflows.concat(country_outflows)
         let inflows = region_inflows.concat(country_inflows)
-        let total_flows = names.map(name=> {
+        let total_flows = names.map((name,i)=> {
             let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
             let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
             let total_flow = outflow - inflow 
+            // console.log([i,name],"outflow",outflow,"inflow",inflow)
             {return {name, outflow,inflow,total_flow}}
         })
         // FILTER BY THRESHOLD
@@ -385,8 +389,10 @@ function dataPrepare(input, config){
     
     function setSelectors() {
         // YEAR SELECTOR 
-        const allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
+        let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
         const lastYearPlusFive = (+allYears[allYears.length-1]+5).toString()
+
+        /* config.year = allYears.reverse()[0] */
         //--
         let allRangeYears = allYears.concat(lastYearPlusFive)
         let sliderticks = document.getElementById("sliderticks");
