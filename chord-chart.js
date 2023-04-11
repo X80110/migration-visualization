@@ -11,7 +11,7 @@ var labelRadius = labelRadius || (outerRadius + 10);
 
 // Configure d3 chord 
 var chord = chord(true,false)
-        .padAngle(0.03)
+        .padAngle(0.02)
         .sortSubgroups(d3.descending)
       
 // Utils: Format values
@@ -343,7 +343,7 @@ function drawChords(raw,config){
         .attr("fill", "none")
         .attr("d", arcRegionLabel);
 
-    regionText.each(function(d, i) {
+  /*   regionText.each(function(d, i) {
         var firstArcSection = /(^.+?)L/;
         var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
         newArc = newArc.replace(/,/g, " ");
@@ -357,7 +357,7 @@ function drawChords(raw,config){
             newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
         }
         d3.select(this).attr("d", newArc);
-    });
+    }); */
 
     groups.append("text")
         .attr("class", "region-label-text")
