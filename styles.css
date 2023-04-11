@@ -584,7 +584,7 @@ li:hover{
   }
 
 select {
-    font-size:.85em;
+    /* font-size:90%; */
     float:right;
     /* position: relative; */
     /* display: flex; */
@@ -630,7 +630,8 @@ select {
 
 #reset {
  /*  display:contents; */
-  font-size:70%;
+ 
+ font-size:80%;
 display:inline-block;
   position:absolute;
 
