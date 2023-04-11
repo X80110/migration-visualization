@@ -244,12 +244,13 @@ function dataPrepare(input, config){
         let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
         let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
         let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
-        console.log(region_outflows)
+        /* console.log(region_outflows) */
         //--ss
         
         let outflows = region_outflows.concat(country_outflows)
         let inflows = region_inflows.concat(country_inflows)
         let total_flows = names.map((name,i)=> {
+            console.log(name)
             let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
             let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
             let total_flow = outflow - inflow 
