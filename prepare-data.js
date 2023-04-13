@@ -8,7 +8,7 @@ let regionColors = []
 
 // #########################################################################################
 // Util functions and initial config  ------------–––-----------------------------------–
-config.year = 1990 || ""
+config.year = 2020 || ""
 config.stockflow = config.stockflow
 config.sex 
 config.type 
