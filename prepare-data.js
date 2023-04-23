@@ -8,8 +8,18 @@ let regionColors = []
 
 // #########################################################################################
 // Util functions and initial config  ------------–––-----------------------------------–
-config.year = 2020 || ""
-config.stockflow = config.stockflow
+/* console */
+config.stockflow = config.stockflow   
+console.log(config.stockflow)
+if(config.stockflow === "flow"){
+    // for flows
+    config.year = 2015 || ""
+} else{
+    // for stcks
+    config.year = 2020 || ""
+
+}
+
 config.sex 
 config.type 
 config.regions = []
@@ -60,11 +70,11 @@ d3.select("#selectMethod")                                    // populate html
         .attr("value",d=> d.id) 
         .attr("label",d=> d.label) 
         .attr("selected", d=> d.id === "da_pb_closed" ? "selected": null)   // 
-
+       
 
 // Get year data  ------------–––-----------------------------------–--------------------
 function filterYear(input,year){
-    year = +year || 1990
+    year = +year 
     nodes = input
     const selectedMatrix = nodes.matrix[year]
     let names = nodes.names
