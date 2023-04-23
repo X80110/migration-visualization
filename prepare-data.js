@@ -246,13 +246,14 @@ function dataPrepare(input, config){
         let unfilteredNL = {...nldata}
         let names = nldata.nodes.map(d=> d.name)
         // COMPUTE TOTAL OUTFLOWS & INFLOWS BEFORE ANY FILTER
-        let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
+        let country_totals = nldata.links.filter(d=> /* d.source_region != d.target && d.target_region != d.source && */ !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
         let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
         let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
         //--
         // let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
-        let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
+        let region_totals = nldata.links.filter(d=> !isRegion(d.source) && !isRegion(d.target))
         let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
+        console.log(region_outflows)
         let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
         /* console.log(region_outflows) */
         //--ss
@@ -260,7 +261,7 @@ function dataPrepare(input, config){
         let outflows = region_outflows.concat(country_outflows)
         let inflows = region_inflows.concat(country_inflows)
         let total_flows = names.map((name,i)=> {
-            console.log(name)
+
             let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
             let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
             let total_flow = outflow - inflow 
