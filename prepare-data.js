@@ -252,21 +252,21 @@ function dataPrepare(input, config){
         // COMPUTE TOTAL OUTFLOWS & INFLOWS BEFORE ANY FILTER
         
 
-        let country_totals = unfilteredNL.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
-        let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
-        let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
-        //--
-        // let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
-        let region_totals = unfilteredNL.links.filter(d=> !isRegion(d.source) && !isRegion(d.target))
-        let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
-        let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
-        /* console.log(region_outflows) */
-        /* console.log(region_outflows) */
-        //--ss
+        // let country_totals = unfilteredNL.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
+        // let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
+        // let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
+        // //--
+        // // let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
+        // let region_totals = unfilteredNL.links.filter(d=> !isRegion(d.source) && !isRegion(d.target))
+        // let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
+        // let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
+        // /* console.log(region_outflows) */
+        // /* console.log(region_outflows) */
+        // //--ss
         
-        let outflows = region_outflows.concat(country_outflows)
+        // let outflows = region_outflows.concat(country_outflows)
 
-        let inflows = region_inflows.concat(country_inflows)
+        // let inflows = region_inflows.concat(country_inflows)
         let total_flows = names.map((name,i)=> {
             
             let outflow =  data.total_outflow[i]
