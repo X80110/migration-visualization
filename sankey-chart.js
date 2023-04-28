@@ -95,7 +95,7 @@ function setData(raw,config){
     const sankey = d3.sankey()
         /* .nodeId(d=> d.index) */
         .nodeWidth(16)
-        .nodePadding(13) 
+        .nodePadding(8) 
         /* .nodeAlign(d3.sankeyJustify) */
         .size([width-300, height])
         /* .nodeSort(null) */
@@ -240,6 +240,7 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("y", d => d.y0 )
         .attr("height", d=> d.y1 - d.y0 )
         /* .attr("width", d=>  isRegion(d.name) ? d.x1:d.x1 - d.x0) */
+        
         .attr("fill", d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
 
@@ -269,10 +270,11 @@ function updateSankey(raw, input, config, graph_data){ */
             :  getMeta(d.name).flag+ " "+  d.name
         )
 
+
     node.select("text")
         .transition('text')
         .duration(500)
-        .attr("font-size", d=> isRegion(d.name) ? "85%": "65%")
+        .attr("font-size", d=> isRegion(d.name) ? "85%": "60%")
         .attr("font-weight", d=> isRegion(d.name) ? "600": "400")
         .attr("y", d => (d.y1 + d.y0) / 2 -4)
        /*  .attr("x", d => d.x0 < width / 2 

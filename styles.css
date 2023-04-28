@@ -667,3 +667,6 @@ select {
 /* .reversed-char{
   transform: scaleY(-1);
 } */
+text.fade {
+  opacity: 0;
+}
