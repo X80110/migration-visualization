@@ -8,12 +8,12 @@ const chordDiagram = d3.select("#chord-chart")
 var innerRadius = Math.min(width, height) *0.35+10;
 var outerRadius = innerRadius + 17;
 var labelRadius = labelRadius || (outerRadius + 10);
+var labelThreshold =  1;
 
 // Configure d3 chord 
 var chord = chord(true,false)
         .padAngle(0.02)
         .sortSubgroups(d3.descending)
-      
 // Utils: Format values
 function formatValue(nStr, seperator) {
     seperator = seperator || ','
@@ -330,7 +330,7 @@ function drawChords(raw,config){
               };
         });
   
-    var maxBarHeight = height / 2 - (70);
+    var maxBarHeight = height / 2 - (60);
     var arcRegionLabel = d3.arc()
         .innerRadius(maxBarHeight)
         .outerRadius(maxBarHeight + 2)
@@ -383,7 +383,8 @@ function drawChords(raw,config){
         } else {
             d3.select(textPath.childNodes[0]).attr("dy", -.3 + (tspanCount - 1) * -0.6 + 'em');
         }
-    });
+    })
+    
 
     function wrapTextOnArc(text, radius) {
         var temporaryText = d3.select('svg')
@@ -421,8 +422,19 @@ function drawChords(raw,config){
                 tspan.text(line.join(" "));
                 textLength = getTextLength(tspan.text());
                 tspan.attr("x", (arcLength - textLength) / 2);
-                
 
+                // if (line.length === 1 && word === "Oceania"){
+                if (textLength > paddedArcLength && line.length === 1){
+                    /* textLength = getTextLength(tspan.text()); */
+                    /* tspan.attr("x", (arcLength - textLength) / 2); */
+
+                    /* tspan = text.append("tspan").attr("dy", lineHeight + dy + "em").text(word); */
+                    /* textLength = getTextLength(tspan.text()); */
+                    /* console.log(tspan.text()) */
+                    tspan.style("opacity",0)
+                }
+
+                
                 if (textLength > paddedArcLength && line.length > 1) {
                     line.pop();
                     tspan.text(line.join(" "));
