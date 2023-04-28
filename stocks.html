@@ -276,8 +276,7 @@
 					document.getElementById("markdown_text").innerHTML = output_text
 					
 					if (filename.includes("flow")){
-
-						document.getElementById("markdown_text").querySelectorAll('a')[6].className = 'drop-link'
+						document.querySelector("#markdown_text > p:nth-child(8) > a").className = 'drop-link'
 					} 
 					else if (filename.includes("stock")) {
 						document.getElementById("markdown_text").querySelectorAll('a')[2].className = 'drop-link'
