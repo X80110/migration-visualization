@@ -343,7 +343,7 @@ function drawChords(raw,config){
         .attr("fill", "none")
         .attr("d", arcRegionLabel);
 
-  /*   regionText.each(function(d, i) {
+    regionText.each(function(d, i) {
         var firstArcSection = /(^.+?)L/;
         var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
         newArc = newArc.replace(/,/g, " ");
@@ -357,7 +357,7 @@ function drawChords(raw,config){
             newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
         }
         d3.select(this).attr("d", newArc);
-    }); */
+    });
 
     groups.append("text")
         .attr("class", "region-label-text")
@@ -372,9 +372,9 @@ function drawChords(raw,config){
         .text(d=> d.name)
         .transition('region-label-text')
         .duration(600)
-        .call(wrapTextOnArc, height / 2 - (70));
+        .call(wrapTextOnArc, height/3 /* / 2 - (70) */);
 
-    /* // adjust dy (labels vertical start) based on number of lines (i.e. tspans)
+    // adjust dy (labels vertical start) based on number of lines (i.e. tspans)
     regionText.each((d,i)=> { 
         var textPath =d3.selectAll("textPath")["_groups"][0][i]
         tspanCount = textPath.childNodes.length;
@@ -383,7 +383,7 @@ function drawChords(raw,config){
         } else {
             d3.select(textPath.childNodes[0]).attr("dy", -.3 + (tspanCount - 1) * -0.6 + 'em');
         }
-    }); */
+    });
 
     function wrapTextOnArc(text, radius) {
         var temporaryText = d3.select('svg')
@@ -402,7 +402,7 @@ function drawChords(raw,config){
             wordCount = words.length,
             line = [],
             textLength,
-            lineHeight = 1.1, 
+            lineHeight = 1, 
             x = 0,
             y = 0,
             dy = 0,
@@ -426,7 +426,7 @@ function drawChords(raw,config){
             }}
         })
         // Fix specific labels 
-        // .filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0); 
+        .filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0); 
     }
     const tooltip = d3.select('body').append('g')
         .attr('id', 'tooltip')
