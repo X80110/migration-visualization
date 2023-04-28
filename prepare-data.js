@@ -241,20 +241,27 @@ function dataPrepare(input, config){
             }
         }
         // GRAPH STRUCTURE
-        let nldata = {nodes: nodes, links:links} 
+        const nldata = {nodes: nodes, links:links} 
         
         let unfilteredNL = {...nldata}
         let names = nldata.nodes.map(d=> d.name)
+        const test_outflow =nldata.links.filter(d=>d.source === "Afghanistan" && d.value != 0&& d.source_region != d.source && d.target_region != d.target)
+        /* console.log(test_outflow) */
+        // console.log("Afghanistan total outflows",d3.flatRollup(test_outflow, v => d3.sum(v, d => d.value), d => d.source)[0] )
+        const test_inflow = nldata.links.filter(d=>d.target === "Afghanistan" && d.value != 0&& d.source_region != d.source && d.target_region != d.target)
+        // console.log("Afghanistan total inflows",d3.flatRollup(test_inflow, v => d3.sum(v, d => d.value), d => d.target)[0] )
+        // console.log("Afghanistan inflows",test_inflow)
+        
         // COMPUTE TOTAL OUTFLOWS & INFLOWS BEFORE ANY FILTER
-        let country_totals = nldata.links.filter(d=> /* d.source_region != d.target && d.target_region != d.source && */ !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
-        let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
+        let country_totals = unfilteredNL.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
         let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
+        let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
         //--
         // let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
-        let region_totals = nldata.links.filter(d=> !isRegion(d.source) && !isRegion(d.target))
-        let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
-        console.log(region_outflows)
+        let region_totals = unfilteredNL.links.filter(d=> !isRegion(d.source) && !isRegion(d.target))
         let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
+        let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
+        /* console.log(region_outflows) */
         /* console.log(region_outflows) */
         //--ss
         

@@ -65,7 +65,7 @@
 				</ul>
 				<div class="logo subtitle">
 					<h2>Explore changes in global migrant flow patterns over the past 30 years.</h2>
-					<p style="opacity:65%;font-size: 1em">Click on a region to explore country-level connections.</p>
+					<p style="opacity:65%;font-size: 1em"> Hover mouse on region or connection to see the number of migrants. Click on a region to explore migration patterns at the country level.</p>
 				</div> 
 		
 	  </header>
@@ -175,10 +175,12 @@
 
     </footer>
 	<script src="https://d3js.org/d3.v7.min.js"></script>
-  	<script src="libs/chord.js"></script>
-  	<script src="libs/parsemd.js"></script>
+	<script src="libs/chord.js"></script>
 	<script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+		<script src="libs/parsemd.js"></script>
+	<script src="static/texts/methods.js"></script>
 
+	
 	<!-- SETTINGS -->
    <script>
 		let config = {}
@@ -260,7 +262,7 @@
 					update(raw,config)
 				})
 			}
-			
+
 			// update visualization for the selected values
 			function update(raw,config){
 				
@@ -278,19 +280,22 @@
 					parsed_text = parseMarkdown(text)
 						// Restructure last paragraph to style as a button
 						.replace(" - See file","</p><p>See file")
-					
+					let method = parseMarkdown(method_text[config.method])
+					console.log(method)
 					element = parsed_text
 					// Set threshold population and replace in text
-					console.log(config.threshold)
+					// console.log(config.threshold)
 					let threshold = d3.format(",.2r")(config.threshold)
-					output_text = parsed_text.replace("X???",threshold)
+					output_text = parsed_text
+						.replace("[METHOD]",method)
+						.replace("X???",threshold)
 
 					// Print on DOM
 					document.getElementById("markdown_text").innerHTML = output_text
 					
 					if (filename.includes("flow")){
 
-						document.getElementById("markdown_text").querySelectorAll('a')[3].className = 'drop-link'
+						document.getElementById("markdown_text").querySelectorAll('a')[6].className = 'drop-link'
 					} 
 					else if (filename.includes("stock")) {
 						document.getElementById("markdown_text").querySelectorAll('a')[2].className = 'drop-link'
@@ -304,10 +309,6 @@
 				return await about_data		
 										
 			}
-			
-			
-		
-	
    </script>
 </body>
 </html>

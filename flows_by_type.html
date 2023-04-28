@@ -177,7 +177,8 @@
     </footer>
   <script src="https://d3js.org/d3.v7.min.js"></script>
    <script src="libs/chord.js"></script>
-   <script src="libs/parsemd.js"></script>
+   	<script src="libs/parsemd.js"></script>
+	<script src="static/texts/methods.js"></script>
 
    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 
@@ -259,65 +260,50 @@
 			}
 			// update visualization for the selected values
 			function update(raw,config){
+				
 				if (config.regions.length > 0){
 					document.getElementById("reset").style.display = ''
 				}  else {
 					document.getElementById("reset").style.display = 'none'
 				}
 				d3.selectAll("#chord-chart g")
-					.remove()    
+					.remove()
 				drawChords(raw,config)
 				setData(raw,config)
+				
+				getMarkdown().then(text => {
+					parsed_text = parseMarkdown(text)
+						// Restructure last paragraph to style as a button
+						.replace(" - See file","</p><p>See file")
+					let method = parseMarkdown(method_text[config.method])
+					console.log(method)
+					element = parsed_text
+					// Set threshold population and replace in text
+					// console.log(config.threshold)
+					let threshold = d3.format(",.2r")(config.threshold)
+					output_text = parsed_text
+						.replace("[METHOD]",method)
+						.replace("X???",threshold)
+
+					// Print on DOM
+					document.getElementById("markdown_text").innerHTML = output_text
+					
+					if (filename.includes("flow")){
+
+						document.getElementById("markdown_text").querySelectorAll('a')[6].className = 'drop-link'
+					} 
+					else if (filename.includes("stock")) {
+						document.getElementById("markdown_text").querySelectorAll('a')[2].className = 'drop-link'
+					}
+				})
 			}
 
 			// Details static/texts/*.md - parse to html 
 			async function getMarkdown(){							
 				const about_data = d3.text(markdown_file)			
-				return await about_data								
+				return await about_data		
+										
 			}
-			getMarkdown().then(text => {
-				parsed_text = parseMarkdown(text)
-					// Restructure last paragraph to style as a button
-					.replace(" - See file","</p><p>See file")
-				
-				element = parsed_text
-				// Set threshold population and replace in text
-				let threshold = d3.format(",.2r")(config.threshold)
-				output_text = parsed_text.replace("X???",threshold)
-
-				// Print on DOM
-				document.getElementById("markdown_text").innerHTML = output_text
-				
-				//Style download link as a button
-				document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
-			})
-			// Details static/texts/*.md - parse to html 
-			async function getMarkdown(){							
-				const about_data = d3.text(markdown_file)			
-				return await about_data								
-			}
-			getMarkdown().then(text => {
-				parsed_text = parseMarkdown(text)
-					// Restructure last paragraph to style as a button
-					.replace(" - See file","</p><p>See file")
-				
-				element = parsed_text
-				// Set threshold population and replace in text
-				let threshold = d3.format(",.2r")(config.threshold)
-				output_text = parsed_text.replace("X???",threshold)
-
-				// Print on DOM
-				document.getElementById("markdown_text").innerHTML = output_text
-				
-				//Style download link as a button
-				//Style download link as a button
-				if (filename.includes("flow")){
-					document.getElementById("markdown_text").querySelector("p:nth-last-child(2)").className = "drop-link"
-				} 
-				else if (filename.includes("stock")) {
-					document.getElementById("markdown_text").querySelector("p:nth-last-child(1)").className = "drop-link"
-				}
-			})
 	
    </script>
 

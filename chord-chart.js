@@ -372,7 +372,7 @@ function drawChords(raw,config){
         .text(d=> d.name)
         .transition('region-label-text')
         .duration(600)
-        .call(wrapTextOnArc, height/3 /* / 2 - (70) */);
+        .call(wrapTextOnArc,maxBarHeight +40 /* / 2 - (70) */);
 
     // adjust dy (labels vertical start) based on number of lines (i.e. tspans)
     regionText.each((d,i)=> { 
@@ -408,12 +408,13 @@ function drawChords(raw,config){
             dy = 0,
             tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
             arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
-            paddedArcLength = arcLength + 12;
+            paddedArcLength = arcLength +10;
             while (word = words.pop()) {
                 line.push(word);
                 tspan.text(line.join(" "));
                 textLength = getTextLength(tspan.text());
                 tspan.attr("x", (arcLength - textLength) / 2);
+
                 if (textLength > paddedArcLength && line.length > 1) {
                     line.pop();
                     tspan.text(line.join(" "));
@@ -423,10 +424,14 @@ function drawChords(raw,config){
                     tspan = text.append("tspan").attr("dy", lineHeight + dy + "em").text(word);
                     textLength = getTextLength(tspan.text());
                     tspan.attr("x", (arcLength - textLength) / 2);    
-            }}
+                }
+                if(textLength > paddedArcLength && line.length < 1) {
+                    tspan.style("opacity",0)
+                }
+            }
         })
         // Fix specific labels 
-        .filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0); 
+        // .filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0); 
     }
     const tooltip = d3.select('body').append('g')
         .attr('id', 'tooltip')
