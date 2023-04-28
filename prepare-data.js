@@ -10,7 +10,7 @@ let regionColors = []
 // Util functions and initial config  ------------–––-----------------------------------–
 /* console */
 config.stockflow = config.stockflow   
-console.log(config.stockflow)
+/* console.log(config.stockflow) */
 if(config.stockflow === "flow"){
     // for flows
     config.year = 2015 || ""

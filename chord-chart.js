@@ -409,11 +409,19 @@ function drawChords(raw,config){
             tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em"),
             arcLength = ((d.endAngle - d.startAngle) / (2 * Math.PI)) * (2 * Math.PI * radius),
             paddedArcLength = arcLength +10;
+            // textLength = getTextLength(tspan.text());
+            
+            // if(textLength > paddedArcLength+5 /* && line.length < 1 */) {
+            //     d3.selectAll(this)
+            //         .attr("style",d=>console.log(d))
+            // }
+
             while (word = words.pop()) {
                 line.push(word);
                 tspan.text(line.join(" "));
                 textLength = getTextLength(tspan.text());
                 tspan.attr("x", (arcLength - textLength) / 2);
+                
 
                 if (textLength > paddedArcLength && line.length > 1) {
                     line.pop();
@@ -425,13 +433,11 @@ function drawChords(raw,config){
                     textLength = getTextLength(tspan.text());
                     tspan.attr("x", (arcLength - textLength) / 2);    
                 }
-                if(textLength > paddedArcLength && line.length < 1) {
-                    tspan.style("opacity",0)
-                }
+               
             }
         })
         // Fix specific labels 
-        .filter(d=>d.name.includes("Oceania")).selectAll("tspan").attr("x",-4); 
+        .filter(d=>d.name.includes("Ocea")).selectAll("tspan").attr("x",-4); 
     }
     const tooltip = d3.select('body').append('g')
         .attr('id', 'tooltip')

@@ -426,11 +426,16 @@ img:hover {
     justify-content: center;
     margin-top:0.6em;
     margin-right:5.5em;
-    
-  
 }  
+  #reset{
+    position:block;
+    margin-top:1em;
+    padding-top:1em;
+    transform: scale(.7);
+  }
   
   #chord {
+    padding-top:4em;
     transform: scale(1.3);
   }
 }
