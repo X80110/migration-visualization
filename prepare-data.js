@@ -76,9 +76,13 @@ d3.select("#selectMethod")                                    // populate html
 function filterYear(input,year){
     year = +year 
     nodes = input
+    // Total flows from file
+    let total_inflow = Object.values(nodes.total_inflow[year])
+    let total_outflow = Object.values(nodes.total_outflow[year])
+
     const selectedMatrix = nodes.matrix[year]
     let names = nodes.names
-    let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions};
+    let result = { matrix: selectedMatrix, names: names,  regions: nodes.regions, total_outflow, total_inflow};
     return result;
 }
 // // Get allTime max Values  ------------–––-----------------------------------–--------------------
@@ -245,14 +249,9 @@ function dataPrepare(input, config){
         
         let unfilteredNL = {...nldata}
         let names = nldata.nodes.map(d=> d.name)
-        const test_outflow =nldata.links.filter(d=>d.source === "Afghanistan" && d.value != 0&& d.source_region != d.source && d.target_region != d.target)
-        /* console.log(test_outflow) */
-        // console.log("Afghanistan total outflows",d3.flatRollup(test_outflow, v => d3.sum(v, d => d.value), d => d.source)[0] )
-        const test_inflow = nldata.links.filter(d=>d.target === "Afghanistan" && d.value != 0&& d.source_region != d.source && d.target_region != d.target)
-        // console.log("Afghanistan total inflows",d3.flatRollup(test_inflow, v => d3.sum(v, d => d.value), d => d.target)[0] )
-        // console.log("Afghanistan inflows",test_inflow)
-        
         // COMPUTE TOTAL OUTFLOWS & INFLOWS BEFORE ANY FILTER
+        
+
         let country_totals = unfilteredNL.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
         let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
         let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
@@ -266,15 +265,18 @@ function dataPrepare(input, config){
         //--ss
         
         let outflows = region_outflows.concat(country_outflows)
+
         let inflows = region_inflows.concat(country_inflows)
         let total_flows = names.map((name,i)=> {
+            
+            let outflow =  data.total_outflow[i]
+            let inflow =  data.total_inflow[i]
 
-            let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
-            let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
             let total_flow = outflow - inflow 
             // console.log([i,name],"outflow",outflow,"inflow",inflow)
             {return {name, outflow,inflow,total_flow}}
         })
+
         // FILTER BY THRESHOLD
         let filteredData = nldata.links
             .filter(d=> d.value > threshold )   

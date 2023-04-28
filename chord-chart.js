@@ -330,7 +330,7 @@ function drawChords(raw,config){
               };
         });
   
-    var maxBarHeight = height / 2 - (60);
+    var maxBarHeight = height / 2 - (70);
     var arcRegionLabel = d3.arc()
         .innerRadius(maxBarHeight)
         .outerRadius(maxBarHeight + 2)
@@ -429,9 +429,9 @@ function drawChords(raw,config){
                     /* tspan.attr("x", (arcLength - textLength) / 2); */
 
                     /* tspan = text.append("tspan").attr("dy", lineHeight + dy + "em").text(word); */
-                    /* textLength = getTextLength(tspan.text()); */
-                    /* console.log(tspan.text()) */
-                    tspan.style("opacity",0)
+                    textLength = getTextLength(tspan.text());
+                    console.log(tspan.text())
+                    /* tspan.style("opacity",0) */
                 }
 
                 
