@@ -663,10 +663,3 @@ select {
 #markdown_text p:nth-last-child(2){
   margin:0
 }
-
-/* .reversed-char{
-  transform: scaleY(-1);
-} */
-text.fade {
-  opacity: 0;
-}
