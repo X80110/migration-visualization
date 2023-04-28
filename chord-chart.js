@@ -363,7 +363,7 @@ function drawChords(raw,config){
         .attr("class", "region-label-text")
         .filter(d=> isRegion(d.name))
         .append("textPath")
-        .attr("font-size",11.5)
+        .attr("font-size",11)
         .attr("font-weight",600)
         .attr("fill", d => getRegionColor(d.name))
         .attr("xlink:href", function(d, i) {
@@ -431,7 +431,7 @@ function drawChords(raw,config){
             }
         })
         // Fix specific labels 
-        // .filter(d=>d.name.includes("Sub") ||d.name.includes("Ocea")).selectAll("tspan").attr("x",0); 
+        .filter(d=>d.name.includes("Ocea")).selectAll("tspan").attr("x",-4); 
     }
     const tooltip = d3.select('body').append('g')
         .attr('id', 'tooltip')
