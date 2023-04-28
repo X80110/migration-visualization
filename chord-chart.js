@@ -431,7 +431,7 @@ function drawChords(raw,config){
             }
         })
         // Fix specific labels 
-        .filter(d=>d.name.includes("Ocea")).selectAll("tspan").attr("x",-4); 
+        .filter(d=>d.name.includes("Oceania")).selectAll("tspan").attr("x",-4); 
     }
     const tooltip = d3.select('body').append('g')
         .attr('id', 'tooltip')
