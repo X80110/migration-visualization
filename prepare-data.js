@@ -246,7 +246,7 @@ function dataPrepare(input, config){
         }
         // GRAPH STRUCTURE
         const nldata = {nodes: nodes, links:links} 
-        
+         
         let unfilteredNL = {...nldata}
         let names = nldata.nodes.map(d=> d.name)
         // COMPUTE TOTAL OUTFLOWS & INFLOWS BEFORE ANY FILTER
