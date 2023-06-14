@@ -83,6 +83,7 @@
 
   
   <div id="main">
+	
         <div class="selectors">
 			
           <div class="range">
@@ -98,21 +99,16 @@
             <select id="selectMethod"></select>
           </div>
         </div>
-		           
 		
 		<div style="display:none" id="reset" class="drop-link">
 			<a name="resetButton" type="button" onclick="resetData()">
 				Collapse regions
 			</a>
 		</div>
+	
 		<div  id="chord">
 			<div class="spin" id="spin"></div>
-			
-			<div style="display:none" id="reset" class="drop-link">
-				<a name="resetButton" type="button" onclick="resetData()">
-					 Collapse regions
-				</a>
-			</div>
+		
 			
 			<div id="chord-chart"> </div>
 		</div>
@@ -123,7 +119,11 @@
 			</div>
 			<div id="sankey-chart"> </div>
 		</div>
-
+		<div style="display:none" id="reset" class="drop-link">
+			<a name="resetButton" type="button" onclick="resetData()">
+				Collapse regions
+			</a>
+		</div>
 		<div class="box"> 
 			<div class="about">
 				<h2><b>Details:</b></h2>

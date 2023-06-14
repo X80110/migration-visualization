@@ -426,11 +426,12 @@ img:hover {
     margin-right:5.5em;
 }  
   #reset{
-    position:block;
+    /* position:inline-block; */
     margin-top:1em;
     padding-top:1em;
-    transform: scale(.7);
+    /* transform: scale(.7); */
   }
+  
   
   #chord {
     padding-top:4em;
@@ -448,7 +449,12 @@ img:hover {
   .header .menu-icon {
     display: none;
   }
+  .spin > div{
+    display:block;
+    margin-top: 0em;
+  }
   
+ 
   
 }
 
@@ -627,10 +633,11 @@ select {
 }
 
 #reset {
-
+  
   font-size:80%;
    /* display:inline-block;
    position:absolute; */
+
    /* margin: auto; */
    /* left:46.7%; */
    filter:  drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1));
@@ -642,7 +649,7 @@ select {
    
    /* margin-top:2.4em; */
    cursor:pointer;
-   z-index:5;  
+   
  } 
  
 /* The graphic interaction */
@@ -682,7 +689,7 @@ select {
         height: 30px;
         width: 30px;
         position: absolute;
-        top:55%;
+        top:65%;
         left: 50%;
         transform: translate3d(-50%, -50%, 0);
         will-change: transform;
