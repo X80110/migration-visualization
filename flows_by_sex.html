@@ -124,7 +124,7 @@
 			</a>
 		</div>
 		<div  id="chord">
-		
+			<div class="spin" id="spin"></div>
 			<div id="chord-chart"> </div>
 		</div>
 		<div style="display:none" id="sankey">
@@ -249,6 +249,16 @@
 			}
 			// run visualization selected on #anchor link
 			function switchViz(chart){
+				document.onreadystatechange = function() {
+					if (document.readyState !== "complete") {
+						document.querySelector("#chord").style.visibility = "hidden";
+						document.querySelector("#spin").style.visibility = "visible";
+					} else {
+						setTimeout(d=> {
+							document.querySelector("#spin").style.visibility = "hidden";
+							document.querySelector("#chord").style.visibility = "visible";},2000)
+					}
+				};
 				const selectedViz = chart === null ? "chord" : chart
 				viz = ["chord","sankey","map"]
 				notIn = viz.filter(d=> !d.includes(selectedViz))
