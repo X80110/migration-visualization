@@ -642,6 +642,7 @@ select {
    
    /* margin-top:2.4em; */
    cursor:pointer;
+   z-index:5;  
  } 
  
 /* The graphic interaction */
