@@ -436,9 +436,7 @@ img:hover {
     padding-top:4em;
     transform: scale(1.3);
   }
-  .selectors .range {
-      display:inline-block;
-  }
+  
 }
 @media (min-width: 892px) {
 
@@ -450,6 +448,7 @@ img:hover {
   .header .menu-icon {
     display: none;
   }
+  
   
 }
 
