@@ -116,16 +116,16 @@
         </div>
 		           
 		
-		
+
 		<div  id="chord">
+			<div class="spin" id="spin"></div>
+			
 			<div style="display:none" id="reset" class="drop-link">
 				<a name="resetButton" type="button" onclick="resetData()">
 					 Collapse regions
 				</a>
 			</div>
-	<!-- 		<div class="selectors" style="opacity:65%; margin-top:1em">
-				<p> Click on the outer arc of a region to explore it at a country level</p>
-			</div> -->
+			
 			<div id="chord-chart"> </div>
 		</div>
 		<div style="display:none" id="sankey">
@@ -228,6 +228,35 @@
 	
 	<!-- RUN DATA AND DRAW CHART	 -->
 	<script>
+			/* const loader = document.querySelector('.spin');
+			const status = document.querySelector('#chord');
+
+			// This function simply emulates an asynchronous function
+			const wait = (ms = 5000) => {
+				return new Promise((resolve) => {
+				setTimeout(() => {
+					resolve();
+				},ms)
+			})
+			}
+
+			const toggleLoader = (state) => {
+				loader.classList.toggle('show', state);
+			}
+
+			const timeout = setTimeout(toggleLoader, 4000);
+
+			status.textContent = "Starting load function";
+			wait(2200)
+			
+			.then(() => {
+				status.textContent = "Load function complete";
+				toggleLoader(false);
+					clearTimeout(timeout);
+			})
+
+ */
+
 			filename = fileName(config).json
 			let datasets =  [];			// promises
 			files.forEach(url => datasets.push(d3.json(url)));
@@ -251,6 +280,16 @@
 				return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
 			}
 			function switchViz(chart){
+				document.onreadystatechange = function() {
+					if (document.readyState !== "complete") {
+						document.querySelector("#chord").style.visibility = "hidden";
+						document.querySelector("#spin").style.visibility = "visible";
+					} else {
+						setTimeout(d=> {
+							document.querySelector("#spin").style.visibility = "hidden";
+							document.querySelector("#chord").style.visibility = "visible";},2000)
+					}
+				};
 				const selectedViz = chart === null ? "chord" : chart
 				viz = ["chord","sankey","map"]
 				notIn = viz.filter(d=> !d.includes(selectedViz))
