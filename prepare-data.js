@@ -48,6 +48,7 @@ let fileName = (configs) => {
     }
 }
 let filename = fileName(config).json
+
 // Method labels ------------–––------------------------------------------------------
 let methods_indexed = ["sd_drop_neg" , "sd_rev_neg" , "mig_rate" , "da_min_open" , "da_min_closed" , "da_pb_closed"]
 let methods_labels_indexed = ["Stock Difference Drop Negative", "Stock Differencing Reverse Negative", "Migration Rates", "Open Demographic Accounting Minimisation", "Closed Demographic Accounting Minimisation", "Closed Demographic Accounting Pseudo-Bayesian"]
@@ -70,6 +71,27 @@ d3.select("#selectMethod")                                    // populate html
         .attr("value",d=> d.id) 
         .attr("label",d=> d.label) 
         .attr("selected", d=> d.id === "da_pb_closed" ? "selected": null)   // 
+       
+// threshold labels ------------–––------------------------------------------------------
+let threshold_labels_indexed = ["10000", "100000","1000000"]
+
+let thresholds = threshold_labels_indexed.map((d,i)=>{ 
+    id = d
+    label = threshold_labels_indexed[i]
+    config.threshold = label[0]
+    return {id, label}
+})
+
+
+console.log(thresholds)
+d3.select("#selectedThreshold")                                    // populate html
+    .selectAll('myOptions')
+    .data(thresholds)
+    .enter()
+        .append('option')
+        .attr("value",d=> d.id) 
+        .attr("label",d=> d.label) 
+        // .attr("selected", d=> d.id === "da_pb_closed" ? "selected": null)   // 
        
 
 // Get year data  ------------–––-----------------------------------–--------------------
@@ -181,12 +203,13 @@ function dataPrepare(input, config){
 
     var input_data = {...input}
     meta = input_data.metadata 
-    threshold = input_data.raw_data.threshold
+    threshold = /* input_data.raw_data.threshold || */ +config.threshold || ""
     colors = input_data.raw_data.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE']
     flags = meta.map(d=>{return { [d.origin_name]:d.origin_flag }})
     input = input_data.raw_data    
     year = +config.year
     sex = config.sex
+
     var data = filterYear(input,year)   
     /* maxValues = allTimeMax(input) */
     /* console.log(maxValues) */
@@ -276,7 +299,7 @@ function dataPrepare(input, config){
             // console.log([i,name],"outflow",outflow,"inflow",inflow)
             {return {name, outflow,inflow,total_flow}}
         })
-
+        
         // FILTER BY THRESHOLD
         let filteredData = nldata.links
             .filter(d=> d.value > threshold )   

@@ -105,6 +105,14 @@
 				Collapse regions
 			</a>
 		</div>
+        <div class="selectors">
+	
+          <div class="method threshold">
+            <div ><span>Population threshold:</span></div>
+            <select id="selectedThreshold"></select>
+          </div>
+        </div>
+		
 	
 		<div  id="chord">
 			<div class="spin" id="spin"></div>			
@@ -184,7 +192,7 @@
 	   config.sex = ""
 		config.type = ""
 		config.method = "da_pb_closed"
-		config.threshold = ""
+
 
 		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
 		// const allMethods = config.method === "" 
@@ -282,8 +290,10 @@
 				document.getElementById(...notIn).style.display = 'none'
 				document.getElementById(selectedViz).style.display = ''
 				config.regions = []
+				
 				getDataNDraw().then(raw=> {
-					config.threshold = raw.raw_data[0].threshold
+					// config.threshold = raw.raw_data[0].threshold
+					console.log(config)
 					update(raw,config)
 				})
 			}
@@ -308,6 +318,7 @@
 				}
 				d3.selectAll("#chord-chart g")
 					.remove()
+				console.log(config)
 				drawChords(raw,config)
 				setData(raw,config)
 				

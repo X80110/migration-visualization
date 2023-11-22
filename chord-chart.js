@@ -799,6 +799,13 @@ function drawChords(raw,config){
             config.type = d3.select(this).property("value")
             update(raw,config)
         })   
+    d3.selectAll("#selectedThreshold")
+        .on("change", function(d) {
+            config.previous = data 
+            config.threshold = d3.select(this).property("value")
+            console.log(config.threshold)
+            update(raw,config)
+        })   
     /* d3.selectAll(".maxValues")
         .on("change", function(d) {
             config.previous = data 
