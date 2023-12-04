@@ -83,7 +83,8 @@ let thresholds = threshold_labels_indexed.map((d,i)=>{
 })
 
 
-console.log(thresholds)
+
+
 d3.select("#selectedThreshold")                                    // populate html
     .selectAll('myOptions')
     .data(thresholds)
@@ -299,7 +300,7 @@ function dataPrepare(input, config){
             // console.log([i,name],"outflow",outflow,"inflow",inflow)
             {return {name, outflow,inflow,total_flow}}
         })
-        
+    
         // FILTER BY THRESHOLD
         let filteredData = nldata.links
             .filter(d=> d.value > threshold )   
@@ -322,18 +323,24 @@ function dataPrepare(input, config){
             let sources = Array.from(new Set(filteredData.flatMap(d=> d.source)))
             let targets = Array.from(new Set(filteredData.flatMap(d=> d.target)))            
             innerjoin = common(sources,targets)
+
             // reindex joined names
             let names_indexed = names.filter(d=> innerjoin.includes(d))
             /* console.log(names.length, names_source.length, names_target.length, innerjoin.length) */
             return names_indexed
         } 
+
         names = Array.from(new Set(removeNullNames())) 
+        
+        total_flows = total_flows.filter(d=> names.includes(d.name))        
+        
         // SET OUTPUT DATA
         let finalData = filteredData.filter(d=> 
             names.includes(d.source) && names.includes(d.target)
         )
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names,finalData)
+        
         // Reindex regions
         let regions = []
         names.map((d,i)=> {
@@ -341,6 +348,8 @@ function dataPrepare(input, config){
                 regions.push(i)
             }
         })
+
+        
         return{ names: names, matrix: filteredMatrix, regions: regions, nldata: finalData, total_flows: total_flows,  unfilteredNL: unfilteredNL}
     }
 
@@ -364,7 +373,9 @@ function dataPrepare(input, config){
     }
     // produce the filtered Matrix for a given a threshold value
     let dataSliced = filteredMatrix(data,year)    
+    console.log(dataSliced)
     data = dataSliced
+    
     total_flows = dataSliced.total_flows
 
     function getMeta(name) {
@@ -375,10 +386,11 @@ function dataPrepare(input, config){
         }
         const region = getRegion(data.names.indexOf(name))
         const region_name = data.names[region]
+
         const id = data.names.indexOf(name)
+
         return {flag: flag(name), region,region_name,id}
     }
-    
     // Produce layout by concatenating and sort all expaned regions and their countries indexes
     let last_selected = expandRegion(data,config.regions[1]).indexList
     let first_selected = expandRegion(data,config.regions[0]).indexList
@@ -396,7 +408,7 @@ function dataPrepare(input, config){
     } 
     
     let filteredLayout = mergeFilter()    
-
+    
     // PREPARE SANKEY LAYOUT
     let sankey_names = [...new Set(sankey_layout.source.concat(sankey_layout.target))]
     let nodes = []
@@ -422,6 +434,7 @@ function dataPrepare(input, config){
             names.push(name)
             unfilteredMatrix.push(subgroup)
         })
+
         unfilteredMatrix.map(d=> {
             let filtered = filteredLayout.map(a=> d[a])
             matrix.push(filtered)    
@@ -430,6 +443,7 @@ function dataPrepare(input, config){
         return data
     }
     let result = finalNamesMatrix()
+    
     
     function setSelectors() {
         // YEAR SELECTOR 
@@ -445,7 +459,7 @@ function dataPrepare(input, config){
         let sliderValue = parseInt(slider.value)
         
         function getTicks (year){
-            console.log(year)
+
             let ticks = allYears.map(col =>
                  +col === +year 
                  ? `<p><b>${col}</b></p   >`
@@ -493,5 +507,6 @@ function dataPrepare(input, config){
     }
 
     setSelectors()
+    
     return {result,total_flows, nldata/* ,maxValues */}
 }
