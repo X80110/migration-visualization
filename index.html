@@ -98,6 +98,10 @@
             <div ><span>Estimation method:</span></div>
             <select id="selectMethod"></select>
           </div>
+		  <div class="selectedRanking">
+            <div ><span>Limit top countries displayed:</span></div>
+            <select id="selectedRanking"></select>
+          </div>
         </div>
 		
 		<div style="display:none" id="reset" class="drop-link">
@@ -107,10 +111,7 @@
 		</div>
         <div class="selectors">
 	
-          <div class="method threshold">
-            <div ><span>Population threshold:</span></div>
-            <select id="selectedThreshold"></select>
-          </div>
+       
         </div>
 		
 	
@@ -192,6 +193,8 @@
 	   config.sex = ""
 		config.type = ""
 		config.method = "da_pb_closed"
+		config.threshold = ""
+		config.ranking = ""
 
 
 		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
@@ -292,15 +295,16 @@
 				config.regions = []
 				
 				getDataNDraw().then(raw=> {
-					// config.threshold = raw.raw_data[0].threshold
-					console.log(config)
+
+					config.threshold = raw.raw_data[0].threshold
+					// console.log(config)
 					update(raw,config)
 				})
 			}
 			switchViz(getAnchor()) 			 
 			
 			// These functions are called in the visualizations at updating the filtering context
-			// Show/Hide 'resect selection' button
+			// Show/Hide 'reset selection' button
 			function resetData(){
 				config.regions = []
 				getDataNDraw().then(raw=> {
@@ -318,7 +322,7 @@
 				}
 				d3.selectAll("#chord-chart g")
 					.remove()
-				console.log(config)
+				// console.log(config)
 				drawChords(raw,config)
 				setData(raw,config)
 				

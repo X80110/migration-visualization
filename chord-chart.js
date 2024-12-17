@@ -97,6 +97,7 @@ function drawChords(raw,config){
             let flag = flags.filter(d=>d[name])[0] ?  flags.filter(d=>d[name])[0] : ""
             return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
         }
+    
         const region = getRegion(input.names.indexOf(name))
         const region_name = input.names[region]
         const id = input.names.indexOf(name)
@@ -799,11 +800,11 @@ function drawChords(raw,config){
             config.type = d3.select(this).property("value")
             update(raw,config)
         })   
-    d3.selectAll("#selectedThreshold")
+    d3.selectAll("#selectedRanking")
         .on("change", function(d) {
             config.previous = data 
-            config.threshold = d3.select(this).property("value")
-            console.log(config.threshold)
+            config.ranking = +d3.select(this).property("value")
+            // console.log(config.ranking)
             update(raw,config)
         })   
     /* d3.selectAll(".maxValues")

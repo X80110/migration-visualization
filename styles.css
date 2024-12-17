@@ -620,6 +620,11 @@ select {
   text-transform: uppercase; 
 }
 
+.selectedRanking select{
+  padding-left: 1.2em;
+  padding-right: 1.2em;
+  float:none;
+}
 
 
 .sourceTarget{
