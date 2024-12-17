@@ -800,10 +800,10 @@ function drawChords(raw,config){
             config.type = d3.select(this).property("value")
             update(raw,config)
         })   
-    d3.selectAll("#selectedRanking")
+    d3.selectAll("#selectedConns")
         .on("change", function(d) {
             config.previous = data 
-            config.ranking = +d3.select(this).property("value")
+            config.limitConns = +d3.select(this).property("value")
             // console.log(config.ranking)
             update(raw,config)
         })   

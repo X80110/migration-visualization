@@ -98,9 +98,10 @@
             <div ><span>Estimation method:</span></div>
             <select id="selectMethod"></select>
           </div>
-		  <div class="selectedRanking">
-            <div ><span>Limit top countries displayed:</span></div>
-            <select id="selectedRanking"></select>
+		  
+		  <div class="connections">
+            <div ><span>Limit connections by country:</span></div>
+            <select id="selectedConns"></select>
           </div>
         </div>
 		
@@ -194,7 +195,7 @@
 		config.type = ""
 		config.method = "da_pb_closed"
 		config.threshold = ""
-		config.ranking = ""
+		config.limitConns = 1000
 
 
 		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
