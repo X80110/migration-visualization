@@ -344,6 +344,20 @@ function dataPrepare(input, config) {
         // RANK COUNTRIES BY NET_FLOW
         // Get flows for each region, and sort them, append RANK value to original dataset
         function rankValues() {
+            // COMPUTE GLOBAL RANKINGS BY TOTAL FLOW (OUTFLOW + INFLOW)
+            const globalRank = flows.filter(d => !isRegion(d.name)) //Exclude regions
+            .sort((a, b) => b.total_flow - a.total_flow) 
+            .map((d, i) => {
+                let name = d.name
+                let value = d.total_flow
+                let global_rank = i + 1
+                return {
+                    name,
+                    value,
+                    global_rank
+                }
+            })
+            // COMPUTE RANKINGS FOR EACH REGION BY TOTAL FLOW (OUTFLOW + INFLOW)
             //Set regions to loop and rank country values within
             const uniqueRegions = [...new Set(flows.map(d => d.region_name))]
             const rankings = {}
@@ -357,11 +371,15 @@ function dataPrepare(input, config) {
                             let name = d.name
                             let value = d.total_flow
                             let rank = i + 1
+                            let global_rank = globalRank.filter(a=> a.name == d.name).map(a=>a.global_rank)
+
                             return {
                                 region,
                                 name,
                                 value,
-                                rank
+                                rank,
+                                global_rank
+                                
                             }
                         })
 
@@ -370,15 +388,22 @@ function dataPrepare(input, config) {
             return regionCountries, rankings
         }
         const rankedValues = Object.values(rankValues()).flat()
-        const ranked_data = names.map(name => {
+        const region_rank = names.map(name => {
             rank = rankedValues.filter(d => d.name === name)[0]
             rank = Object(rank).rank
             return rank
         })
+        const global_rank = names.map(name => {
+            g_rank = rankedValues.filter(d => d.name === name)[0]
+            g_rank = Object(g_rank).global_rank
+            return g_rank
+        })
+        
 
         
         flows.forEach((d, i) => {
-            d.rank = ranked_data[i]
+            d.rank = region_rank[i]
+            d.global_rank = global_rank[i]
         })
         // console.log(config.ranking)
 
@@ -401,7 +426,7 @@ function dataPrepare(input, config) {
 
 
 
-        let filteredData = nldata.links
+    
             // .filter(d=>)
 
         // console.log(config.ranking)
@@ -414,7 +439,7 @@ function dataPrepare(input, config) {
 
         // FILTER BY THRESHOLD
         /* .filter(d=> d.value > threshold )    */
-
+        let filteredData = nldata.links
         // EXCLUDE NON-RECIPROCAL COUNTRIES
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
@@ -448,6 +473,7 @@ function dataPrepare(input, config) {
         // Filter by #selectedRanking top netflow values
 
         ranked_names = flows.filter(d=> isRegion(d.name) || d.rank < config.ranking).map(d=>d.name)
+        // ranked_names = flows.filter(d=> isRegion(d.name) || d.global_rank < config.ranking).map(d=>d.name)
         names = names.filter(d=> 
                 ranked_names.includes(d)
         )
@@ -475,7 +501,7 @@ function dataPrepare(input, config) {
                 regions.push(i)
             }
         })
-        console.log(names)
+
         return {
             names: names,
             matrix: filteredMatrix,
