@@ -58,7 +58,7 @@ function drawChords(raw,config){
     /* let maxValues = dataPrepare(input,config).maxValues */
 
     let data = preparedData.result
-    let net_flows = preparedData.net_flows
+    let flows = preparedData.flows
     input = input.raw_data                  // used for metadata
     
 
@@ -102,12 +102,12 @@ function drawChords(raw,config){
         const region_name = input.names[region]
         const id = input.names.indexOf(name)
         
-        const outflow = net_flows.filter(d=>d.name.includes(name))[0].outflow
-        const inflow = net_flows.filter(d=>d.name.includes(name))[0].inflow
-        const net_flow = outflow + inflow
+        const outflow = flows.filter(d=>d.name.includes(name))[0].outflow
+        const inflow = flows.filter(d=>d.name.includes(name))[0].inflow
+        const total_flow = outflow + inflow
         /* const allTimeMaxFlow = maxValues[id][name]
-        const isMax = net_flow === allTimeMaxFlow ? true: false */
-        return {flag: flag(name), region,region_name,id,outflow,inflow,net_flow/* ,allTimeMaxFlow, isMax */}
+        const isMax = total_flow === allTimeMaxFlow ? true: false */
+        return {flag: flag(name), region,region_name,id,outflow,inflow,total_flow/* ,allTimeMaxFlow, isMax */}
     }
     /* console.log(getMeta("Austria")) */
     
@@ -633,7 +633,10 @@ function drawChords(raw,config){
     chordDiagram.selectAll("g")
         .on("mouseout", function (evt, d) {        
             chords.selectAll(".path-item")
+                .transition('mouseover')
+                .duration(30)
                 .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.03: 0.80)
+                
             /* groups.selectAll(".group-arc")
                 .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80) */
             
@@ -642,13 +645,19 @@ function drawChords(raw,config){
     chordDiagram.selectAll(".group-arc, .path-item, .country-label")
         .on("mousemove", tooltipCountry)
         .on("mouseout", function(){
-                tooltip.style("visibility", "hidden");
+                tooltip
+                    .transition('mouseout')
+                    .duration(30)
+                    .style("visibility", "hidden");
         })
 
     chordDiagram.selectAll(".group-arc, .path-item, .country-label")
         .on("mousemove", tooltipRegion)
         .on("mouseout", function(){
-                 tooltip.style("visibility", "hidden");
+                 tooltip
+                    .transition('mouseout')
+                    .duration(30)
+                    .style("visibility", "hidden");
         })
     // function mouseover() {
     //     chordDiagram.selectAll(".group-arc, .path-item, .region-label-text")
