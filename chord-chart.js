@@ -770,50 +770,6 @@ function drawChords(raw,config){
     chordDiagram
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
     
-    d3.selectAll("#selectYear")
-        .on("input", function(d) {
-            config.previous = data 
-            config.year = +d3.select(this).property("value")
-            update(raw,config)
-        })
-    d3.selectAll("#stockFlow")
-        .on("change", function(d) {
-            config.previous = data 
-            config.stockflow = d3.select(this).property("value")
-            update(raw,config)
-        })
-    d3.selectAll("#selectMethod")
-        .on("change", function(d) {
-            config.previous = data 
-            config.method = d3.select(this).property("value")
-            update(raw,config)
-        })
-    d3.selectAll(".selectSex")
-        .on("change", function(d) {
-            config.previous = data 
-            config.sex = d3.select(this).property("value")
-            update(raw,config)
-        })
-    d3.selectAll(".selectType")
-        .on("change", function(d) {
-            config.previous = data 
-            config.type = d3.select(this).property("value")
-            update(raw,config)
-        })   
-    d3.selectAll("#selectedConns")
-        .on("change", function(d) {
-            config.previous = data 
-            config.limitConns = +d3.select(this).property("value")
-            // console.log(config.ranking)
-            update(raw,config)
-        })   
-    /* d3.selectAll(".maxValues")
-        .on("change", function(d) {
-            config.previous = data 
-            config.max = d3.select(this).property("value")
-            
-            update(raw,config)
-        })    */
 }
 
 
