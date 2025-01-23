@@ -350,9 +350,6 @@ img:hover {
     border: 0px;/*  solid #598cae; */
     cursor: pointer;
 }
-
-
-
 .box {
   margin-right: 3em;
   margin-left: 3em;
@@ -623,7 +620,7 @@ select {
   text-transform: uppercase; 
 }
 
-.connections select{
+.selectedRanking select{
   padding-left: 1.2em;
   padding-right: 1.2em;
   float:none;
