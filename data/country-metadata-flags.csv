@@ -2,12 +2,13 @@ origin_iso,origin_name,origin_flag,originregion_name
 AFG,Afghanistan,🇦🇫,South Asia
 ALB,Albania,🇦🇱,Europe
 DZA,Algeria,🇩🇿,Africa
-ASM,American Samoa,,none
+ASM,American Samoa,🇦🇸,none
 AND,Andorra,🇦🇩,none
 AGO,Angola,🇦🇴,Africa
 AIA,Anguilla,🇦🇮,none
 ATA,Antarctica,🇦🇶,none
 ATG,Antigua and Barbuda,🇦🇬,none
+ATG,Antigua & Barbuda,🇦🇬,none
 ARG,Argentina,🇦🇷,Latin America
 ARM,Armenia,🇦🇲,Fmr Soviet Union
 ABW,Aruba,🇦🇼,Latin America
@@ -61,6 +62,7 @@ CRI,Costa Rica,🇨🇷,Latin America
 HRV,Croatia,🇭🇷,Europe
 CUB,Cuba,🇨🇺,Latin America
 CUW,Curaçao,🇨🇼,none
+CUW,Curacao,🇨🇼,none
 CYP,Cyprus,🇨🇾,West Asia
 CZE,Czechia,🇨🇿,Europe
 CIV,Côte d`Ivoire,🇨🇮,Africa
@@ -162,6 +164,7 @@ MUS,Mauritius,🇲🇺,Africa
 MYT,Mayotte,🇾🇹,Africa
 MEX,Mexico,🇲🇽,Latin America
 FSM,Micronesia,🇫🇲,Oceania
+FSM,FS Micronesia,🇫🇲,Oceania
 FSM,Micronesia (Fed. States of),🇫🇲,Oceania
 MDA,Moldova,🇲🇩,Fmr Soviet Union
 MDA,Republic of Moldova,🇲🇩,Fmr Soviet Union
@@ -214,10 +217,14 @@ SHN,"Saint Helena, Ascension and Tristan da Cunha",🇹🇦,none
 SHN,"Saint Helena",🇹🇦,none
 SHN,"St. Helena",🇹🇦,none
 KNA,Saint Kitts and Nevis,🇰🇳,none
+KNA,St. Kitts & Nevis,🇰🇳,none
 LCA,Saint Lucia,🇱🇨,Latin America
+LCA,St. Lucia,🇱🇨,Latin America
 MAF,Saint Martin,🇲🇫,none
 SPM,Saint Pierre and Miquelon,🇵🇲,none
+SPM,St. Pierre & Miquelon,🇵🇲,none
 VCT,Saint Vincent and the Grenadines,🇻🇨,Latin America
+VCT,St. Vincent & Grenadines,🇻🇨,Latin America
 WSM,Samoa,🇼🇸,Oceania
 SMR,San Marino,🇸🇲,Europe
 STP,Sao Tome and Principe,🇸🇹,Africa
@@ -266,6 +273,7 @@ TUN,Tunisia,🇹🇳,Africa
 TUR,Turkey,🇹🇷,West Asia
 TKM,Turkmenistan,🇹🇲,Fmr Soviet Union
 TCA,Turks and Caicos Islands,🇹🇨,none
+TCA,Turks & Caicos Islands,🇹🇨,none
 TUV,Tuvalu,🇹🇻,none
 UGA,Uganda,🇺🇬,Africa
 UKR,Ukraine,🇺🇦,Fmr Soviet Union
@@ -284,8 +292,10 @@ VNM,Viet Nam,🇻🇳,South-East Asia
 VNM,Vietnam,🇻🇳,South-East Asia
 VGB,British Virgin Islands,🇻🇬,none
 VIR,US Virgin Islands,🇻🇮,Latin America
+VIR,U.S. Virgin Islands,🇻🇮,Latin America
 VIR,United States Virgin Islands,🇻🇮,Latin America
 WLF,Wallis and Futuna,🇼🇫,none
+WLF,Wallis & Futuna,🇼🇫,none
 WLF,Wallis and Futuna Islands,🇼🇫,none
 ESH,Western Sahara,🇪🇭,Africa
 YEM,Yemen,🇾🇪,West Asia
