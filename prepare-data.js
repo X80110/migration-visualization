@@ -30,7 +30,7 @@ config.rankings
 // build the data filename (json) with config values  ------------–––-------------------
 let fileName = (configs) => {
     configs = {...config}
-    console.log(configs)
+
     // build filename hierarchy
     let stockflow = config.stockflow
     sex = config.sex === "all" || "" ?
@@ -186,13 +186,13 @@ function filterYear(input, year) {
 //             //--
 //             let outflows = region_outflows.concat(country_outflows)
 //             let inflows = region_inflows.concat(country_inflows)
-//             let net_flows = names.map(name=> {
+//             let flows = names.map(name=> {
 //                 let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
 //                 let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
-//                 let net_flow = outflow + inflow
-//                 {return net_flow}
+//                 let total_flow = outflow + inflow
+//                 {return total_flow}
 //             })
-//             return net_flows.flat()
+//             return flows.flat()
 //         })
 
 //         //  Go through names (indexes) for each year and obtain max for each index
@@ -320,10 +320,11 @@ function dataPrepare(input, config) {
         }); 
 
         // COMPUTE TOTAL FLOWS
-        let net_flows = names.map((name, i) => {
+        let flows = names.map((name, i) => {
             let outflow = data.total_outflow[i]
             let inflow = data.total_inflow[i]
             let net_flow = outflow - inflow
+            let total_flow = outflow + inflow
             let connections = number_connections.map(d=>d.connections)[i]
             let region_name = getMeta(name).region_name
             // let rank
@@ -333,6 +334,7 @@ function dataPrepare(input, config) {
                     outflow,
                     inflow,
                     net_flow,
+                    total_flow,
                     connections
                     // rank
                 }
@@ -340,20 +342,20 @@ function dataPrepare(input, config) {
         })
 
         // RANK COUNTRIES BY NET_FLOW
-        // Get net_flows for each region, and sort them, append RANK value to original dataset
+        // Get flows for each region, and sort them, append RANK value to original dataset
         function rankValues() {
             //Set regions to loop and rank country values within
-            const uniqueRegions = [...new Set(net_flows.map(d => d.region_name))]
+            const uniqueRegions = [...new Set(flows.map(d => d.region_name))]
             const rankings = {}
             let regionCountries
             uniqueRegions
                 .forEach((region, index) => {
-                    regionCountries = net_flows
+                    regionCountries = flows
                         .filter(d => d.region_name === region && d.name !== region) // discard region values
-                        .sort((a, b) => b.net_flow - a.net_flow) 
+                        .sort((a, b) => b.total_flow - a.total_flow) 
                         .map((d, i) => {
                             let name = d.name
-                            let value = d.net_flow
+                            let value = d.total_flow
                             let rank = i + 1
                             return {
                                 region,
@@ -362,7 +364,7 @@ function dataPrepare(input, config) {
                                 rank
                             }
                         })
-                    console.log(regionCountries)
+
                     rankings[index] = regionCountries
                 })
             return regionCountries, rankings
@@ -373,16 +375,16 @@ function dataPrepare(input, config) {
             rank = Object(rank).rank
             return rank
         })
-        console.log(net_flows)
+
         
-        net_flows.forEach((d, i) => {
+        flows.forEach((d, i) => {
             d.rank = ranked_data[i]
         })
         // console.log(config.ranking)
 
 
        /*  */
-        // console.log(net_flows)
+        // console.log(flows)
 
    /*      // FILTER BY TOP RANKING VALUES
         function filterSourceTarget(nldata, countryRank, ranking) {
@@ -403,10 +405,10 @@ function dataPrepare(input, config) {
             // .filter(d=>)
 
         // console.log(config.ranking)
-    /*     let rankedCountries = filterSourceTarget(filteredData, net_flows,10000)
+    /*     let rankedCountries = filterSourceTarget(filteredData, flows,10000)
         filteredData = rankedCountries */
         
-        /*  let filteredData = filterSourceTarget(nldata.links,net_flows,40) */
+        /*  let filteredData = filterSourceTarget(nldata.links,flows,40) */
         // into both source & target
         /* .filter(d=> d.source_target > threshold )    */
 
@@ -444,20 +446,20 @@ function dataPrepare(input, config) {
         names = Array.from(new Set(removeNullNames()))
         
         // Filter by #selectedRanking top netflow values
-        console.log(config.ranking)
-        ranked_names = net_flows.filter(d=> isRegion(d.name) || d.rank < config.ranking).map(d=>d.name)
+
+        ranked_names = flows.filter(d=> isRegion(d.name) || d.rank < config.ranking).map(d=>d.name)
         names = names.filter(d=> 
                 ranked_names.includes(d)
         )
         /* // Filter by limit #selectedConns 
-        limited_connections_names = net_flows.filter(d=> isRegion(d.name) || d.connections < config.limitConns).map(d=>d.name)
+        limited_connections_names = flows.filter(d=> isRegion(d.name) || d.connections < config.limitConns).map(d=>d.name)
         console.log(limited_connections_names)
         names = names.filter(d=> 
                 limited_connections_names.includes(d)
         )
          */
         // Match filtered countries to other data
-        // net_flows = net_flows.filter(d => names.includes(d.name))
+        // flows = flows.filter(d => names.includes(d.name))
         // SET OUTPUT DATA
 
         let finalData = filteredData.filter(d =>
@@ -479,7 +481,7 @@ function dataPrepare(input, config) {
             matrix: filteredMatrix,
             regions: regions,
             nldata: finalData,
-            net_flows: net_flows,
+            flows: flows,
             unfilteredNL: unfilteredNL
         }
     }
@@ -514,7 +516,7 @@ function dataPrepare(input, config) {
 
     data = dataSliced
 
-    net_flows = dataSliced.net_flows
+    flows = dataSliced.flows
 
 
     function getMeta(name) {
@@ -670,7 +672,7 @@ function dataPrepare(input, config) {
 
     return {
         result,
-        net_flows,
+        flows,
         nldata /* ,maxValues */
     }
     

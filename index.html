@@ -98,10 +98,28 @@
             <div ><span>Estimation method:</span></div>
             <select id="selectMethod"></select>
           </div>
-		  <div class="selectedRanking">
+	<!-- 	  <div class="selectedRanking">
             <div ><span>Limit top countries displayed:</span></div>
             <select id="selectedRanking"></select>
-          </div>
+          </div> -->
+		  <div class="slider-container">
+			<label for="selectedRanking"></label>
+			<input type="range" id="selectedRanking" name="slider" min="0" max="60" value="100">
+			<div class="slider-value">Show highest flows: <span id="slider-value">All</span></div>
+		</div>
+	
+		<script>
+			// Obtenim els elements del DOM
+			const slider = document.getElementById('selectedRanking');
+			const sliderValue = document.getElementById('slider-value');
+	
+			// Afegim un esdeveniment per detectar quan es mou el slider
+			slider.addEventListener('input', function() {
+				// Actualitzem el valor mostrat
+				
+				sliderValue.textContent = this.value >= 60? "All" : this.value;
+			});
+		</script>
         </div>
 		
 		<div style="display:none" id="reset" class="drop-link">
