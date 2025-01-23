@@ -168,8 +168,8 @@ function updateSankey(raw, input, config, graph_data){ */
         const region = getRegion(input_data.names.indexOf(name))
         const region_name = input_data.names[region]
         const id = input_data.names.indexOf(name)
-        const outflow = net_flows.filter(d=>d.name.includes(name))[0].outflow
-        const inflow = net_flows.filter(d=>d.name.includes(name))[0].inflow
+        const outflow = flows.filter(d=>d.name.includes(name))[0].outflow
+        const inflow = flows.filter(d=>d.name.includes(name))[0].inflow
             return {flag: flag(name), region,region_name,id,outflow,inflow}
     }
     

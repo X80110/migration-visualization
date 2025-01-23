@@ -646,7 +646,7 @@ function drawChords(raw,config){
         .on("mousemove", tooltipCountry)
         .on("mouseout", function(){
                 tooltip
-                    .transition('mouseout')
+                    .transition('mouseu')
                     .duration(30)
                     .style("visibility", "hidden");
         })
@@ -654,10 +654,7 @@ function drawChords(raw,config){
     chordDiagram.selectAll(".group-arc, .path-item, .country-label")
         .on("mousemove", tooltipRegion)
         .on("mouseout", function(){
-                 tooltip
-                    .transition('mouseout')
-                    .duration(30)
-                    .style("visibility", "hidden");
+                 tooltip.style("visibility", "hidden");
         })
     // function mouseover() {
     //     chordDiagram.selectAll(".group-arc, .path-item, .region-label-text")
@@ -709,66 +706,66 @@ function drawChords(raw,config){
                     .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
             })
     // // INTERACTIONS: Mouseover
-    // chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
+    chordDiagram.on("mouseover",mouseover).on("mouseout", mouseout)
  
-    // function mouseover() {
-    //     chordDiagram.selectAll(".group-arc, .path-item, .region-label-text")
-    //         .on("mouseover", function(evt,d){
-    //             chords.selectAll(".path-item, .group-arc")
-    //                         .transition('mouseover')
-    //                         .duration(80)
-    //                         .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
-    //                     d3.select(this)
-    //                         .transition('mouseover-this')
-    //                         .duration(80)
-    //                         .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
-    //         })
-    //         //  .on("mouseover", function (evt, d) {
-    //         //         // console.log(d.id)
-    //         //         if (config.regions < 1){
-    //         //             chords.selectAll(".path-item, .group-arc")
-    //         //                 .transition('mouseover')
-    //         //                 .duration(80)
-    //         //                 .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
-    //         //             d3.select(this)
-    //         //                 .transition('mouseover-this')
-    //         //                 .duration(80)
-    //         //                 .style("opacity", 0.80)
-    //         //         }
-    //         //         else{
-    //         //             chords.selectAll(".path-item, .group-arc")
-    //         //                 .transition('mouseover')
-    //         //                 .duration(80)
-    //         //                 .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
-    //         //             d3.select(this)
-    //         //                 .transition('mouseover-this')
-    //         //                 .duration(80)
-    //         //                 .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
-    //         //         }
-    //         //     }
-    //         // )
-    //     groups
-    //         .on("mouseover", function(evt,d) {
-    //             d3.select(this).selectAll(".group-arc, .region-label-text")
-    //                 .transition('mouseout')
-    //                 .duration(80) 
-    //                 .attr("d", arc.outerRadius(outerRadius))    
-    //         })
-    // }   
+    function mouseover() {
+        chordDiagram.selectAll(".group-arc, .path-item, .region-label-text")
+            .on("mouseover", function(evt,d){
+                chords.selectAll(".path-item, .group-arc")
+                            .transition('mouseover')
+                            .duration(80)
+                            .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
+                        d3.select(this)
+                            .transition('mouseover-this')
+                            .duration(80)
+                            .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
+            })
+            //  .on("mouseover", function (evt, d) {
+            //         // console.log(d.id)
+            //         if (config.regions < 1){
+            //             chords.selectAll(".path-item, .group-arc")
+            //                 .transition('mouseover')
+            //                 .duration(80)
+            //                 .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
+            //             d3.select(this)
+            //                 .transition('mouseover-this')
+            //                 .duration(80)
+            //                 .style("opacity", 0.80)
+            //         }
+            //         else{
+            //             chords.selectAll(".path-item, .group-arc")
+            //                 .transition('mouseover')
+            //                 .duration(80)
+            //                 .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
+            //             d3.select(this)
+            //                 .transition('mouseover-this')
+            //                 .duration(80)
+            //                 .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
+            //         }
+            //     }
+            // )
+        groups
+            .on("mouseover", function(evt,d) {
+                d3.select(this).selectAll(".group-arc, .region-label-text")
+                    .transition('mouseout')
+                    .duration(80) 
+                    .attr("d", arc.outerRadius(outerRadius))    
+            })
+    }   
         
-    // function mouseout() {
-    //     // chordDiagram.selectAll("g")
-    //     chordDiagram
-    //         .on("mouseout", function (evt, d) {        
+    function mouseout() {
+        // chordDiagram.selectAll("g")
+        chordDiagram
+            .on("mouseout", function (evt, d) {        
                 
-    //             chords.selectAll(".path-item .group-arc")
-    //                 .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1: 0.80)
-    //             groups.selectAll(".group-arc")
-    //                 .transition("mouseout")
-    //                 .duration(80)
-    //                 .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
-    //     })  
-    // }
+                chords.selectAll(".path-item .group-arc")
+                    .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.1: 0.80)
+                groups.selectAll(".group-arc")
+                    .transition("mouseout")
+                    .duration(80)
+                    .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
+        })  
+    }
     chordDiagram.selectAll(".path-item, .country-label-text")
         .on("mousemove", tooltipCountry)
         /* .on("mouseout", d=> tooltip.style("visibility", "hidden")) */
