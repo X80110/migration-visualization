@@ -58,7 +58,7 @@ function drawChords(raw,config){
     /* let maxValues = dataPrepare(input,config).maxValues */
 
     let data = preparedData.result
-    let total_flows = preparedData.total_flows
+    let net_flows = preparedData.net_flows
     input = input.raw_data                  // used for metadata
     
 
@@ -102,12 +102,12 @@ function drawChords(raw,config){
         const region_name = input.names[region]
         const id = input.names.indexOf(name)
         
-        const outflow = total_flows.filter(d=>d.name.includes(name))[0].outflow
-        const inflow = total_flows.filter(d=>d.name.includes(name))[0].inflow
-        const total_flow = outflow + inflow
+        const outflow = net_flows.filter(d=>d.name.includes(name))[0].outflow
+        const inflow = net_flows.filter(d=>d.name.includes(name))[0].inflow
+        const net_flow = outflow + inflow
         /* const allTimeMaxFlow = maxValues[id][name]
-        const isMax = total_flow === allTimeMaxFlow ? true: false */
-        return {flag: flag(name), region,region_name,id,outflow,inflow,total_flow/* ,allTimeMaxFlow, isMax */}
+        const isMax = net_flow === allTimeMaxFlow ? true: false */
+        return {flag: flag(name), region,region_name,id,outflow,inflow,net_flow/* ,allTimeMaxFlow, isMax */}
     }
     /* console.log(getMeta("Austria")) */
     
@@ -770,6 +770,50 @@ function drawChords(raw,config){
     chordDiagram
         .on("mouseout", d=> tooltip.style("visibility", "hidden"))
     
+    d3.selectAll("#selectYear")
+        .on("input", function(d) {
+            config.previous = data 
+            config.year = +d3.select(this).property("value")
+            update(raw,config)
+        })
+    d3.selectAll("#stockFlow")
+        .on("change", function(d) {
+            config.previous = data 
+            config.stockflow = d3.select(this).property("value")
+            update(raw,config)
+        })
+    d3.selectAll("#selectMethod")
+        .on("change", function(d) {
+            config.previous = data 
+            config.method = d3.select(this).property("value")
+            update(raw,config)
+        })
+    d3.selectAll(".selectSex")
+        .on("change", function(d) {
+            config.previous = data 
+            config.sex = d3.select(this).property("value")
+            update(raw,config)
+        })
+    d3.selectAll(".selectType")
+        .on("change", function(d) {
+            config.previous = data 
+            config.type = d3.select(this).property("value")
+            update(raw,config)
+        })   
+    d3.selectAll("#selectedRanking")
+        .on("change", function(d) {
+            config.previous = data 
+            config.ranking = +d3.select(this).property("value")
+            // console.log(config.ranking)
+            update(raw,config)
+        })   
+    /* d3.selectAll(".maxValues")
+        .on("change", function(d) {
+            config.previous = data 
+            config.max = d3.select(this).property("value")
+            
+            update(raw,config)
+        })    */
 }
 
 
