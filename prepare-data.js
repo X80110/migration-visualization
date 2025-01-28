@@ -311,13 +311,13 @@ function dataPrepare(input, config) {
         }
         let names = nldata.nodes.map(d => d.name)
 
-        // COMPUTE No. of CONNECTIONS FOR EACH
-        let number_connections = []
-        nldata.nodes.forEach((country,i) => { 
-            let nonZeroConnections = country.connections.filter(connection => connection !== 0).length;
-            number_connections[i] = {name: country.name, connections: nonZeroConnections}
-            /* console.log(`${d.name} has ${nonZeroConnections} non-zero connections.`); */
-        }); 
+        // // COMPUTE No. of CONNECTIONS FOR EACH
+        // let number_connections = []
+        // nldata.nodes.forEach((country,i) => { 
+        //     let nonZeroConnections = country.connections.filter(connection => connection !== 0).length;
+        //     number_connections[i] = {name: country.name, connections: nonZeroConnections}
+        //     // /* console.log(`${d.name} has ${nonZeroConnections} non-zero connections.`); */
+        // }); 
 
         // COMPUTE TOTAL FLOWS
         let flows = names.map((name, i) => {
@@ -325,7 +325,7 @@ function dataPrepare(input, config) {
             let inflow = data.total_inflow[i]
             let net_flow = outflow - inflow
             let total_flow = outflow + inflow
-            let connections = number_connections.map(d=>d.connections)[i]
+            // let connections = number_connections.map(d=>d.connections)[i]
             let region_name = getMeta(name).region_name
             // let rank
             { return {
@@ -335,7 +335,7 @@ function dataPrepare(input, config) {
                     inflow,
                     net_flow,
                     total_flow,
-                    connections
+                    // connections
                     // rank
                 }
             }
@@ -371,7 +371,7 @@ function dataPrepare(input, config) {
                             let name = d.name
                             let value = d.total_flow
                             let rank = i + 1
-                            let global_rank = globalRank.filter(a=> a.name == d.name).map(a=>a.global_rank)
+                            let global_rank = globalRank.filter(a=> a.name == d.name).map(a=>a.global_rank)[0]
 
                             return {
                                 region,
@@ -399,30 +399,59 @@ function dataPrepare(input, config) {
             return g_rank
         })
         
-
+        console.log(nldata)
         
         flows.forEach((d, i) => {
             d.rank = region_rank[i]
             d.global_rank = global_rank[i]
         })
         // console.log(config.ranking)
+        
 
 
        /*  */
-        // console.log(flows)
+       let filteredData = nldata.links
+       const connectionsWithRelevance = filteredData.map(conn => {
+            const sourceNode = flows.find(node => node.name === conn.source);
+            const targetNode = flows.find(node => node.name === conn.target);
+            const relevance = (sourceNode.total_flow + targetNode.total_flow) * conn.value; // Example relevance calculation
+        return { ...conn, relevance };
+      });
+       
+      connectionsWithRelevance.sort((a, b) => b.relevance - a.relevance);
+      console.log(connectionsWithRelevance)
+      const filteredConnections = connectionsWithRelevance.slice(0, config.ranking);
+      filteredData = filteredConnections
+    //   console.log(filteredConnections)
+    //   const chordData = filteredConnections.map(conn => ({
+    //     source: conn.source,
+    //     target: conn.target,
+    //     value: conn.value,
+    //   }));
+    //    console.log(chordData)
+    //    console.log(flows)
+        
+    //     // FILTER BY TOP RANKING VALUES
+    //     function filterSourceTarget(links, countryRank, ranking) {
+    //         // Create a map for quick lookup of numbers by country name
+    //         let rankMap = new Map();
+    //       /*   links.forEach((d, i) => {
+    //             d.rank = region_rank[i]
+    //             d.global_rank = global_rank[i]
+    //         }) */
+    //         countryRank.forEach(item => rankMap.set(item.name, item.global_rank === undefined ? 1000 : item.global_rank));
+    //         /* links.map(d=> console.log(d))
+    //          */
+    //         let global_rank = countryRank.map(d=>d.global_rank)
+    //         // console.log(global_rank)
 
-   /*      // FILTER BY TOP RANKING VALUES
-        function filterSourceTarget(nldata, countryRank, ranking) {
-            // Create a map for quick lookup of numbers by country name
-            let rankMap = new Map();
-            countryRank.forEach(item => rankMap.set(item.name, item.rank === undefined ? 1000 : item.rank));
-            // console.log(rankMap)
 
-            // Filter the source-target array
-            return nldata.filter(pair =>
-                rankMap.get(pair.target) < ranking && rankMap.get(pair.target) < ranking
-            );
-        } */
+    //         // Filter the source-target array
+    //         return [links.filter(pair =>
+    //             rankMap.get(pair.target) < ranking && rankMap.get(pair.target) < ranking
+    //         ),global_rank];
+
+    //     }
 
 
 
@@ -430,16 +459,17 @@ function dataPrepare(input, config) {
             // .filter(d=>)
 
         // console.log(config.ranking)
-    /*     let rankedCountries = filterSourceTarget(filteredData, flows,10000)
-        filteredData = rankedCountries */
-        
+        // let rankedCountries = filterSourceTarget(filteredData, flows,10000)
+        // filteredData = rankedCountries
+        // console.log(rankedCountries)
         /*  let filteredData = filterSourceTarget(nldata.links,flows,40) */
         // into both source & target
         /* .filter(d=> d.source_target > threshold )    */
 
         // FILTER BY THRESHOLD
         /* .filter(d=> d.value > threshold )    */
-        let filteredData = nldata.links
+
+
         // EXCLUDE NON-RECIPROCAL COUNTRIES
         // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
@@ -471,12 +501,15 @@ function dataPrepare(input, config) {
         names = Array.from(new Set(removeNullNames()))
         
         // Filter by #selectedRanking top netflow values
+        // console.log(names)
 
-        ranked_names = flows.filter(d=> isRegion(d.name) || d.rank < config.ranking).map(d=>d.name)
+        // ranked_names = flows.filter(d=> isRegion(d.name) || d.rank < config.ranking).map(d=>d.name)
         // ranked_names = flows.filter(d=> isRegion(d.name) || d.global_rank < config.ranking).map(d=>d.name)
-        names = names.filter(d=> 
+        // console.log(ranked_names)
+        // Re order names
+    /*     names = names.filter(d=> 
                 ranked_names.includes(d)
-        )
+        ) */
         /* // Filter by limit #selectedConns 
         limited_connections_names = flows.filter(d=> isRegion(d.name) || d.connections < config.limitConns).map(d=>d.name)
         console.log(limited_connections_names)
@@ -487,6 +520,7 @@ function dataPrepare(input, config) {
         // Match filtered countries to other data
         // flows = flows.filter(d => names.includes(d.name))
         // SET OUTPUT DATA
+        
 
         let finalData = filteredData.filter(d =>
             names.includes(d.source) && names.includes(d.target)
@@ -543,7 +577,9 @@ function dataPrepare(input, config) {
     data = dataSliced
 
     flows = dataSliced.flows
-
+    // console.log(dataSliced)
+   /*  sankey_names.filter(d=> 
+        limited_connections_names.includes(d)) */
 
     function getMeta(name) {
         // get flag for a given country name
@@ -587,7 +623,8 @@ function dataPrepare(input, config) {
     }
 
     let filteredLayout = mergeFilter()
-
+    // console.log(filteredLayout)
+    
     // PREPARE SANKEY LAYOUT
     let sankey_names = [...new Set(sankey_layout.source.concat(sankey_layout.target))]
     let nodes = []
@@ -600,7 +637,6 @@ function dataPrepare(input, config) {
     })
     let selectedLinks = dataSliced.nldata
         .filter(d => sankey_names.includes(d.source) && sankey_names.includes(d.target))
-
     let nldata = {
         nodes: nodes,
         links: selectedLinks,
@@ -611,6 +647,7 @@ function dataPrepare(input, config) {
     let names = []
     let unfilteredMatrix = [] // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
     let matrix = [] // yeah, this is the final matrix 
+
 
     // Populate the filtered matrix and names in to the objects  
     function finalNamesMatrix() {
@@ -632,7 +669,7 @@ function dataPrepare(input, config) {
         return data
     }
     let result = finalNamesMatrix()
-
+    console.log(result)
 
     function setSelectors() {
         // YEAR SELECTOR 
@@ -695,11 +732,12 @@ function dataPrepare(input, config) {
     }
 
     setSelectors()
-
+    console.log(result)
     return {
         result,
         flows,
         nldata /* ,maxValues */
     }
     
+
 }
