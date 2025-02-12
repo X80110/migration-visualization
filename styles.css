@@ -354,6 +354,7 @@ img:hover {
 .ticks  {
     display: flex;
     justify-content: space-between;
+    line-height: normal;
     font-weight: 300;
     font-size: 80%;
     padding: -2em;
