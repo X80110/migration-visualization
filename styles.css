@@ -350,6 +350,26 @@ img:hover {
     border: 0px;/*  solid #598cae; */
     cursor: pointer;
 }
+
+.ticks  {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 300;
+    font-size: 80%;
+    padding: -2em;
+    width: 100%;
+    top: 20px;
+}
+
+.ticks span {
+    display: inline-block;
+    text-align: center;
+    width: 20%; Adjust based on the number of ticks
+}
+/* .slider-value {
+  font-weight: 300;
+  font-size: 90%;
+}  */
 .box {
   margin-right: 3em;
   margin-left: 3em;

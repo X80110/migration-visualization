@@ -3,7 +3,7 @@ var width = 800;
 var height = width - 50;
 const textId = "O-text-1";
 let regionIndex = 1
-let ranking = 10000
+let ranking = 6000
 let regionColors = []
 
 // #########################################################################################
@@ -311,13 +311,13 @@ function dataPrepare(input, config) {
         }
         let names = nldata.nodes.map(d => d.name)
 
-        // // COMPUTE No. of CONNECTIONS FOR EACH
-        // let number_connections = []
-        // nldata.nodes.forEach((country,i) => { 
-        //     let nonZeroConnections = country.connections.filter(connection => connection !== 0).length;
-        //     number_connections[i] = {name: country.name, connections: nonZeroConnections}
-        //     // /* console.log(`${d.name} has ${nonZeroConnections} non-zero connections.`); */
-        // }); 
+        // COMPUTE No. of CONNECTIONS FOR EACH
+        let number_connections = []
+        nldata.nodes.forEach((country,i) => { 
+            let nonZeroConnections = country.connections.filter(connection => connection !== 0).length;
+            number_connections[i] = {name: country.name, connections: nonZeroConnections}
+            // /* console.log(`${d.name} has ${nonZeroConnections} non-zero connections.`); */
+        }); 
 
         // COMPUTE TOTAL FLOWS
         let flows = names.map((name, i) => {
@@ -325,7 +325,7 @@ function dataPrepare(input, config) {
             let inflow = data.total_inflow[i]
             let net_flow = outflow - inflow
             let total_flow = outflow + inflow
-            // let connections = number_connections.map(d=>d.connections)[i]
+            let connections = number_connections.map(d=>d.connections)[i]
             let region_name = getMeta(name).region_name
             // let rank
             { return {
@@ -335,7 +335,7 @@ function dataPrepare(input, config) {
                     inflow,
                     net_flow,
                     total_flow,
-                    // connections
+                    connections
                     // rank
                 }
             }
@@ -414,29 +414,22 @@ function dataPrepare(input, config) {
        const connectionsWithRelevance = filteredData.map(conn => {
             const sourceNode = flows.find(node => node.name === conn.source);
             const targetNode = flows.find(node => node.name === conn.target);
-            const relevance = (sourceNode.total_flow + targetNode.total_flow) * conn.value; // Example relevance calculation
+            const relevance = (sourceNode.total_flow + targetNode.total_flow) * conn.value; //  relevance calculation
         return { ...conn, relevance };
       });
-       
-      connectionsWithRelevance.sort((a, b) => b.relevance - a.relevance);
-      console.log(connectionsWithRelevance)
+    
+    //   connectionsWithRelevance.sort((a, b) => b.relevance - a.relevance);
+      connectionsWithRelevance.sort((a, b) => b.value - a.value);
+
       const filteredConnections = connectionsWithRelevance.slice(0, config.ranking);
       filteredData = filteredConnections
-    //   console.log(filteredConnections)
-    //   const chordData = filteredConnections.map(conn => ({
-    //     source: conn.source,
-    //     target: conn.target,
-    //     value: conn.value,
-    //   }));
-    //    console.log(chordData)
-    //    console.log(flows)
-        
+
     //     // FILTER BY TOP RANKING VALUES
     //     function filterSourceTarget(links, countryRank, ranking) {
     //         // Create a map for quick lookup of numbers by country name
     //         let rankMap = new Map();
     //       /*   links.forEach((d, i) => {
-    //             d.rank = region_rank[i]
+    //             d.rank = region_rank[i]  
     //             d.global_rank = global_rank[i]
     //         }) */
     //         countryRank.forEach(item => rankMap.set(item.name, item.global_rank === undefined ? 1000 : item.global_rank));

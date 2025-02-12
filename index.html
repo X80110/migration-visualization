@@ -105,9 +105,16 @@
 		  
 		  <div class="slider-container">
 			<label for="selectedRanking"></label>
-			<br>
-			<input type="range" id="selectedRanking" name="slider" min="0" max="6000" value="8000">
-			<div class="slider-value">Limit connections displayed: <span id="slider-value">All</span></div>
+			<div class="slider-value">Connections displayed: <span id="slider-value">All</span></div>
+			<!-- <input  class="slider-stock" type="range" id="selectedRanking" name="slider" min="100" max="1000" value="1000"> -->
+			<input   type="range" id="selectedRanking" name="slider" min="100" max="1000" value="1000">
+			<div class="ticks">
+				<span>100</span>
+				<span>500</span>
+				<span>1000</span>
+				<span>All</span>
+			</div>
+			
 		</div>
 	
 		<script>
@@ -119,7 +126,7 @@
 			slider.addEventListener('input', function() {
 				// Actualitzem el valor mostrat
 				
-				sliderValue.textContent = this.value >= 6000? "All" : this.value;
+				sliderValue.textContent = this.value >= 1000? "All" : this.value;
 			});
 		</script>
         </div>
