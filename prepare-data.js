@@ -112,6 +112,7 @@ function filterYear(input, year) {
     let total_inflow = Object.values(nodes.total_inflow[year])
     let total_outflow = Object.values(nodes.total_outflow[year])
 
+
     const selectedMatrix = nodes.matrix[year]
     let names = nodes.names
     let result = {
@@ -399,7 +400,7 @@ function dataPrepare(input, config) {
             return g_rank
         })
         
-        console.log(nldata)
+
         
         flows.forEach((d, i) => {
             d.rank = region_rank[i]
@@ -662,7 +663,7 @@ function dataPrepare(input, config) {
         return data
     }
     let result = finalNamesMatrix()
-    console.log(result)
+
 
     function setSelectors() {
         // YEAR SELECTOR 
@@ -725,7 +726,7 @@ function dataPrepare(input, config) {
     }
 
     setSelectors()
-    console.log(result)
+    
     return {
         result,
         flows,
