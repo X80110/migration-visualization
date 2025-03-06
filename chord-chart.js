@@ -55,12 +55,11 @@ function drawChords(raw,config){
     let input = {raw_data: raw_data, metadata: raw.metadata}
 
     preparedData =  dataPrepare(input,config)
-    /* let maxValues = dataPrepare(input,config).maxValues */
+
 
     let data = preparedData.result
     let flows = preparedData.flows
     input = input.raw_data                  // used for metadata
-    
 
     let previous = config.previous || data  // used to interpolate between layouts
     var aLittleBit = Math.PI / 100000;
@@ -78,13 +77,12 @@ function drawChords(raw,config){
     var arc = d3.arc() 
         .innerRadius(innerRadius)
         /* .outerRadius(outerRadius) */
-        
+    
         .outerRadius(d=> isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
     var ribbon = d3.ribbonArrow()
         .sourceRadius(innerRadius)
         
-          /*   .endAngle(d=> d.endAngle*0.05+0.1)
-            .startAngle(d=> d.startAngle*0.05+0.1) */
+       
         .targetRadius(innerRadius -5) 
         .headRadius(15)
     /* .radius(250) */
@@ -105,9 +103,10 @@ function drawChords(raw,config){
         const outflow = flows.filter(d=>d.name.includes(name))[0].outflow
         const inflow = flows.filter(d=>d.name.includes(name))[0].inflow
         const total_flow = outflow + inflow
+        const max_flow = flows.filter(d=> d.name.includes(name))[0].total_flow
         /* const allTimeMaxFlow = maxValues[id][name]
         const isMax = total_flow === allTimeMaxFlow ? true: false */
-        return {flag: flag(name), region,region_name,id,outflow,inflow,total_flow/* ,allTimeMaxFlow, isMax */}
+        return {flag: flag(name), region,region_name,id,outflow,inflow,total_flow,max_flow/* ,allTimeMaxFlow, isMax */}
     }
     /* console.log(getMeta("Austria")) */
     
@@ -129,15 +128,18 @@ function drawChords(raw,config){
     } 
     /* console.log(data.names.map(d=>getMeta(d))) */
     // Append variables to the processed data for d3 chord() data inputs
+
     function computedChords(data)  {        // data for each arrow
         let chords = chord(data.matrix).map(d=> {
             d.source.name = data.names[d.source.index]
             d.source.region = getMeta(d.source.name).region
             d.source.id = getMeta(d.source.name).id
+
             //-----
             d.target.name = data.names[d.target.index]
             d.target.region = getMeta(d.target.name).region
             d.target.id = getMeta(d.target.name).id
+
             //-----
             direction = d.source.id > d.target.id ? 'source' :'target'
             d.id = direction+`-`+d.source.id+`-`+d.target.id
@@ -251,7 +253,7 @@ function drawChords(raw,config){
         .attr("class","container")
         .attr("id","container")
         /* .attr("viewBox", "xMinYMax meet) */    
-        
+    console.log(data)
     const groups = container.append("g")        
         .attr("class","groups")
         .selectAll("g")
@@ -261,7 +263,7 @@ function drawChords(raw,config){
 
     groups.append("path")
         .attr("class","group-arc")
-        /* .attr("d", arc)  */
+        .attr("d", arc)        
         .attr("id",d=>"group-" + d.id)
         .style("fill",d=> isRegion(d.name) ? getRegionColor(d.name) :colorCountries(d.name))
         .style("opacity",/* d=> isRegion(d.name) && config.regions.length > 0 ? 0.1:  */0.80)
