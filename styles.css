@@ -195,10 +195,13 @@ img:hover {
   width:30%;
   margin-top:4em;
   margin-bottom:3em;
+  margin:25px;
+  
 }
 .logos a{
-  display:inline;
-  margin:15px
+  display:inline-flex;
+  vertical-align: middle;
+  
 }
 .version{
   opacity:0.7;
@@ -252,6 +255,7 @@ img:hover {
 #yearRange {
     margin-bottom:1.2em;
     color: #000;
+    vertical-align: middle;
 }
 
 /*------ SLIDER each 5 years -----------------*/
