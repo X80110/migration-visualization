@@ -234,7 +234,7 @@ function dataPrepare(input, config) {
 
     var data = filterYear(input, year)
     /* maxValues = allTimeMax(input) */
-    /* console.log(maxValues) */
+    /* console.log) */
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names, data) {
         const index = new Map(names.map((name, i) => [name, i]));

@@ -107,7 +107,7 @@
 			<label for="selectedRanking"></label>
 			<div class="slider-value">Connections displayed<!-- : <span id="slider-value">All</span> --></div>
 			<!-- <input  class="slider-stock" type="range" id="selectedRanking" name="slider" min="100" max="1000" value="1000"> -->
-			<input   type="range" id="selectedRanking" name="slider" min="100" max="900" step="400" value="1000">
+			<input  class="range-slider" type="range" id="selectedRanking" name="slider" min="100" max="900" step="400" value="1000">
 			<div class="ticks">
 				<span>100</span>
 				<span>500</span>
@@ -121,12 +121,12 @@
 			const slider = document.getElementById('selectedRanking');
 			const sliderValue = document.getElementById('slider-value');
 	
-			// Afegim un esdeveniment per detectar quan es mou el slider
+			/* // Afegim un esdeveniment per detectar quan es mou el slider
 			slider.addEventListener('input', function() {
 				// Actualitzem el valor mostrat
 				
 				sliderValue.textContent = this.value >= 1000? "All" : this.value;
-			});
+			}); */
 		</script>
         </div>
 		
@@ -232,6 +232,7 @@
 	
 	   /* console.log(filename) */
 	   let files = [
+		
 		"json/flow_da_min_closed.json",
 		"json/flow_da_min_open.json",
 		"json/flow_da_pb_closed.json",
@@ -245,6 +246,7 @@
 	
 	
 	<!-- CHART -->
+	<script src="json/dummy.js"></script>
 	<script src="prepare-data.js"></script>
 	<script src="chord-chart.js"></script>
 	<script src="sankey-chart.js"></script>	
@@ -279,21 +281,22 @@
 			})
 
  */
-
+			
 			filename = fileName(config).json
 			let datasets =  [];			// promises
 			files.forEach(url => datasets.push(d3.json(url)));
 
 			let file_index = files.indexOf(filename)
-			
+			let run_time = 0
 			
 			// Load site data
 			async function getDataNDraw() {      
+
 				let raw  = []
 				for (let dataset of datasets) {
 					raw.push(dataset)
 				}
-				
+				raw_data:await Promise.all(raw)
 				const metadata = d3.csv("data/country-metadata-flags.csv")
 				return {raw_data:await Promise.all(raw), metadata: await metadata}
 			};
@@ -302,7 +305,9 @@
 			function getAnchor() {
 				return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
 			}
+
 			function switchViz(chart){
+				
 				document.onreadystatechange = function() {
 					if (document.readyState !== "complete") {
 						document.querySelector("#chord").style.visibility = "hidden";
@@ -320,10 +325,25 @@
 				document.getElementById(selectedViz).style.display = ''
 				config.regions = []
 				
+				/* if (runtime = 0) {
+					dummy_start = {raw_data: dummy, metadata: dummy_metadata}
+					console.log(runtime)
+				} else {
+
+					getDataNDraw().then(raw=> {
+	
+						config.threshold = raw.raw_data[0].threshold
+						// console.log(config)
+						console.log(raw)
+						update(raw,config)
+					})
+				}
+				runtime = runtime+1 */
 				getDataNDraw().then(raw=> {
 
 					config.threshold = raw.raw_data[0].threshold
 					// console.log(config)
+					console.log(raw)
 					update(raw,config)
 				})
 			}

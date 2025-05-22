@@ -41,8 +41,7 @@ function labelPosition(angle) {
         r: angle > Math.PI ? (temp + Math.PI / 2) * 180 / Math.PI : (temp - Math.PI / 2) * 180 / Math.PI
       };
     }
-    // ##########################################################
-    //  DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW   DRAW    DRAW
+// #########################   DRAW 
 function drawChords(raw,config){
     allYears = Object.keys(raw.raw_data[0].matrix)
    
