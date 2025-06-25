@@ -217,21 +217,19 @@
 	
 	<!-- SETTINGS -->
    <script>
-		let config = {}
-	   config.stockflow = "flow"
-	   config.sex = ""
-		config.type = ""
-		config.method = "da_pb_closed"
-		config.threshold = ""
-		config.ranking = ""
+		let config = {
+			stockflow: "flow",
+			sex: "",
+			type: "",
+			method: "da_pb_closed",
+			threshold: "",
+			ranking: "",
+			regions: []
+		};
 
-
-		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
-		// const allMethods = config.method === "" 
-        //         ? ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'] 
-        //         : ['da_min_closed', 'da_min_open','da_pb_closed'].reverse()
-		const allTypes = ['outward','transit','return']
-		const allSexes = ['male', 'female'].reverse()
+		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'];
+		const allTypes = ['outward','transit','return'];
+		const allSexes = ['male', 'female'].reverse();
 	
 	   /* console.log(filename) */
 	   let files = [
