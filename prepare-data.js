@@ -124,94 +124,7 @@ function filterYear(input, year) {
     };
     return result;
 }
-// // Get allTime max Values  ------------–––-----------------------------------–--------------------
-// function allTimeMax(input){
-//     const allYears = [...new Set(Object.keys(input.matrix))]
-//     const isRegion = (name) => {
-//         return input.regions.includes(input.names.indexOf(name))
-//     } 
-//     const getRegion = (index) => {
-//         var r = 0;
-//         for (var i = 0; i < input.regions.length; i++) {
-//             if (input.regions[i] > index) {
-//                 break;
-//             }
-//             r = i;
-//         }
-//         return input.regions[r];
-//     }
-//     const  year_datasets = () =>{
-//         // for each year process dataset flows
-//         dataset_year = allYears.map((d,i) => {
-//             let datasets = input.matrix[d]   //
-//             let dataset = {[d]:datasets}
-//             let year_dataset = dataset[d]
-//             let countryNames = input.names
-//             // GET SOURCE-TARGET STRUCTURE 
-//             // Create array of name & connections objects
-//             let matrix = countryNames.map((d,i)=> {
-//                     let name = d
-//                     let regionName = countryNames[getRegion(i)]
-//                     let matrix = year_dataset.map(a=>a[i])
-//                     return{ name:name,
-//                             region: regionName,
-//                             connections:matrix }
-//             })
-//             let nodes = matrix 
-//             // Create object to push links during loop
-//             let links = []
-//             let l = 0 // <- iterator         
-//             for (let j in matrix){
-//                 let target_region = matrix[j].region    // <- include region why not
-//                 let target = matrix[j].name
-//                 // loop (into each 1st level array)
-//                 for (let k in matrix[j].connections){
-//                     let source = matrix[k].name
-//                     let source_region = matrix[k].region    // <- include region why not
-//                     let value = matrix[j].connections[k]
-//                     links[l] = {source_region,source,target_region,target,value}
-//                     l = l+1 
-//                 }
-//             }
-//             // GRAPH STRUCTURE
-//             let nldata = {nodes: nodes, links:links} 
-//             let names = nldata.nodes.map(d=> d.name)
-//             // COMPUTE OUTFLOWS, INFLOWS & TOTAL FLOWS FOR EACH YEAR
-//             let country_totals = nldata.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
-//             let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
-//             let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
-//             //--
-//             let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
-//             let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source) 
-//             let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target) 
-//             //--
-//             let outflows = region_outflows.concat(country_outflows)
-//             let inflows = region_inflows.concat(country_inflows)
-//             let flows = names.map(name=> {
-//                 let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
-//                 let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
-//                 let total_flow = outflow + inflow
-//                 {return total_flow}
-//             })
-//             return flows.flat()
-//         })
-
-//         //  Go through names (indexes) for each year and obtain max for each index
-//         countryTotalFlows = input.names.map((name,id)=>{
-//             countryTotalFlows = allYears.map((year,index)=> {
-//                 year_dataset = dataset_year[index][id]                
-//                 return year_dataset
-//             })
-//             let max = d3.max(countryTotalFlows)
-//             return {[name]:max}
-//         })
-//         return countryTotalFlows
-//     } 
-//     allyear_totals = year_datasets()
-//     return allyear_totals
-// }
-
-
+// Commented out allTimeMax function removed.
 
 // #########################################################################################
 // #########################################################################################
@@ -219,11 +132,15 @@ function filterYear(input, year) {
 function dataPrepare(input, config) {
 
     var input_data = {...input}
-    meta = input_data.metadata
+    meta = input_data.metadata // meta is input.metadata (parsed CSV)
     threshold = /* input_data.raw_data.threshold || */ 10000 || +config.threshold
     ranking = /* input_data.raw_data.threshold || */ 10000 || +config.ranking
-    colors = input_data.raw_data.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE']
-    flags = meta.map(d => {
+    // colors = input_data.raw_data.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE'] 
+    // ^ Removed: Chart files now source 'colours' from specificRawData. The JSONs should contain a 'colours' array.
+    
+    // 'flags' is constructed locally within dataPrepare using 'meta' (input_data.metadata)
+    // This is fine as it's scoped to this function call.
+    const localFlags = meta.map(d => {
         return {
             [d.origin_name]: d.origin_flag
         }
@@ -236,14 +153,25 @@ function dataPrepare(input, config) {
     /* maxValues = allTimeMax(input) */
     /* console.log) */
     // Set a matrix of the data data to pass to the chord() function
-    function getMatrix(names, data) {
+    function getMatrix(names, matrixData) { 
         const index = new Map(names.map((name, i) => [name, i]));
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
-        for (const {
-                source,
-                target,
-                value
-            } of data) matrix[index.get(source)][index.get(target)] += value;
+
+        // Ensure matrixData is iterable and an array before looping
+        const iterableMatrixData = Array.isArray(matrixData) ? matrixData : [];
+
+        for (const link of iterableMatrixData) { // Changed to simple loop variable 'link'
+            // Destructure safely, providing defaults if properties are missing, though ideally they exist
+            const { source, target, value = 0 } = link || {}; 
+
+            if (source && target && index.has(source) && index.has(target)) {
+                 matrix[index.get(source)][index.get(target)] += value;
+            } else {
+                 if (link) { // Avoid logging for completely null/undefined entries if iterableMatrixData was []
+                    console.warn(`Skipping link in getMatrix due to missing name in index or invalid link structure: ${source} -> ${target}`, link);
+                 }
+            }
+        }
         return matrix;
     }
     // UTILS ----------------------------------------------------------------------
@@ -415,15 +343,18 @@ function dataPrepare(input, config) {
        const connectionsWithRelevance = filteredData.map(conn => {
             const sourceNode = flows.find(node => node.name === conn.source);
             const targetNode = flows.find(node => node.name === conn.target);
-            const relevance = (sourceNode.total_flow + targetNode.total_flow) * conn.value; //  relevance calculation
-        return { ...conn, relevance };
+            // Calculate 'relevance' score for potential alternative ranking. Currently unused for sorting.
+            const relevance = (sourceNode.total_flow + targetNode.total_flow) * conn.value; 
+            return { ...conn, relevance }; // Include relevance in the object if needed later
       });
     
-    //   connectionsWithRelevance.sort((a, b) => b.relevance - a.relevance);
+      // Sort connections by their actual migration 'value' in descending order.
+      // The 'relevance' field is calculated but not used for this primary sorting.
       connectionsWithRelevance.sort((a, b) => b.value - a.value);
 
+      // Filter to top N connections based on config.ranking (maps to UI slider "Connections displayed")
       const filteredConnections = connectionsWithRelevance.slice(0, config.ranking);
-      filteredData = filteredConnections
+      filteredData = filteredConnections; // These are the primary links to consider for the visualization
 
     //     // FILTER BY TOP RANKING VALUES
     //     function filterSourceTarget(links, countryRank, ranking) {
@@ -464,13 +395,22 @@ function dataPrepare(input, config) {
         /* .filter(d=> d.value > threshold )    */
 
 
-        // EXCLUDE NON-RECIPROCAL COUNTRIES
-        // Generate new names array for both source-target to exclude non-reciprocal (0 to sth && sth to 0) relationships 
-        let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source) // remove values if flow targets source region
+        // EXCLUDE NON-RECIPROCAL COUNTRIES / REFINE NAMES LIST
+        // The goal of this section is to refine the list of country names to be included in the visualization.
+        // It aims to ensure that the countries are part of meaningful bidirectional flows or significant overall flows
+        // after the initial top-N filtering by connection value.
+
+        // First, filter out connections where a region flows to itself (e.g. "Europe" to "Europe").
+        // This does not remove country-to-country flows within the same region.
+        let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source); 
+        
+        // removeNullNames aims to find countries that are part of some reciprocal interaction within dataSelect.
+        // A country is kept if it appears as both a source and a target within the selected (and self-region-flow-removed) dataset.
         function removeNullNames() {
-            let names_source = Array.from(new Set(dataSelect.flatMap(d => d.source))); // <- be careful, this broke the country sorting by regions when d.target specified  
+            let names_source = Array.from(new Set(dataSelect.flatMap(d => d.source))); 
             let names_target = Array.from(new Set(dataSelect.flatMap(d => d.target)));
 
+            // Helper to find common elements in arrays (effectively an intersection)
             function common(...arr) {
                 return arr.reduce((first, second) => {
                     return first.filter(el => second.includes(el));
@@ -542,31 +482,65 @@ function dataPrepare(input, config) {
 
     // DEFINE LAYOUT FOR SELECTED REGIONS
     // Expand countries under selected regions
-    function expandRegion(input, region) {
-        // here we'll find the region index -> we'll get following region -> finally we define a range between both index and replace them on selected region value
-        const nameRegionIndex = input.names.indexOf(region) // index of selected region in names
-        const regionIndex = input.regions.indexOf(nameRegionIndex) // index of selected region in regions
-        const nextNameRegionIndex = input.regions[regionIndex] >= input.regions.slice(-1).pop() // if equal or higher than last element in regions
-            ?
-            input.names.length // return last index in names
-            :
-            input.regions[regionIndex + 1] // return next element in regions        
-        // console.log(nameRegionIndex,nextNameRegionIndex)
-        // get range between two values
-        const range = (min, max) => Array.from({
-            length: max - min + 1
-        }, (a, i) => min + i); // computes
-        let countryRange = range(nameRegionIndex + 1, nextNameRegionIndex - 1) // applies
-        let indexList = new Array(input.regions).flat()
-        // replace selected region on index and append its countries instead
-        indexList[regionIndex] = countryRange
-        return {
-            indexList: indexList.flat(),
-            countryRange
+    function expandRegion(currentData, regionName) { // Renamed 'input' to 'currentData' for clarity
+        if (typeof regionName === 'undefined' || regionName === null || regionName === "") {
+            // If no specific region is to be expanded, return all region indices themselves.
+            // And an empty countryRange, as no countries are being expanded.
+            // Ensure currentData.regions exists and is an array
+            const regions = Array.isArray(currentData.regions) ? currentData.regions : [];
+            return {
+                indexList: regions.slice(), // Return a copy of the region indices
+                countryRange: [] 
+            };
         }
+    
+        const nameRegionIndex = currentData.names.indexOf(regionName);
+        // Ensure currentData.regions exists for the includes check
+        const regionsArray = Array.isArray(currentData.regions) ? currentData.regions : [];
+
+        if (nameRegionIndex === -1 || !regionsArray.includes(nameRegionIndex)) {
+            // If the provided regionName is not a known region or not in names list,
+            // behave as if no specific region was selected for expansion.
+            console.warn(`expandRegion: regionName "${regionName}" not found or not a valid region. Returning all regions.`);
+            return {
+                indexList: regionsArray.slice(), 
+                countryRange: []
+            };
+        }
+    
+        const regionIndexInRegionsArray = regionsArray.indexOf(nameRegionIndex); // Index OF nameRegionIndex in currentData.regions array
+    
+        // Determine the end index for the country range
+        let endRangeIndex;
+        if (regionIndexInRegionsArray === regionsArray.length - 1) {
+            // This is the last region, so countries go up to the end of the names list
+            endRangeIndex = currentData.names.length;
+        } else {
+            // Not the last region, so countries go up to the index of the next region
+            endRangeIndex = regionsArray[regionIndexInRegionsArray + 1];
+        }
+    
+        const range = (min, max) => Array.from({ length: Math.max(0, max - min) }, (_, i) => min + i);
+        // Countries are from nameRegionIndex + 1 up to endRangeIndex (exclusive for end)
+        let countriesInRange = range(nameRegionIndex + 1, endRangeIndex); 
+    
+        // Construct the new indexList: start with all regions, then replace one region with its countries
+        let newIndexList = regionsArray.slice(); // Start with a copy of all region indices
+        
+        const positionToReplace = newIndexList.indexOf(nameRegionIndex);
+        if (positionToReplace !== -1) {
+            newIndexList.splice(positionToReplace, 1, ...countriesInRange); // Replace region with its countries
+        } else {
+            console.warn("Could not find region index in list for replacement in expandRegion");
+        }
+        
+        return {
+            indexList: newIndexList.flat(), 
+            countryRange: countriesInRange 
+        };
     }
     // produce the filtered Matrix for a given a threshold value
-    let dataSliced = filteredMatrix(data, year)
+    let dataSliced = filteredMatrix(data) // Removed 'year' argument as it's not used by filteredMatrix
 
     data = dataSliced
 
@@ -578,8 +552,9 @@ function dataPrepare(input, config) {
     function getMeta(name) {
         // get flag for a given country name
         const flag = (name) => {
-            let flag = flags.filter(d => d[name])[0] ? flags.filter(d => d[name])[0] : ""
-            return Object.values(flag)[0] !== undefined ? Object.values(flag)[0] : ""
+            // Use localFlags which is defined in the outer dataPrepare scope
+            let flagResult = localFlags.find(f => f[name]); 
+            return flagResult ? flagResult[name] : "";
         }
         const region = getRegion(data.names.indexOf(name))
         const region_name = data.names[region]
@@ -593,77 +568,99 @@ function dataPrepare(input, config) {
             id
         }
     }
-    // Produce layout by concatenating and sort all expaned regions and their countries indexes
-    let last_selected = expandRegion(data, config.regions[1]).indexList
-    let first_selected = expandRegion(data, config.regions[0]).indexList
-    let target = last_selected.map(d => data.names[d])
-    let source = first_selected.map(d => data.names[d])
-    let sankey_layout = {
-        source: source,
-        target: target
-    }
+    // Produce layout for CHORD diagram based on config.regions
+    let final_chord_indices = [];
+    if (config.regions && config.regions.length > 0) {
+        let expanded_country_indices = [];
+        let processed_parent_region_indices = new Set();
 
-    let mergeFilter = () => {
-        let together = last_selected.concat(first_selected)
-        let unique = [...new Set(together)]
-        let ids = config.regions.map(d => {
-            return getMeta(d).id
-        }) // remove values for regions expaned
-        let unique_id = unique.filter(d => !ids.includes(d))
-        let sort = unique_id.sort(function (a, b) {
-            return a - b
-        }) // 
-        return sort
+        config.regions.forEach(regionName => {
+            if (regionName) {
+                const expansion = expandRegion(data, regionName); // 'data' is dataSliced
+                expanded_country_indices.push(...expansion.countryRange);
+                const parentRegionIndex = data.names.indexOf(regionName);
+                if (parentRegionIndex !== -1) {
+                    processed_parent_region_indices.add(parentRegionIndex);
+                }
+            }
+        });
+        final_chord_indices.push(...expanded_country_indices);
+        data.regions.forEach(regionIdx => {
+            if (!processed_parent_region_indices.has(regionIdx)) {
+                final_chord_indices.push(regionIdx);
+            }
+        });
+    } else {
+        final_chord_indices = data.regions.slice();
     }
+    final_chord_indices = [...new Set(final_chord_indices)].sort((a, b) => a - b);
+    let filteredLayout = final_chord_indices; // This is the list of indices for the chord diagram
 
-    let filteredLayout = mergeFilter()
-    // console.log(filteredLayout)
+    // Function to create matrix and names for Chord
+    function buildChordData(layout_indices, source_data) {
+        let new_names = [];
+        let new_unfiltered_matrix_rows = [];
+        let new_matrix = [];
+
+        layout_indices.forEach(idx => { // Use forEach for clarity if map's return isn't used
+            new_names.push(source_data.names[idx]);
+            new_unfiltered_matrix_rows.push(source_data.matrix[idx]);
+        });
+
+        new_unfiltered_matrix_rows.forEach(row_data => { // Use forEach
+            let filtered_row = layout_indices.map(col_idx => row_data[col_idx]);
+            new_matrix.push(filtered_row);
+        });
+        return { names: new_names, matrix: new_matrix };
+    }
+    let result = buildChordData(filteredLayout, data); // 'data' is dataSliced
+
+    // PREPARE SANKEY LAYOUT (uses dataSliced and config.regions directly)
+    // Note: Sankey specific logic for source/target selection from config.regions
+    let sankeySourceRegionName = config.regions && config.regions.length > 0 ? config.regions[0] : undefined;
+    let sankeyTargetRegionName = config.regions && config.regions.length > 1 ? config.regions[1] : undefined;
     
-    // PREPARE SANKEY LAYOUT
-    let sankey_names = [...new Set(sankey_layout.source.concat(sankey_layout.target))]
-    let nodes = []
-    sankey_names.map(d => {
-        let item = {
-            name: d,
-            id: getMeta(d).id
+    // If only one region is in config.regions for Sankey, treat it as source, and target becomes all other regions.
+    // Or, if a specific interaction model for Sankey is desired with one region selected, this logic might need adjustment.
+    // For now, assume config.regions[0] is source, config.regions[1] is target if they exist.
+
+    let sankey_source_indices = expandRegion(data, sankeySourceRegionName).indexList;
+    let sankey_target_indices = expandRegion(data, sankeyTargetRegionName).indexList;
+
+    // If a region was expanded, its original region index might be missing from indexList if not handled by expandRegion.
+    // However, expandRegion now returns all regions if name is undefined.
+    // If only one region selected (e.g. config.regions[0] is 'Europe', config.regions[1] is undefined):
+    //   sankey_source_indices = countries of Europe + other top-level regions
+    //   sankey_target_indices = all top-level regions (from data.regions)
+    // This might need further refinement based on exact desired Sankey interaction for single region selection.
+    // A common pattern: if one region selected, show its countries vs all other regions (aggregated).
+
+    let sankey_source_names = sankey_source_indices.map(d_idx => data.names[d_idx]);
+    let sankey_target_names = sankey_target_indices.map(d_idx => data.names[d_idx]);
+
+    // Ensure consistent node ordering for Sankey if it relies on input order
+    let sankey_display_names = [...new Set(sankey_source_names.concat(sankey_target_names))]
+                                .sort((a,b) => data.names.indexOf(a) - data.names.indexOf(b)); 
+    
+    let sankey_nodes = sankey_display_names.map(name => ({
+        name: name,
+        id: getMeta(name).id // getMeta is the one nested in dataPrepare
+    }));
+
+    // dataSliced.nldata contains all links AFTER ranking filter.
+    // Filter these links for Sankey based on the derived sankey_display_names.
+    let selectedLinksForSankey = dataSliced.nldata.filter(link => 
+        sankey_display_names.includes(link.source) && sankey_display_names.includes(link.target)
+    );
+
+    let nldata = { // This nldata is now specifically for Sankey
+        nodes: sankey_nodes,
+        links: selectedLinksForSankey,
+        sankey_layout: { // Keep structure if sankey-chart.js expects this exact layout obj
+            source: sankey_source_names, // These are names, not indices
+            target: sankey_target_names  // These are names, not indices
         }
-        nodes.push(item)
-    })
-    let selectedLinks = dataSliced.nldata
-        .filter(d => sankey_names.includes(d.source) && sankey_names.includes(d.target))
-    let nldata = {
-        nodes: nodes,
-        links: selectedLinks,
-        sankey_layout
-    }
-
-    // PREPARE CHORD DATA
-    let names = []
-    let unfilteredMatrix = [] // this will gather the first level of selectedCountries + regions but having each a yet unfiltered array of values to match the matrix
-    let matrix = [] // yeah, this is the final matrix 
-
-
-    // Populate the filtered matrix and names in to the objects  
-    function finalNamesMatrix() {
-        filteredLayout.map(d => {
-            let name = data.names[d]
-            let subgroup = data.matrix[d]
-            names.push(name)
-            unfilteredMatrix.push(subgroup)
-        })
-
-        unfilteredMatrix.map(d => {
-            let filtered = filteredLayout.map(a => d[a])
-            matrix.push(filtered)
-        })
-        data = {
-            names,
-            matrix
-        }
-        return data
-    }
-    let result = finalNamesMatrix()
-
+    };
 
     function setSelectors() {
         // YEAR SELECTOR 
