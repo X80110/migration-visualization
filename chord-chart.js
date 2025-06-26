@@ -1,13 +1,17 @@
+// Define chart-specific dimensions to avoid ReferenceError if global width/height are not yet defined
+const CHORD_WIDTH = 800; // Matching value from prepare-data.js
+const CHORD_HEIGHT = 750; // Matching value from prepare-data.js
+
 // Create svg 
 const chordDiagram = d3.select("#chord-chart")
     .append("svg")
     /* .attr('preserveAspectRatio', 'xMinYMid') */
-    .attr("viewBox", [-width / 2, -height / 2, width, height]);
+    .attr("viewBox", [-CHORD_WIDTH / 2, -CHORD_HEIGHT / 2, CHORD_WIDTH, CHORD_HEIGHT]);
 
 /* let regionIndex = 1     */    
-var innerRadius = Math.min(width, height) *0.35+10;
+var innerRadius = Math.min(CHORD_WIDTH, CHORD_HEIGHT) *0.35+10;
 var outerRadius = innerRadius + 17;
-var labelRadius = labelRadius || (outerRadius + 10);
+var labelRadius = labelRadius || (outerRadius + 10); // This will use the new outerRadius
 var labelThreshold =  1;
 
 // Configure d3 chord 
@@ -44,10 +48,11 @@ function labelPosition(angle) {
 // #########################   DRAW 
 // Function signature changed:
 // - `raw` (collection of all datasets) is replaced by `specificRawData` (the single JSON for the current view) and `metadata`
-// - `preparedData` is now passed in directly.
-function drawChords(specificRawData, metadata, preparedData, config){
+// - `chartWidth` and `chartHeight` are now passed in.
+// - Arguments changed to: chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight
+function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight){
     // allYears = Object.keys(raw.raw_data[0].matrix); // This was for the old 'raw' structure, specificRawData is one dataset
-    // If allYears is still needed, it should be derived from specificRawData.matrix keys if it's a multi-year file, or passed differently.
+    // If allYears is still needed, it should be derived from specificRawData.matrix keys (passed as specificRawData).
     // For now, assuming it might not be directly needed or its source will be specificRawData.
     if (specificRawData && specificRawData.matrix) {
       allYears = Object.keys(specificRawData.matrix);
@@ -58,14 +63,15 @@ function drawChords(specificRawData, metadata, preparedData, config){
     // The following lines are removed as data preparation is now done externally:
     // let file_index = files.indexOf(filename) // 'filename' was removed, and 'files' global is not reliable here.
     // let raw_data = raw.raw_data[file_index]
-    // let local_input = {raw_data: raw_data, metadata: metadata}
-    // preparedData =  dataPrepare(local_input,config) // This was the global preparedData
+    // let local_input = {raw_data: raw_data, metadata: metadataCsv}
+    // preparedData_local =  dataPrepare(local_input,config) 
 
-    let data = preparedData.result; // Use the passed-in preparedData
-    let flows = preparedData.flows; // Use the passed-in preparedData
+    // Use the new structured input:
+    let data = chordData; // Contains .names and .matrix for the chord diagram
+    let flows = commonData.flows; // Array of flow objects {name, outflow, inflow, ...}
     
-    // 'input' variable was used for metadata lookups like input.names, input.regions, input.colours
-    // These should now come from `specificRawData` or be part of `preparedData` if transformed.
+    // 'input' alias for specificRawData (original JSON content for current view)
+    // Used for things like input.regions, input.names (original lists), input.colours
     // Let's alias specificRawData to 'input' for minimal changes to getMeta, getRegion, isRegion, getRegionColor etc.
     // This assumes specificRawData has .names, .regions, .colours properties.
     let input = specificRawData; 
@@ -107,46 +113,14 @@ function drawChords(specificRawData, metadata, preparedData, config){
         .headRadius(15)
     /* .radius(250) */
 
-    
-    
-    // Get metadata given a source/target name
-    // Refactored to accept metadata_csv (parsed CSV data for flags) directly
-    function getMeta(name, metadata_csv) {
-        const get_flag_for_name = (countryName, csv_data) => {
-            if (!csv_data) return "";
-            const country_row = csv_data.find(row => row.origin_name === countryName);
-            return country_row ? country_row.origin_flag : "";
-        };
-    
-        const flag_value = get_flag_for_name(name, metadata_csv);
-        const region = getRegion(input.names.indexOf(name)); // getRegion still uses 'input' from drawChords scope
-        const region_name = input.names[region];
-        const id = input.names.indexOf(name);
-        
-        // 'flows' is from preparedData in drawChords scope
-        const flow_data_for_name = flows.find(d=>d.name.includes(name)); 
-        const outflow = flow_data_for_name ? flow_data_for_name.outflow : 0;
-        const inflow = flow_data_for_name ? flow_data_for_name.inflow : 0;
-        const total_flow = outflow + inflow;
-        const max_flow = flow_data_for_name ? flow_data_for_name.total_flow : 0;
+    // getFullMetaForChord wrapper removed. Logic will be inline or a simplified local helper if needed.
+    // Global getBasicMeta will be used, and flow data will be merged from 'flows' (commonData.flows).
 
-        return {flag: flag_value, region,region_name,id,outflow,inflow,total_flow,max_flow};
-    }
-    /* console.log(getMeta("Austria", metadata)) */ // Example call if metadata is in scope
-    
-    // Get region index given a source/target name
-    function getRegion(index) {
-        var r = 0;
-        for (var i = 0; i < input.regions.length; i++) {
-            if (input.regions[i] > index) {
-            break;
-            }
-            r = i;
-        }
-        return input.regions[r];
-    }
+    // Local getRegion function is removed as getBasicMeta handles region determination.
+    // function getRegion(index) { ... } 
 
     // Computes true if 'name' is identified as a region. Will be used to run conditional styles on each element. 
+    // 'input' here is specificRawData.
     function isRegion(name) {
         return input.regions.includes(input.names.indexOf(name))
     } 
@@ -155,16 +129,17 @@ function drawChords(specificRawData, metadata, preparedData, config){
 
     function computedChords(data)  {        // data for each arrow
         let chords = chord(data.matrix).map(d=> {
-            d.source.name = data.names[d.source.index]
-            const sourceMeta = getMeta(d.source.name, metadata);
-            d.source.region = sourceMeta.region;
-            d.source.id = sourceMeta.id;
+            d.source.name = data.names[d.source.index];
+            const sourceBasicMeta = getBasicMeta(d.source.name, input, metadataCsv); // 'input' is specificRawData, 'metadataCsv' is metadata
+            // Flow data is not directly needed for source.region and source.id for chord structure
+            d.source.region = sourceBasicMeta.region;
+            d.source.id = sourceBasicMeta.id;
 
             //-----
-            d.target.name = data.names[d.target.index]
-            const targetMeta = getMeta(d.target.name, metadata);
-            d.target.region = targetMeta.region;
-            d.target.id = targetMeta.id;
+            d.target.name = data.names[d.target.index];
+            const targetBasicMeta = getBasicMeta(d.target.name, input, metadataCsv);
+            d.target.region = targetBasicMeta.region;
+            d.target.id = targetBasicMeta.id;
 
             //-----
             direction = d.source.id > d.target.id ? 'source' :'target'
@@ -180,9 +155,9 @@ function drawChords(specificRawData, metadata, preparedData, config){
         let groups = chord(data.matrix).groups
         groups.map(d=>{
             d.name = data.names[d.index];
-            const groupMeta = getMeta(d.name, metadata);
-            d.id = groupMeta.id;
-            d.region = groupMeta.region;
+            const groupBasicMeta = getBasicMeta(d.name, input, metadataCsv);
+            d.id = groupBasicMeta.id;
+            d.region = groupBasicMeta.region;
             d.angle = (d.startAngle  + (d.endAngle - d.startAngle) / 2);
             })
     return groups
@@ -271,26 +246,26 @@ function drawChords(specificRawData, metadata, preparedData, config){
     }
 
     const colorCountries = (name) => {
-        const countryMeta = getMeta(name, metadata); // 'metadata' is from drawChords's scope
-        let color_country = getRegionColor(countryMeta.region_name); 
+        // 'input' is specificRawData from drawChords scope, 'metadataCsv' is the metadata param from drawChords
+        const countryBasicMeta = getBasicMeta(name, input, metadataCsv); 
+        let color_country = getRegionColor(countryBasicMeta.region_name); // getRegionColor uses 'input'
         let hsl = d3.hsl(color_country);
         
         const r_palette = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
         
-        const id = Number(countryMeta.id);
-        const region = Number(countryMeta.region);
+        const id = Number(countryBasicMeta.id);
+        const region = Number(countryBasicMeta.region); // This is the ID of the region name
     
         if (isNaN(id) || isNaN(region)) {
-            // console.warn(`colorCountries: Invalid id or region for name "${name}". Meta:`, countryMeta);
-            return r_palette[0]; // Return a default/fallback color
+            // console.warn(`colorCountries: Invalid id or region for name "${name}". Meta:`, countryBasicMeta);
+            return r_palette[0]; 
         }
         
-        // Ensure the index is positive and within bounds for the palette
-        let index = (id - region) % 5;
-        if (index < 0) {
-            index += 5;
-        }
-        return r_palette[index];
+        let palleteIndex = (id - region); // Original logic: index relative to the start of the region block
+                                          // getBasicMeta's 'region' IS the index of the region name.
+                                          // This is consistent with how 'id - region' was used before if 'region' was the region's own ID.
+        palleteIndex = ((palleteIndex % 5) + 5) % 5; // Ensure positive and within 0-4 range
+        return r_palette[palleteIndex];
     };
 
     // START CREATING SVG ELEMENTS
@@ -364,10 +339,10 @@ function drawChords(specificRawData, metadata, preparedData, config){
             ${d.angle > Math.PI ? "rotate(180)" : ""}
         `)
         .text(d => {
-            const labelMeta = getMeta(d.name, metadata);
+            const labelBasicMeta = getBasicMeta(d.name, input, metadataCsv);
             return d.angle > Math.PI
-                ? d.name+ " "+ labelMeta.flag
-                :  labelMeta.flag+ " "+  d.name;
+                ? d.name+ " "+ labelBasicMeta.flag
+                :  labelBasicMeta.flag+ " "+  d.name;
         })
         .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
         .transition('country-label')
@@ -380,7 +355,7 @@ function drawChords(specificRawData, metadata, preparedData, config){
               };
         });
   
-    var maxBarHeight = height / 2 - (70);
+    var maxBarHeight = chartHeight / 2 - (70); // Use passed-in chartHeight
     var arcRegionLabel = d3.arc()
         .innerRadius(maxBarHeight)
         .outerRadius(maxBarHeight + 2)
@@ -511,31 +486,48 @@ function drawChords(specificRawData, metadata, preparedData, config){
         .style('visibility', 'hidden')
         .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
         
-    function tooltipCountry(evt,d)  {
-        const sourceMeta = getMeta(d.source.name, metadata);
-        const targetMeta = getMeta(d.target.name, metadata);
-        var source = isRegion(data.names[d.source.index])
-            ? `<span style="color:${ getRegionColor(data.names[d.source.index])}"> ${d.source.name}</span>`
-            : `<span style="color:${ colorCountries(d.source.name)}"> ${sourceMeta.flag+ " "+  d.source.name}</span>`
-        var target = isRegion(data.names[d.target.index] )
-            ? `<span style="color:${ getRegionColor(data.names[d.target.index])}"> ${d.target.name}</span>`
-            : `<span style="color:${ colorCountries(d.source.name)}"> ${targetMeta.flag+ " "+  d.target.name}</span>`
+    // const tooltip = d3.select('body').append('g') // This was the duplicate declaration
+    //     .attr('id', 'tooltip')
+    //     .style('background-color','#ffffff')
+        .style('padding','1em')
+        .style('border-radius','4px')
+        .style('position', 'absolute')
+        .style('text-align', 'center')
+        .style('visibility', 'hidden')
+        .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
         
-        let currentFilename = fileName(config).json; // Derive filename from current config
+    function tooltipCountry(evt,d_link)  { // d_link is the link object from D3 {source, target, value}
+        const sourceBasicMeta = getBasicMeta(d_link.source.name, input, metadataCsv);
+        const sourceFlowInfo = flows.find(f => f.name === d_link.source.name) || {}; // 'flows' is commonData.flows
+        const sourceFullMeta = { ...sourceBasicMeta, ...sourceFlowInfo };
+
+        const targetBasicMeta = getBasicMeta(d_link.target.name, input, metadataCsv);
+        const targetFlowInfo = flows.find(f => f.name === d_link.target.name) || {};
+        const targetFullMeta = { ...targetBasicMeta, ...targetFlowInfo };
+
+        var sourceDisplay = isRegion(d_link.source.name) 
+            ? `<span style="color:${ getRegionColor(d_link.source.name)}"> ${d_link.source.name}</span>`
+            : `<span style="color:${ colorCountries(d_link.source.name)}"> ${sourceFullMeta.flag+ " "+  d_link.source.name}</span>`;
+        var targetDisplay = isRegion(d_link.target.name)
+            ? `<span style="color:${ getRegionColor(d_link.target.name)}"> ${d_link.target.name}</span>`
+            : `<span style="color:${ colorCountries(d_link.target.name)}"> ${targetFullMeta.flag+ " "+  d_link.target.name}</span>`;
+        
+        let currentFilename = fileName(config).json; 
+        let valueDisplay;
         if(currentFilename.includes('stock')){
-            var value = ` <div> 
-                        <b>${formatValue(d.source.value)}</b> 
-                        <br>in<br> `
+            valueDisplay = ` <div> 
+                        <b>${formatValue(d_link.source.value)}</b> 
+                        <br>in<br> </div> `;
         } else {
-            var value = ` <div> 
+            valueDisplay = ` <div> 
                         ▾<br>
-                        <b>${formatValue(d.source.value)}</b> 
-                        <br>  `
+                        <b>${formatValue(d_link.source.value)}</b> 
+                        <br>  </div> `;
         }
         return tooltip
-            .html(`\ <b>${source} </b> 
-                        ${value} 
-                        ${target}  `)
+            .html(`\ <b>${sourceDisplay} </b> 
+                        ${valueDisplay} 
+                        ${targetDisplay}  `)
             .transition('tooltip')
             .duration(15)
             .style('background-color','#ffffff')
@@ -545,38 +537,41 @@ function drawChords(specificRawData, metadata, preparedData, config){
             .style("visibility", "visible")       
     }
 
-    function tooltipRegion(evt,d) {
-        const regionMeta = getMeta(d.name, metadata);
-        let source = isRegion(d.name)
-            ? `<span style="color:white"> <b>${d.name}</b></span>`
-            : `<span style="color:white"> ${regionMeta.region_name}</span></br>
-                <span style="color:white"><b> ${regionMeta.flag+ " "+  d.name}</b></span>`
-        if (data.matrix !== undefined) {
-            var outflow = formatValue(regionMeta.outflow) 
-            var inflow = formatValue(regionMeta.inflow)
-        }
-        let currentFilename = fileName(config).json; // Derive filename from current config
+    function tooltipRegion(evt,d_group) { // d_group is a group object
+        const basicMeta = getBasicMeta(d_group.name, input, metadataCsv);
+        const flowInfo = flows.find(f => f.name === d_group.name) || {}; // 'flows' is commonData.flows
+        const fullMeta = { ...basicMeta, ...flowInfo };
+
+        let sourceDisplay = isRegion(d_group.name) 
+            ? `<span style="color:white"> <b>${d_group.name}</b></span>`
+            : `<span style="color:white"> ${fullMeta.region_name}</span></br>
+                <span style="color:white"><b> ${fullMeta.flag+ " "+  d_group.name}</b></span>`;
+        
+        var outflowDisplay = formatValue(fullMeta.outflow || 0); 
+        var inflowDisplay = formatValue(fullMeta.inflow || 0);
+        
+        let currentFilename = fileName(config).json; 
         // console.log(currentFilename.includes("stock")) ---> false ? then synthax is outflow/inflow instead of emigrants/immigrants
         if (currentFilename.includes('stock') ){
             return tooltip
-                .html(`\ ${source} </br>
-                        Total emigrants: <b> ${outflow}</b> </br>
-                        Total immigrants: <b> ${inflow} </b> `)
+                .html(`\ ${sourceDisplay} </br>
+                        Total emigrants: <b> ${outflowDisplay}</b> </br>
+                        Total immigrants: <b> ${inflowDisplay} </b> `)
                 .transition('tooltip')
                 .duration(15)
-                .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+                .style('background-color',isRegion(d_group.name) ? getRegionColor(d_group.name): colorCountries(d_group.name)) // Use d_group.name
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
                 .style("visibility", "visible")
         }
         else {
             return tooltip
-                .html(`\ ${source} </br>
-                        Total Outflow: <b> ${outflow}</b> </br>
-                        Total Inflow: <b> ${inflow} </b> `)
+                .html(`\ ${sourceDisplay} </br> 
+                        Total Outflow: <b> ${outflowDisplay}</b> </br>
+                        Total Inflow: <b> ${inflowDisplay} </b> `)
                 .transition('tooltip')
                 .duration(15)
-                .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+                .style('background-color',isRegion(d_group.name) ? getRegionColor(d_group.name): colorCountries(d_group.name))
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
                 .style("visibility", "visible")
@@ -602,9 +597,14 @@ function drawChords(specificRawData, metadata, preparedData, config){
         .filter(function(d) {
             return d.id !== d.region;
         })
-        .on('click', function(evt, d) {
-            const regionNameToRemove = getMeta(d.name, metadata).region_name;
-            config.regions.splice( config.regions.indexOf( regionNameToRemove ), 1);
+        .on('click', function(evt, d_country_group) { // d_country_group is a group object for a country
+            const basicMeta = getBasicMeta(d_country_group.name, input, metadataCsv);
+            // Flow data not needed here, just region_name from basicMeta
+            const regionNameToRemove = basicMeta.region_name;
+            const indexToRemove = config.regions.indexOf(regionNameToRemove);
+            if (indexToRemove > -1) {
+                config.regions.splice(indexToRemove, 1);
+            }
             
             d3.selectAll("g#tooltip")
                 .remove()    

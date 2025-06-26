@@ -24,60 +24,51 @@ if (!Number.prototype.mod) { // Define if not already defined globally
     };
 }
 
-function getRegion_sankey(index, current_specificRawData) {
-    if (!current_specificRawData || !current_specificRawData.regions) return 0; // Safety
-    var r = 0;
-    for (var i = 0; i < current_specificRawData.regions.length; i++) {
-        if (current_specificRawData.regions[i] > index) {
-        break;
-        } r = i;
-    } return current_specificRawData.regions[r];
-}
+// getRegion_sankey is removed as getBasicMeta provides region information.
 
-function isRegion_sankey(name, current_specificRawData) {
-    if (!current_specificRawData || !current_specificRawData.regions || !current_specificRawData.names) return false; // Safety
+function isRegion_sankey(name, current_specificRawData) { // Retained for direct checks
+    if (!current_specificRawData || !current_specificRawData.regions || !current_specificRawData.names) return false; 
     const nameIndex = current_specificRawData.names.indexOf(name);
     if (nameIndex === -1) return false;
     return current_specificRawData.regions.includes(nameIndex);
 } 
 
-function getMeta_sankey(name, current_specificRawData, current_metadata_csv, current_prepared_flows) {
-    const get_flag_for_name = (countryName, csv_data) => {
-        if (!csv_data) return "";
-        const country_row = csv_data.find(row => row.origin_name === countryName);
-        return country_row ? country_row.origin_flag : "";
-    };
+// getMeta_sankey is removed. Logic is now: call global getBasicMeta, then augment with flows locally.
 
-    const nameIndex = current_specificRawData.names.indexOf(name);
-    const flag_value = get_flag_for_name(name, current_metadata_csv);
-    const region_val = getRegion_sankey(nameIndex, current_specificRawData);
-    const region_name_val = nameIndex !== -1 && current_specificRawData.names[region_val] ? current_specificRawData.names[region_val] : "N/A";
-    const id_val = nameIndex;
-    
-    const flow_data_for_name = current_prepared_flows ? current_prepared_flows.find(d=>d.name && d.name.includes(name)) : null; 
-    const outflow_val = flow_data_for_name ? flow_data_for_name.outflow : 0;
-    const inflow_val = flow_data_for_name ? flow_data_for_name.inflow : 0;
-
-    return {flag: flag_value, region: region_val, region_name: region_name_val, id: id_val, outflow: outflow_val, inflow: inflow_val};
-}
-
-const getRegionColor_sankey = (name, current_specificRawData) => {
-    if (!current_specificRawData || !current_specificRawData.regions || !current_specificRawData.names) return '#ccc'; // Safety
+const getRegionColor_sankey = (name, current_specificRawData) => { // Retained, uses specificRawData
+    if (!current_specificRawData || !current_specificRawData.regions || !current_specificRawData.names) return '#ccc'; 
     const regionNames = current_specificRawData.regions.map((d)=> { return current_specificRawData.names[d]});
     const regionIndex = regionNames.indexOf(name);
     const colorPalette = current_specificRawData.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE'];
     return colorPalette[regionIndex % colorPalette.length];
 }
 
-const colorCountries_sankey = (name, current_specificRawData, current_metadata_csv, current_prepared_flows) => {
-    const countryMeta = getMeta_sankey(name, current_specificRawData, current_metadata_csv, current_prepared_flows);
-    let color_country = getRegionColor_sankey(countryMeta.region_name, current_specificRawData);
+const colorCountries_sankey = (name, current_specificRawData, current_metadata_csv /* current_prepared_flows not needed here directly */) => {
+    // Uses global getBasicMeta. current_metadata_csv is the metadata param from setData.
+    const countryBasicMeta = getBasicMeta(name, current_specificRawData, current_metadata_csv); 
+    
+    let color_country = getRegionColor_sankey(countryBasicMeta.region_name, current_specificRawData);
     let hsl = d3.hsl(color_country);
-    // countryMeta contains id and region
-    const r = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
-    return r[(countryMeta.id - countryMeta.region) % 5]; // Ensure countryMeta.id and .region are numbers
+
+    const id = Number(countryBasicMeta.id);
+    const region = Number(countryBasicMeta.region); // This is the ID of the region name from getBasicMeta
+
+    if (isNaN(id) || isNaN(region)) {
+        // console.warn('colorCountries_sankey: Invalid id or region for name', name, countryBasicMeta);
+        const r_palette_fallback = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
+        return r_palette_fallback[0]; // Return a default/fallback color
+    }
+    
+    const r_palette = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
+    let palleteIndex = (id - region); 
+    palleteIndex = ((palleteIndex % 5) + 5) % 5; // Ensure positive and within 0-4 range
+    return r_palette[palleteIndex];
 }
 // --- End of Top-Level Helper Functions ---
+
+// Define chart-specific dimensions to avoid ReferenceError if global width/height are not yet defined
+const SANKEY_WIDTH = 800; // Matching value from prepare-data.js
+const SANKEY_HEIGHT = 750; // Matching value from prepare-data.js
 
 
 // create graph structure for sankey
@@ -131,7 +122,7 @@ let graph = (data) => {
 
 const sankeyDiagram = d3.select("#sankey-chart")
     .append("svg")
-    .attr("viewBox", [-(width/5) , -10, width, height+50])
+    .attr("viewBox", [-(SANKEY_WIDTH/5) , -10, SANKEY_WIDTH, SANKEY_HEIGHT+50]);
 
 const Links = sankeyDiagram.append("g")
     .attr("class", "links");
@@ -151,44 +142,57 @@ const tooltip = d3.select('body').append('g')
 
 // Function signature changed:
 // - `raw` is replaced by `specificRawData` (the single JSON for the current view) and `metadata`
-// - `preparedData` is now passed in directly, removing reliance on global state.
-function setData(specificRawData, metadata, preparedData, config){
+// - `chartWidth` and `chartHeight` are now passed in.
+// - Arguments changed to: sankeyData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight
+function setData(sankeyData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight){
     // GET SELECTED DATASET - This section is removed as specificRawData is now passed directly.
-    // filename = fileName(config).json; // Still needed for tooltip logic later, can be derived from config
+    // filename = fileName(config).json; // Tooltips derive this locally if needed.
     // file_index = files.indexOf(filename); // 'files' global might not be reliable
     // let input_alias = {raw_data: raw.raw_data[file_index], metadata: raw.metadata}; // Old way
 
     // `input_data` was an alias for the specific raw data JSON. Now use `specificRawData`.
-    let input_data = specificRawData; // Used for metadata like .regions, .names for getMeta, getRegion etc.
-                                      // Also for specificRawData.matrix for tooltip logic.
-
-    // `preparedData` is now an argument.
-    // The following lines use `preparedData` that's passed in.
-    let indexedSource = preparedData.nldata.sankey_layout.source;  // list all origin node
-    let indexedTarget = preparedData.nldata.sankey_layout.target;  // list all destination nodes
+    let input_data = specificRawData; // Used for specificRawData.names, .regions, .colours by helpers
     
-    /* indexedNodes = indexedSource.concat(indexedTarget)     */          
-    // Ensure `preparedData.nldata.links` exists and is an array before filtering
-    let sort_links = [];
-    if (preparedData && preparedData.nldata && Array.isArray(preparedData.nldata.links)) {
-        sort_links = preparedData.nldata.links  // sort links by source and target
-            .filter(d=> indexedSource.includes(d.source) &&  indexedTarget.includes(d.target));
+    // Use the new structured input:
+    // `sankeyData` contains .nodes, .links, .layout
+    // `commonData` contains .flows
+    // `metadataCsv` is the parsed flags CSV
+
+    let indexedSource = sankeyData.layout.source;  // These are already name arrays
+    let indexedTarget = sankeyData.layout.target;  // These are already name arrays
+    
+    let linksForGraph = [];
+    if (sankeyData && Array.isArray(sankeyData.links)) {
+        // The links in sankeyData.links should already be filtered by dataPrepare
+        // to only include those between sankey_display_names.
+        // The filter here using indexedSource/Target might be redundant if dataPrepare's
+        // sankey_display_names logic is comprehensive. However, it provides an additional layer of safety.
+        linksForGraph = sankeyData.links.filter(d => 
+            (indexedSource.includes(d.source) || indexedSource.includes(d.source_region)) && // Check both name and region if applicable
+            (indexedTarget.includes(d.target) || indexedTarget.includes(d.target_region))   // Check both name and region
+        );
+         // If links are pre-filtered in dataPrepare to only be between nodes in sankeyData.nodes,
+         // then this filter might simplify or change. For now, assume this filtering is okay.
+         // A simpler filter if sankeyData.links are guaranteed to be between displayed nodes:
+         // linksForGraph = sankeyData.links;
+
     } else {
-        console.error("Sankey: preparedData.nldata.links is not available or not an array.", preparedData);
-        // Potentially clear the sankey chart or show an error
+        console.error("Sankey: sankeyData.links is not available or not an array.", sankeyData);
         Links.selectAll("path").remove();
         Nodes.selectAll("g").remove();
-        return; // Exit if data is not properly structured
+        return; 
     }
     
-    graphData = graph(sort_links); // generate graph
+    // graph() expects an array of {source, target, value} objects. 
+    // sankeyData.links should be this.
+    graphData = graph(linksForGraph); 
   
     const sankey = d3.sankey()
         /* .nodeId(d=> d.index) */
         .nodeWidth(16)
         .nodePadding(8) 
         /* .nodeAlign(d3.sankeyJustify) */
-        .size([width-300, height])
+        .size([chartWidth-300, chartHeight]) // Use passed-in chartWidth and chartHeight
         /* .nodeSort(null) */
         /* .linkSort(null) */
      /*    .linkSort((a,b) => {
@@ -228,8 +232,8 @@ function updateSankey(raw, input, config, graph_data){ */
     // Alias specificRawData and parts of preparedData for convenience if helpers remain inside.
     // However, helpers are moved out, so they will take these as params.
     const current_specificRawData = specificRawData;
-    const current_metadata_csv = metadata;
-    const current_prepared_flows = preparedData.flows;
+    const current_metadata_csv = metadataCsv; // Corrected: was metadata
+    const current_prepared_flows = commonData.flows; // Corrected: was preparedData.flows
 
 
     //// DRAW VECTORS ////////////////////////////////////////////////////////////////////////
@@ -268,10 +272,7 @@ function updateSankey(raw, input, config, graph_data){ */
 
     nodeEnter.append("rect")
         .attr("class", "node")
-        .attr("x", d => d.x0 < width / 2 
-            ? d.x0-3
-            : d.x0+3 
-            )
+        .attr("x", d => d.x0 < chartWidth / 2 ? d.x0-3 : d.x0+3 ) // Use chartWidth
         .attr("y", d=> d.y0)
         .attr("height", d=> d.y1 - d.y0 )
         .style("opacity",d=> isRegion_sankey(d.name, current_specificRawData) && config.regions.length > 0 ? 0.1: 0.7)
@@ -285,7 +286,7 @@ function updateSankey(raw, input, config, graph_data){ */
     node.select("rect")  
         .transition('node')
         .duration(500)
-        .attr("x", d => d.x0 < width / 2 ? d.x0-3:d.x0+3 )
+        .attr("x", d => d.x0 < chartWidth / 2 ? d.x0-3 : d.x0+3 ) // Use chartWidth
         .attr("y", d => d.y0 )
         .attr("height", d=> d.y1 - d.y0 )
         /* .attr("width", d=>  isRegion_sankey(d.name, current_specificRawData) ? d.x1:d.x1 - d.x0) */
@@ -298,10 +299,10 @@ function updateSankey(raw, input, config, graph_data){ */
     nodeEnter.append("text")
         .attr("x",d =>{ 
             const isReg = isRegion_sankey(d.name, current_specificRawData);
-            if(d.x0 < width / 2 && isReg) {return d.x1+6}
-            if(d.x0 > width / 2 && isReg) {return d.x0-6}
-            if(d.x0 < width / 2 && !isReg) {return d.x1-26}
-            if(d.x0 > width / 2 && !isReg) {return d.x0+26}
+            if(d.x0 < chartWidth / 2 && isReg) {return d.x1+6}          // Use chartWidth
+            if(d.x0 > chartWidth / 2 && isReg) {return d.x0-6}          // Use chartWidth
+            if(d.x0 < chartWidth / 2 && !isReg) {return d.x1-26}         // Use chartWidth
+            if(d.x0 > chartWidth / 2 && !isReg) {return d.x0+26}         // Use chartWidth
         })
         .attr("y", d => (d.y1 + d.y0) / 2 - 6)
         .attr("font-size", d=> isRegion_sankey(d.name, current_specificRawData) ? "85%": "65%")
@@ -310,16 +311,17 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("dy", "0.6em")
         .attr("text-anchor", d =>{ 
             const isReg = isRegion_sankey(d.name, current_specificRawData);
-            if(d.x0 < width / 2 && isReg) {return "start"}
-            if(d.x0 > width / 2 && isReg) {return "end"}
-            if(d.x0 < width / 2 && !isReg) {return "end"}
-            if(d.x0 > width / 2 && !isReg) {return "start"}
+            if(d.x0 < chartWidth / 2 && isReg) {return "start"}         // Use chartWidth
+            if(d.x0 > chartWidth / 2 && isReg) {return "end"}           // Use chartWidth
+            if(d.x0 < chartWidth / 2 && !isReg) {return "end"}          // Use chartWidth
+            if(d.x0 > chartWidth / 2 && !isReg) {return "start"}         // Use chartWidth
         })
         .text(d => {
-            const meta = getMeta_sankey(d.name, current_specificRawData, current_metadata_csv, current_prepared_flows);
+            // Use global getBasicMeta; flow data not needed for node label, just flag.
+            const basicMeta = getBasicMeta(d.name, current_specificRawData, current_metadata_csv);
             return d.sourceLinks.length > 0
-                ?  d.name+ " "+ meta.flag
-                :  meta.flag+ " "+  d.name;
+                ?  d.name+ " "+ basicMeta.flag
+                :  basicMeta.flag+ " "+  d.name;
         })
 
 
@@ -331,87 +333,120 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("y", d => (d.y1 + d.y0) / 2 -4)
         .attr("x",d =>{ 
             const isReg = isRegion_sankey(d.name, current_specificRawData);
-            if(d.x0 < width / 2 && isReg) {return d.x1+6}
-            if(d.x0 > width / 2 && isReg) {return d.x0-6}
-            if(d.x0 < width / 2 && !isReg) {return d.x1-26}
-            if(d.x0 > width / 2 && !isReg) {return d.x0+26}
+            if(d.x0 < chartWidth / 2 && isReg) {return d.x1+6}          // Use chartWidth
+            if(d.x0 > chartWidth / 2 && isReg) {return d.x0-6}          // Use chartWidth
+            if(d.x0 < chartWidth / 2 && !isReg) {return d.x1-26}         // Use chartWidth
+            if(d.x0 > chartWidth / 2 && !isReg) {return d.x0+26}         // Use chartWidth
         })
         .attr("dy", "0.6em")
         .attr("text-anchor", d =>{ 
             const isReg = isRegion_sankey(d.name, current_specificRawData);
-            if(d.x0 < width / 2 && isReg) {return "start"}
-            if(d.x0 > width / 2 && isReg) {return "end"}
-            if(d.x0 < width / 2 && !isReg) {return "end"}
-            if(d.x0 > width / 2 && isReg) {return "start"}
+            if(d.x0 < chartWidth / 2 && isReg) {return "start"}         // Use chartWidth
+            if(d.x0 > chartWidth / 2 && isReg) {return "end"}           // Use chartWidth
+            if(d.x0 < chartWidth / 2 && !isReg) {return "end"}          // Use chartWidth
+            if(d.x0 > chartWidth / 2 && isReg) {return "start"}         // Use chartWidth
         })
         .text(d => {
-            const meta = getMeta_sankey(d.name, current_specificRawData, current_metadata_csv, current_prepared_flows);
+            const basicMeta = getBasicMeta(d.name, current_specificRawData, current_metadata_csv);
             return d.sourceLinks.length > 0
-                ?  d.name+ " "+ meta.flag
-                :  meta.flag+ " "+  d.name;
+                ?  d.name+ " "+ basicMeta.flag
+                :  basicMeta.flag+ " "+  d.name;
         })
     node.exit().remove();
     // OPEN REGIONS
     nodeEnter
-        .on('click', function(evt, d) {
+        .on('click', function(evt, d_node) { // d_node is the clicked Sankey node data
             // compute clicked region
               // config.regions[0] will be *source*
               // config.regions[1] will be *target*
-            function nodeSide(a){ // This function uses 'd' from the .on('click') scope.
-                a = d
-                a.x0 < width / 2 ?  config.regions[0] = a.name : null;
-                a.x0 > width / 2 ? config.regions[1] = a.name : null
+            function nodeSide(clickedNodeData){ 
+                if (clickedNodeData.x0 < chartWidth / 2) { // Clicked a source node
+                    // If clicking the same source region that's already the sole focus, collapse it.
+                    if (config.regions[0] === clickedNodeData.name && (config.regions[1] === undefined || config.regions[1] === null)) {
+                        config.regions[0] = undefined;
+                    } else {
+                        config.regions[0] = clickedNodeData.name;
+                        config.regions[1] = undefined; // Clear target selection
+                    }
+                } else { // Clicked a target node
+                    // If clicking the same target region that's already the sole focus, collapse it.
+                    if (config.regions[1] === clickedNodeData.name && (config.regions[0] === undefined || config.regions[0] === null)) {
+                        config.regions[1] = undefined;
+                    } else {
+                        config.regions[1] = clickedNodeData.name;
+                        config.regions[0] = undefined; // Clear source selection
+                    }
+                }
+                 // Ensure config.regions is an array of two, even if with undefined values
+                if (!Array.isArray(config.regions)) config.regions = [];
+                while(config.regions.length < 2) {
+                    config.regions.push(undefined);
+                }
+                config.regions.length = 2; // Enforce length of 2
             }
-            nodeSide(d)
+            nodeSide(d_node) 
             // Call the global update function from index.html
             update(loadedJsonData, initialMetadata, config);
         })
     /// CLOSE REGIONS
     nodeEnter
-        .filter(d=>!isRegion_sankey(d.name, current_specificRawData))
-        .on('click', function(evt, d) {
-            const meta = getMeta_sankey(d.name, current_specificRawData, current_metadata_csv, current_prepared_flows);
-            config.regions.splice( config.regions.indexOf( meta.region_name ), 1);
-            // d3.selectAll("#tooltip")
-            //     .remove() 
-            // Call the global update function from index.html
+        .filter(d_node=>!isRegion_sankey(d_node.name, current_specificRawData))
+        .on('click', function(evt, d_node) {
+            const basicMeta = getBasicMeta(d_node.name, current_specificRawData, current_metadata_csv);
+            // We only need region_name from basicMeta here. Flow data is not relevant for this action.
+            const regionNameToRemove = basicMeta.region_name;
+            const indexToRemove = config.regions.indexOf(regionNameToRemove);
+            if (indexToRemove > -1) {
+                 config.regions.splice(indexToRemove, 1);
+            }
+            // If a region was in config.regions[0] or [1], make that slot undefined
+            if (config.regions[0] === regionNameToRemove) config.regions[0] = undefined;
+            if (config.regions[1] === regionNameToRemove) config.regions[1] = undefined;
+
             update(loadedJsonData, initialMetadata, config);
             
         })    
 
     
     /* nodeEnter.append("title")
-        .text(function(d) { return d.name + "\n" + formatValue(d.value); });
+        .text(function(d) { return d.name + "\n" + formatValue_sankey(d.value); });
 
     node.select("title")
-        .text(function(d) { return d.name + "\n" + formatValue(d.value); }); */    
-    function tooltipCountry(evt,d)  {
-        const sourceMeta = getMeta_sankey(d.source.name, current_specificRawData, current_metadata_csv, current_prepared_flows);
-        const targetMeta = getMeta_sankey(d.target.name, current_specificRawData, current_metadata_csv, current_prepared_flows);
+        .text(function(d) { return d.name + "\n" + formatValue_sankey(d.value); }); */    
+    function tooltipCountry(evt,d_link)  { // d_link is a link object from Sankey links
+        const sourceBasicMeta = getBasicMeta(d_link.source.name, current_specificRawData, current_metadata_csv);
+        // Flow data for tooltips should come from current_prepared_flows (commonData.flows)
+        // const sourceFlowInfo = current_prepared_flows.find(f => f.name === d_link.source.name) || {};
+        // const sourceFullMeta = { ...sourceBasicMeta, ...sourceFlowInfo };
+        // For this tooltip, only flag is needed from meta, value from d_link itself.
 
-        var source = isRegion_sankey(d.source.name, current_specificRawData)  
-            ? `<span style="color:${ getRegionColor_sankey(d.source.name, current_specificRawData)}"> ${d.source.name}</span>`
-            : `<span style="color:${ colorCountries_sankey(d.source.name, current_specificRawData, current_metadata_csv, current_prepared_flows)}"> ${sourceMeta.flag+ " "+  d.source.name}</span>`
+        const targetBasicMeta = getBasicMeta(d_link.target.name, current_specificRawData, current_metadata_csv);
+        // const targetFlowInfo = current_prepared_flows.find(f => f.name === d_link.target.name) || {};
+        // const targetFullMeta = { ...targetBasicMeta, ...targetFlowInfo };
+
+        var sourceDisplay = isRegion_sankey(d_link.source.name, current_specificRawData)  
+            ? `<span style="color:${ getRegionColor_sankey(d_link.source.name, current_specificRawData)}"> ${d_link.source.name}</span>`
+            : `<span style="color:${ colorCountries_sankey(d_link.source.name, current_specificRawData, current_metadata_csv)}"> ${sourceBasicMeta.flag+ " "+  d_link.source.name}</span>`;
         
-        var target = isRegion_sankey(d.target.name, current_specificRawData) 
-            ? `<span style="color:${ getRegionColor_sankey(d.target.name, current_specificRawData)}"> ${d.target.name}</span>`
-            : `<span style="color:${ colorCountries_sankey(d.target.name, current_specificRawData, current_metadata_csv, current_prepared_flows)}"> ${targetMeta.flag+ " "+  d.target.name}</span>` // Note: color used target's source color before, fixed to target
+        var targetDisplay = isRegion_sankey(d_link.target.name, current_specificRawData) 
+            ? `<span style="color:${ getRegionColor_sankey(d_link.target.name, current_specificRawData)}"> ${d_link.target.name}</span>`
+            : `<span style="color:${ colorCountries_sankey(d_link.target.name, current_specificRawData, current_metadata_csv)}"> ${targetBasicMeta.flag+ " "+  d_link.target.name}</span>`;
         
         let currentFilename = fileName(config).json; 
         if(currentFilename.includes('stock')){
-            var value = ` <div> 
-                        <b>${formatValue_sankey(d.value)}</b> 
-                        <br>in<br> </div> `
+            var valueDisplay = ` <div> 
+                        <b>${formatValue_sankey(d_link.value)}</b> 
+                        <br>in<br> </div> `;
         } else {
-            var value = ` <div> 
+            var valueDisplay = ` <div> 
                         ▾<br>
-                        <b>${formatValue_sankey(d.value)}</b> 
-                        <br> </div> `
+                        <b>${formatValue_sankey(d_link.value)}</b> 
+                        <br> </div> `;
         }
         return tooltip
-            .html(`<span>\ <b>${source} </b> 
-                        ${value} 
-                        ${target}  </span>`)
+            .html(`<span>\ <b>${sourceDisplay} </b> 
+                        ${valueDisplay} 
+                        ${targetDisplay}  </span>`)
             .transition('tooltip')
             .duration(50)
             .style('background-color','#ffffff')
@@ -420,36 +455,40 @@ function updateSankey(raw, input, config, graph_data){ */
             .style("left", (evt.pageX+30)+"px")
             .style("visibility", "visible")       
     }
-    function tooltipRegion(evt,d) {
-        const meta = getMeta_sankey(d.name, current_specificRawData, current_metadata_csv, current_prepared_flows);
-        let source = isRegion_sankey(d.name, current_specificRawData)
-            ? `<span style="color:white"> <b>${d.name}</b></span>`
-            : `<span style="color:white"> ${meta.region_name}</span></br>
-                <span style="color:white"><b> ${meta.flag+ " "+  d.name}</b></span>`;
+    function tooltipRegion(evt,d_node) { // d_node is a node from Sankey nodes
+        const basicMeta = getBasicMeta(d_node.name, current_specificRawData, current_metadata_csv);
+        const flowInfo = current_prepared_flows.find(f => f.name === d_node.name) || {};
+        const fullMeta = { ...basicMeta, ...flowInfo };
+
+        let sourceDisplay = isRegion_sankey(d_node.name, current_specificRawData)
+            ? `<span style="color:white"> <b>${d_node.name}</b></span>`
+            : `<span style="color:white"> ${fullMeta.region_name}</span></br>
+                <span style="color:white"><b> ${fullMeta.flag+ " "+  d_node.name}</b></span>`;
         
-        var outflow = formatValue_sankey(meta.outflow); // outflow & inflow are now directly from meta
-        var inflow = formatValue_sankey(meta.inflow);
+        var outflowDisplay = formatValue_sankey(fullMeta.outflow || 0); 
+        var inflowDisplay = formatValue_sankey(fullMeta.inflow || 0);
         
         let currentFilename = fileName(config).json; 
-        // console.log(currentFilename.includes("stock")) ---> false ? then syntax is outflow/inflow instead of emigrants/immigrants
         if (currentFilename.includes('stock') ){
             return tooltip
-                .html(`<span>\ ${source} </br>
-                        Total emigrants: <b> ${outflow}</b> </br>
-                        Total immigrants: <b> ${inflow} </b> </span>`)
-                .style('background-color',isRegion_sankey(d.name, current_specificRawData) 
-                                        ? getRegionColor_sankey(d.name, current_specificRawData)
-                                        : colorCountries_sankey(d.name, current_specificRawData, current_metadata_csv, current_prepared_flows))
+                .html(`<span>\ ${sourceDisplay} </br>
+                        Total emigrants: <b> ${outflowDisplay}</b> </br>
+                        Total immigrants: <b> ${inflowDisplay} </b> </span>`)
+                .style('background-color',isRegion_sankey(d_node.name, current_specificRawData) 
+                                        ? getRegionColor_sankey(d_node.name, current_specificRawData)
+                                        : colorCountries_sankey(d_node.name, current_specificRawData, current_metadata_csv))
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
                 .style("visibility", "visible")
         }
         else {
             return tooltip
-                .html(`<span>\ ${source} </br>
-                        Total Out: <b> ${outflow}</b> </br>
-                        Total In: <b> ${inflow} </b> </span>`)
-                .style('background-color',isRegion(d.name) ? getRegionColor(d.name): colorCountries(d.name))
+                .html(`<span>\ ${sourceDisplay} </br>
+                        Total Out: <b> ${outflowDisplay}</b> </br>
+                        Total In: <b> ${inflowDisplay} </b> </span>`)
+                .style('background-color',isRegion_sankey(d_node.name, current_specificRawData) 
+                                        ? getRegionColor_sankey(d_node.name, current_specificRawData)
+                                        : colorCountries_sankey(d_node.name, current_specificRawData, current_metadata_csv))
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
                 .style("visibility", "visible")
@@ -512,9 +551,9 @@ function updateSankey(raw, input, config, graph_data){ */
         .on('mouseout', function () {
             sankeyDiagram.select("g#tooltip").remove()
             sankeyDiagram.selectAll(".link")
-                .style("opacity",d=> isRegion(d.source.name) && isRegion(d.target.name) && config.regions.length > 0 ? 0.1: 0.7)
+                .style("opacity",d=> isRegion_sankey(d.source.name, current_specificRawData) && isRegion_sankey(d.target.name, current_specificRawData) && config.regions.length > 0 ? 0.1: 0.7)
             sankeyDiagram.selectAll(".node")
-                .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.1: 0.7)
+                .style("opacity",d=> isRegion_sankey(d.name, current_specificRawData) && config.regions.length > 0 ? 0.1: 0.7)
         })
 
 }

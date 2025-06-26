@@ -28,7 +28,7 @@ config.threshold
 config.rankings
 
 // build the data filename (json) with config values  ------------–––-------------------
-let fileName = (configs) => {
+var fileName = (configs) => { // Changed let to var for wider global scope
     configs = {...config}
 
     // build filename hierarchy
@@ -54,6 +54,61 @@ let fileName = (configs) => {
     }
 }
 let filename = fileName(config).json
+
+// --- Consolidated Metadata Function ---
+// Provides basic metadata: flag, id (index in currentRawData.names), 
+// region (index of parent region in currentRawData.names), and region_name.
+// Does not include flow data.
+function getBasicMeta(name, currentRawData, metadataCsv) {
+    if (!name || !currentRawData || !currentRawData.names || !currentRawData.regions || !metadataCsv) {
+        // console.warn("getBasicMeta: Missing required arguments or data structure.", name, currentRawData, metadataCsv);
+        return { flag: "", id: -1, region: -1, region_name: "N/A" };
+    }
+
+    const id = currentRawData.names.indexOf(name);
+    if (id === -1) {
+        // console.warn(`getBasicMeta: Name "${name}" not found in currentRawData.names.`);
+        return { flag: "", id: -1, region: -1, region_name: "N/A" };
+    }
+
+    let flag = "";
+    const metaRow = metadataCsv.find(row => row.origin_name === name);
+    if (metaRow) {
+        flag = metaRow.origin_flag || "";
+    }
+
+    // Helper to find the region index (value from currentRawData.regions) for a given nameIndex
+    // This is the index that points to the region's name in currentRawData.names
+    const getRegionValueForNameIndex = (nameIndex, regionsArray, namesArrayLength) => {
+        let regionVal = -1; // Default if not found or is a top-level region not further categorized
+        // Find which region group the nameIndex belongs to
+        // regionsArray contains the start indices of each region
+        for (let i = 0; i < regionsArray.length; i++) {
+            const currentRegionStartIndex = regionsArray[i];
+            const nextRegionStartIndex = (i + 1 < regionsArray.length) ? regionsArray[i + 1] : namesArrayLength;
+            if (nameIndex >= currentRegionStartIndex && nameIndex < nextRegionStartIndex) {
+                regionVal = currentRegionStartIndex; // This IS the region index (value)
+                break;
+            }
+        }
+        // If the name itself is a region, its region is itself.
+        if (regionsArray.includes(nameIndex)) {
+            regionVal = nameIndex;
+        }
+        return regionVal;
+    };
+
+    const regionValue = getRegionValueForNameIndex(id, currentRawData.regions, currentRawData.names.length);
+    const region_name = (regionValue !== -1 && currentRawData.names[regionValue]) ? currentRawData.names[regionValue] : "N/A";
+
+    return { 
+        flag: flag, 
+        id: id,                   // Index of 'name' in currentRawData.names
+        region: regionValue,      // Index of the region's name in currentRawData.names
+        region_name: region_name
+    };
+}
+
 
 // Method labels ------------–––------------------------------------------------------
 let methods_indexed = ["sd_drop_neg", "sd_rev_neg", "mig_rate", "da_min_open", "da_min_closed", "da_pb_closed"]
@@ -138,19 +193,61 @@ function dataPrepare(input, config) {
     // colors = input_data.raw_data.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE'] 
     // ^ Removed: Chart files now source 'colours' from specificRawData. The JSONs should contain a 'colours' array.
     
-    // 'flags' is constructed locally within dataPrepare using 'meta' (input_data.metadata)
-    // This is fine as it's scoped to this function call.
-    const localFlags = meta.map(d => {
-        return {
-            [d.origin_name]: d.origin_flag
-        }
-    })
-    input = input_data.raw_data
-    year = +config.year
-    sex = config.sex
+    // 'localFlags' definition removed as it's no longer used. 
+    // getBasicMeta now uses 'meta' (input_data.metadata) directly.
+    input = input_data.raw_data; // Alias for the specific JSON data content
+    year = +config.year;
+    sex = config.sex;
 
-    var data = filterYear(input, year)
-    /* maxValues = allTimeMax(input) */
+    // UTILS needed by filteredMatrix - defined here so they are in scope when filteredMatrix is called.
+    // These operate on 'input' (input_data.raw_data - the raw JSON for the current file).
+    const getRegion = (index_in_input_names) => {
+        var r = 0;
+        // input.regions contains indices relative to input.names
+        for (var i = 0; i < input.regions.length; i++) {
+            if (input.regions[i] > index_in_input_names) {
+                break;
+            }
+            r = i;
+        }
+        return input.regions[r]; // Returns the region's ID (which is an index in input.names)
+    };
+    
+    const isRegion = (name_string) => {
+        const nameIdx = input.names.indexOf(name_string);
+        if (nameIdx === -1) return false;
+        return input.regions.includes(nameIdx);
+    };
+
+    // 'dataFromFilterYear' contains the matrix, names, regions, and flow totals for the selected year
+    // from the 'input' (specific JSON data).
+    // Note: filterYear returns input.names and input.regions, so indices are consistent.
+    var dataFromFilterYear = filterYear(input, year);
+    
+    // 'dataSliced' is the result of further processing/filtering (ranking, etc.) on 'dataFromFilterYear'.
+    // It contains { names, matrix, regions, nldata, flows, unfilteredNL }
+    // The .names, .matrix, .regions in dataSliced are potentially different from dataFromFilterYear
+    // if countries/regions were filtered out by ranking or other criteria.
+    let dataSliced = filteredMatrix(dataFromFilterYear); // Pass dataFromFilterYear to filteredMatrix
+
+    // The 'flows' array within dataSliced already contains total_outflow, total_inflow, etc.
+    // calculated based on dataFromFilterYear's totals, but mapped to potentially filtered 'names'.
+    flows = dataSliced.flows; // Use the flows from dataSliced for consistency downstream.
+                              // Note: 'data' variable below this point in the original code refers to dataSliced.
+                              // To avoid confusion, let's consistently use dataSliced.
+
+    // The nested getMeta function (around line 581) will be removed.
+    // Calls to it will be replaced by getBasicMeta.
+    // For example, in filteredMatrix, when building its local 'flows' array:
+    // let region_name = getMeta(name).region_name; becomes
+    // let region_name = getBasicMeta(name, data_for_basic_meta, meta).region_name;
+    // 'data_for_basic_meta' would be 'input' (the JSON content) if getBasicMeta needs original names/regions,
+    // or 'dataFromFilterYear' if it needs year-specific structure but pre-filteredMatrix names.
+    // Or 'dataSliced' if it needs the names list post-filteredMatrix.
+    // getBasicMeta is defined to take 'currentRawData' which is the JSON file content.
+    // So, when getBasicMeta is called from within dataPrepare, currentRawData should be 'input'.
+    // And metadataCsv should be 'meta'.
+
     /* console.log) */
     // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names, matrixData) { 
@@ -175,21 +272,10 @@ function dataPrepare(input, config) {
         return matrix;
     }
     // UTILS ----------------------------------------------------------------------
-    // Assign region to each index
-    const getRegion = (index) => {
-        var r = 0;
-        for (var i = 0; i < input.regions.length; i++) {
-            if (input.regions[i] > index) {
-                break;
-            }
-            r = i;
-        }
-        return input.regions[r];
-    }
-    // Returns true if the name is a region
-    const isRegion = (name) => {
-        return input.regions.includes(input.names.indexOf(name))
-    }
+    // Definitions of getRegion and isRegion moved to before filteredMatrix call.
+    // This block is now removed to prevent redeclaration.
+    // const getRegion = (index) => { ... }
+    // const isRegion = (name) => { ... }
 
     // APPLY FILTERS ------------------------------------------------------------
     function filteredMatrix(input) {
@@ -255,7 +341,10 @@ function dataPrepare(input, config) {
             let net_flow = outflow - inflow
             let total_flow = outflow + inflow
             let connections = number_connections.map(d=>d.connections)[i]
-            let region_name = getMeta(name).region_name
+            // Use global getBasicMeta. 'input' is specificRawData, 'meta' is metadataCsv for getBasicMeta.
+            // 'data' in this scope is dataFromFilterYear.
+            let basicMetaData = getBasicMeta(name, input, meta); 
+            let region_name = basicMetaData.region_name;
             // let rank
             { return {
                     region_name,
@@ -540,34 +629,20 @@ function dataPrepare(input, config) {
         };
     }
     // produce the filtered Matrix for a given a threshold value
-    let dataSliced = filteredMatrix(data) // Removed 'year' argument as it's not used by filteredMatrix
+    // let dataSliced = filteredMatrix(data) // THIS WAS THE REDECLARATION - REMOVED. 
+    // dataSliced was already computed earlier (around line 216) using dataFromFilterYear.
 
-    data = dataSliced
+    data = dataSliced; // 'data' now correctly refers to the result of the single filteredMatrix call.
+                     // 'dataSliced' here refers to the one declared around L216.
 
-    flows = dataSliced.flows
+    flows = dataSliced.flows; // 'flows' also correctly refers to the flows from the single filteredMatrix call.
     // console.log(dataSliced)
    /*  sankey_names.filter(d=> 
         limited_connections_names.includes(d)) */
 
-    function getMeta(name) {
-        // get flag for a given country name
-        const flag = (name) => {
-            // Use localFlags which is defined in the outer dataPrepare scope
-            let flagResult = localFlags.find(f => f[name]); 
-            return flagResult ? flagResult[name] : "";
-        }
-        const region = getRegion(data.names.indexOf(name))
-        const region_name = data.names[region]
+    // Nested getMeta function (previously around here) is now removed. 
+    // Calls will be updated to use global getBasicMeta.
 
-        const id = data.names.indexOf(name)
-
-        return {
-            flag: flag(name),
-            region,
-            region_name,
-            id
-        }
-    }
     // Produce layout for CHORD diagram based on config.regions
     let final_chord_indices = [];
     if (config.regions && config.regions.length > 0) {
@@ -624,17 +699,38 @@ function dataPrepare(input, config) {
     // Or, if a specific interaction model for Sankey is desired with one region selected, this logic might need adjustment.
     // For now, assume config.regions[0] is source, config.regions[1] is target if they exist.
 
-    let sankey_source_indices = expandRegion(data, sankeySourceRegionName).indexList;
-    let sankey_target_indices = expandRegion(data, sankeyTargetRegionName).indexList;
+    let sankey_source_indices;
+    let sankey_target_indices;
 
-    // If a region was expanded, its original region index might be missing from indexList if not handled by expandRegion.
-    // However, expandRegion now returns all regions if name is undefined.
-    // If only one region selected (e.g. config.regions[0] is 'Europe', config.regions[1] is undefined):
-    //   sankey_source_indices = countries of Europe + other top-level regions
-    //   sankey_target_indices = all top-level regions (from data.regions)
-    // This might need further refinement based on exact desired Sankey interaction for single region selection.
-    // A common pattern: if one region selected, show its countries vs all other regions (aggregated).
+    if (sankeySourceRegionName && sankeyTargetRegionName) {
+        // Both source and target regions are specified for expansion
+        sankey_source_indices = expandRegion(data, sankeySourceRegionName).countryRange; // Only countries
+        sankey_target_indices = expandRegion(data, sankeyTargetRegionName).countryRange; // Only countries
+    } else if (sankeySourceRegionName) {
+        // Only source region is specified for expansion
+        sankey_source_indices = expandRegion(data, sankeySourceRegionName).countryRange; // Only countries
+        // Target becomes all other top-level regions (excluding the source region itself)
+        const sourceRegionNameIndex = data.names.indexOf(sankeySourceRegionName);
+        sankey_target_indices = data.regions.filter(r_idx => r_idx !== sourceRegionNameIndex);
+        if (sankey_target_indices.length === 0 && data.regions.length > 0) { // Avoid empty target if possible, fallback to all regions if only one region exists overall
+             sankey_target_indices = data.regions.slice(); // Fallback if filtering left nothing
+        }
+    } else if (sankeyTargetRegionName) {
+        // Only target region is specified for expansion
+        sankey_target_indices = expandRegion(data, sankeyTargetRegionName).countryRange; // Only countries
+        // Source becomes all other top-level regions (excluding the target region itself)
+        const targetRegionNameIndex = data.names.indexOf(sankeyTargetRegionName);
+        sankey_source_indices = data.regions.filter(r_idx => r_idx !== targetRegionNameIndex);
+        if (sankey_source_indices.length === 0 && data.regions.length > 0) { // Avoid empty source if possible
+            sankey_source_indices = data.regions.slice(); // Fallback
+        }
+    } else {
+        // Neither source nor target region is specified for expansion (default view)
+        sankey_source_indices = data.regions.slice(); // All top-level regions
+        sankey_target_indices = data.regions.slice(); // All top-level regions
+    }
 
+    // Convert indices to names
     let sankey_source_names = sankey_source_indices.map(d_idx => data.names[d_idx]);
     let sankey_target_names = sankey_target_indices.map(d_idx => data.names[d_idx]);
 
@@ -644,7 +740,8 @@ function dataPrepare(input, config) {
     
     let sankey_nodes = sankey_display_names.map(name => ({
         name: name,
-        id: getMeta(name).id // getMeta is the one nested in dataPrepare
+        // Use global getBasicMeta. 'input' is specificRawData (original JSON content), 'meta' is metadataCsv.
+        id: getBasicMeta(name, input, meta).id 
     }));
 
     // dataSliced.nldata contains all links AFTER ranking filter.
@@ -725,10 +822,23 @@ function dataPrepare(input, config) {
     setSelectors()
     
     return {
-        result,
-        flows,
-        nldata /* ,maxValues */
-    }
+        common: {
+            allNames: dataSliced.names, // All relevant names after all filtering in dataPrepare
+            allRegions: dataSliced.regions, // Corresponding region indices from dataSliced
+            flows: flows, // This is dataSliced.flows
+            configSnapshot: {...config} // Shallow copy of the config used for this preparation
+        },
+        chordData: {
+            names: result.names, // from buildChordData
+            matrix: result.matrix  // from buildChordData
+        },
+        sankeyData: {
+            nodes: nldata.nodes,
+            links: nldata.links,
+            layout: nldata.sankey_layout // {source_names, target_names}
+        }
+        /* old return was { result, flows, nldata } */
+    };
     
 
 }

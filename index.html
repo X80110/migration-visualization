@@ -208,9 +208,12 @@
 	   <span class="version"> Version 1.0 (June 2023). </span>
 
     </footer>
-	<script src="libs/d3.v7.min.js" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  	<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+
+	<!-- <script src="libs/d3.v7.min.js" defer></script>
+	<script src="libs/d3-sankey.min.js" defer></script> -->
 	<script src="libs/chord.js" defer></script>
-	<script src="libs/d3-sankey.min.js" defer></script>
 	<script src="libs/parsemd.js" defer></script>
 	<script src="static/texts/methods.js" defer></script>
 
@@ -424,13 +427,30 @@
 				// This is acceptable for now as event handlers call the main 'update' which correctly sources data.
 				
 				// Always call drawChords as it might be the default or handle its own visibility/DOM.
-				drawChords(currentJsonDataCache[targetFileName], currentMetadata, preparedDataResult, currentConfig);
+				const specificRawData = currentJsonDataCache[targetFileName]; // Data for the current view
+				const metadataCsv = currentMetadata; // Parsed CSV for flags
+
+				drawChords(
+					preparedDataResult.chordData, 
+					preparedDataResult.common, 
+					specificRawData, 
+					metadataCsv, 
+					currentConfig, 
+					width, height // Global width/height from prepare-data.js
+				);
 				
 				// Conditionally call setData for Sankey
 				const sankeyChartElement = document.getElementById('sankey');
 				if (sankeyChartElement && sankeyChartElement.style.display !== 'none') {
 					console.log("Sankey is visible, calling setData");
-					setData(currentJsonDataCache[targetFileName], currentMetadata, preparedDataResult, currentConfig);
+					setData(
+						preparedDataResult.sankeyData, 
+						preparedDataResult.common, 
+						specificRawData, 
+						metadataCsv, 
+						currentConfig, 
+						width, height // Global width/height
+					);
 				} else {
 					console.log("Sankey is not visible, skipping setData");
 				}
