@@ -1,6 +1,6 @@
-#Global Migration Data Explorer
+# Global Migration Data Explorer
 
-##IIASA researchers have developed a new tool -- the Global Migration Data Explorer -- to help address the lack of data on global migration flows and provide a visual method for exploring migration patterns worldwide.
+## IIASA researchers have developed a new tool -- the Global Migration Data Explorer -- to help address the lack of data on global migration flows and provide a visual method for exploring migration patterns worldwide.
 
 The [Global Migration Data Explorer](https://global-migration.iiasa.ac.at/) builds upon the success of its [predecessor](http://www.global-migration.info/) by incorporating estimates of more recent periods, based on advanced estimation methods, and expanding the scope to include different migration measures and breakdowns of migration patterns by sex.
 
