@@ -1,16 +1,13 @@
 //  INITIAL PARAMETERS
 var width = 800;
 var height = width - 50;
-const textId = "O-text-1";
 let regionIndex = 1
 let ranking = 6000
 let regionColors = []
 
 // #########################################################################################
 // Util functions and initial config  ------------–––-----------------------------------–
-/* console */
 config.stockflow = config.stockflow
-/* console.log(config.stockflow) */
 if (config.stockflow === "flow") {
     // for flows
     config.year = 2015 || ""
@@ -26,6 +23,24 @@ config.regions = []
 config.maxRegionsOpen = 2 // config.regions = region || config.regions
 config.threshold 
 config.rankings
+
+// Utils: Format values
+function formatValue(nStr, seperator) {
+    seperator = seperator || ','
+    nStr += ''
+    x = nStr.split('.')
+    x1 = x[0]
+    x2 = x.length > 1 ? '.' + x[1] : ''
+    var rgx = /(\d+)(\d{3})/
+    //--
+    while (rgx.test(x1)) {
+      x1 = x1.replace(rgx, '$1' + seperator + '$2');
+    }
+    return x1 + x2;
+  }
+//   Number.prototype.mod = function (n) {
+//     return ((this % n) + n) % n
+//   };
 
 // build the data filename (json) with config values  ------------–––-------------------
 var fileName = (configs) => { // Changed let to var for wider global scope
@@ -43,7 +58,6 @@ var fileName = (configs) => { // Changed let to var for wider global scope
     let json = 'json/' + stockflow + '_' + sex + type + method + '.json'
     // clean non-lineal irregularities
     json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_")
-    // console.log( config.method, config.stockflow) 
     return {
         json: json,
         values: stockflow,
@@ -61,13 +75,11 @@ let filename = fileName(config).json
 // Does not include flow data.
 function getBasicMeta(name, currentRawData, metadataCsv) {
     if (!name || !currentRawData || !currentRawData.names || !currentRawData.regions || !metadataCsv) {
-        // console.warn("getBasicMeta: Missing required arguments or data structure.", name, currentRawData, metadataCsv);
         return { flag: "", id: -1, region: -1, region_name: "N/A" };
     }
 
     const id = currentRawData.names.indexOf(name);
     if (id === -1) {
-        // console.warn(`getBasicMeta: Name "${name}" not found in currentRawData.names.`);
         return { flag: "", id: -1, region: -1, region_name: "N/A" };
     }
 
@@ -188,13 +200,9 @@ function dataPrepare(input, config) {
 
     var input_data = {...input}
     meta = input_data.metadata // meta is input.metadata (parsed CSV)
-    threshold = /* input_data.raw_data.threshold || */ 10000 || +config.threshold
-    ranking = /* input_data.raw_data.threshold || */ 10000 || +config.ranking
-    // colors = input_data.raw_data.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE'] 
-    // ^ Removed: Chart files now source 'colours' from specificRawData. The JSONs should contain a 'colours' array.
+    threshold = 10000 || +config.threshold
+    ranking = 10000 || +config.ranking
     
-    // 'localFlags' definition removed as it's no longer used. 
-    // getBasicMeta now uses 'meta' (input_data.metadata) directly.
     input = input_data.raw_data; // Alias for the specific JSON data content
     year = +config.year;
     sex = config.sex;
@@ -219,52 +227,25 @@ function dataPrepare(input, config) {
         return input.regions.includes(nameIdx);
     };
 
-    // 'dataFromFilterYear' contains the matrix, names, regions, and flow totals for the selected year
-    // from the 'input' (specific JSON data).
-    // Note: filterYear returns input.names and input.regions, so indices are consistent.
     var dataFromFilterYear = filterYear(input, year);
     
-    // 'dataSliced' is the result of further processing/filtering (ranking, etc.) on 'dataFromFilterYear'.
-    // It contains { names, matrix, regions, nldata, flows, unfilteredNL }
-    // The .names, .matrix, .regions in dataSliced are potentially different from dataFromFilterYear
-    // if countries/regions were filtered out by ranking or other criteria.
     let dataSliced = filteredMatrix(dataFromFilterYear); // Pass dataFromFilterYear to filteredMatrix
 
-    // The 'flows' array within dataSliced already contains total_outflow, total_inflow, etc.
-    // calculated based on dataFromFilterYear's totals, but mapped to potentially filtered 'names'.
-    flows = dataSliced.flows; // Use the flows from dataSliced for consistency downstream.
-                              // Note: 'data' variable below this point in the original code refers to dataSliced.
-                              // To avoid confusion, let's consistently use dataSliced.
+    flows = dataSliced.flows; 
 
-    // The nested getMeta function (around line 581) will be removed.
-    // Calls to it will be replaced by getBasicMeta.
-    // For example, in filteredMatrix, when building its local 'flows' array:
-    // let region_name = getMeta(name).region_name; becomes
-    // let region_name = getBasicMeta(name, data_for_basic_meta, meta).region_name;
-    // 'data_for_basic_meta' would be 'input' (the JSON content) if getBasicMeta needs original names/regions,
-    // or 'dataFromFilterYear' if it needs year-specific structure but pre-filteredMatrix names.
-    // Or 'dataSliced' if it needs the names list post-filteredMatrix.
-    // getBasicMeta is defined to take 'currentRawData' which is the JSON file content.
-    // So, when getBasicMeta is called from within dataPrepare, currentRawData should be 'input'.
-    // And metadataCsv should be 'meta'.
-
-    /* console.log) */
-    // Set a matrix of the data data to pass to the chord() function
     function getMatrix(names, matrixData) { 
         const index = new Map(names.map((name, i) => [name, i]));
         const matrix = Array.from(index, () => new Array(names.length).fill(0));
 
-        // Ensure matrixData is iterable and an array before looping
         const iterableMatrixData = Array.isArray(matrixData) ? matrixData : [];
 
-        for (const link of iterableMatrixData) { // Changed to simple loop variable 'link'
-            // Destructure safely, providing defaults if properties are missing, though ideally they exist
+        for (const link of iterableMatrixData) { 
             const { source, target, value = 0 } = link || {}; 
 
             if (source && target && index.has(source) && index.has(target)) {
                  matrix[index.get(source)][index.get(target)] += value;
             } else {
-                 if (link) { // Avoid logging for completely null/undefined entries if iterableMatrixData was []
+                 if (link) { 
                     console.warn(`Skipping link in getMatrix due to missing name in index or invalid link structure: ${source} -> ${target}`, link);
                  }
             }
@@ -331,7 +312,6 @@ function dataPrepare(input, config) {
         nldata.nodes.forEach((country,i) => { 
             let nonZeroConnections = country.connections.filter(connection => connection !== 0).length;
             number_connections[i] = {name: country.name, connections: nonZeroConnections}
-            // /* console.log(`${d.name} has ${nonZeroConnections} non-zero connections.`); */
         }); 
 
         // COMPUTE TOTAL FLOWS
@@ -341,11 +321,8 @@ function dataPrepare(input, config) {
             let net_flow = outflow - inflow
             let total_flow = outflow + inflow
             let connections = number_connections.map(d=>d.connections)[i]
-            // Use global getBasicMeta. 'input' is specificRawData, 'meta' is metadataCsv for getBasicMeta.
-            // 'data' in this scope is dataFromFilterYear.
             let basicMetaData = getBasicMeta(name, input, meta); 
             let region_name = basicMetaData.region_name;
-            // let rank
             { return {
                     region_name,
                     name,
@@ -354,16 +331,13 @@ function dataPrepare(input, config) {
                     net_flow,
                     total_flow,
                     connections
-                    // rank
                 }
             }
         })
 
         // RANK COUNTRIES BY NET_FLOW
-        // Get flows for each region, and sort them, append RANK value to original dataset
         function rankValues() {
-            // COMPUTE GLOBAL RANKINGS BY TOTAL FLOW (OUTFLOW + INFLOW)
-            const globalRank = flows.filter(d => !isRegion(d.name)) //Exclude regions
+            const globalRank = flows.filter(d => !isRegion(d.name)) 
             .sort((a, b) => b.total_flow - a.total_flow) 
             .map((d, i) => {
                 let name = d.name
@@ -375,15 +349,13 @@ function dataPrepare(input, config) {
                     global_rank
                 }
             })
-            // COMPUTE RANKINGS FOR EACH REGION BY TOTAL FLOW (OUTFLOW + INFLOW)
-            //Set regions to loop and rank country values within
             const uniqueRegions = [...new Set(flows.map(d => d.region_name))]
             const rankings = {}
             let regionCountries
             uniqueRegions
                 .forEach((region, index) => {
                     regionCountries = flows
-                        .filter(d => d.region_name === region && d.name !== region) // discard region values
+                        .filter(d => d.region_name === region && d.name !== region) 
                         .sort((a, b) => b.total_flow - a.total_flow) 
                         .map((d, i) => {
                             let name = d.name
@@ -397,10 +369,8 @@ function dataPrepare(input, config) {
                                 value,
                                 rank,
                                 global_rank
-                                
                             }
                         })
-
                     rankings[index] = regionCountries
                 })
             return regionCountries, rankings
@@ -417,134 +387,45 @@ function dataPrepare(input, config) {
             return g_rank
         })
         
-
-        
         flows.forEach((d, i) => {
             d.rank = region_rank[i]
             d.global_rank = global_rank[i]
         })
-        // console.log(config.ranking)
         
-
-
-       /*  */
        let filteredData = nldata.links
        const connectionsWithRelevance = filteredData.map(conn => {
             const sourceNode = flows.find(node => node.name === conn.source);
             const targetNode = flows.find(node => node.name === conn.target);
-            // Calculate 'relevance' score for potential alternative ranking. Currently unused for sorting.
             const relevance = (sourceNode.total_flow + targetNode.total_flow) * conn.value; 
-            return { ...conn, relevance }; // Include relevance in the object if needed later
+            return { ...conn, relevance }; 
       });
     
-      // Sort connections by their actual migration 'value' in descending order.
-      // The 'relevance' field is calculated but not used for this primary sorting.
       connectionsWithRelevance.sort((a, b) => b.value - a.value);
 
-      // Filter to top N connections based on config.ranking (maps to UI slider "Connections displayed")
       const filteredConnections = connectionsWithRelevance.slice(0, config.ranking);
-      filteredData = filteredConnections; // These are the primary links to consider for the visualization
+      filteredData = filteredConnections; 
 
-    //     // FILTER BY TOP RANKING VALUES
-    //     function filterSourceTarget(links, countryRank, ranking) {
-    //         // Create a map for quick lookup of numbers by country name
-    //         let rankMap = new Map();
-    //       /*   links.forEach((d, i) => {
-    //             d.rank = region_rank[i]  
-    //             d.global_rank = global_rank[i]
-    //         }) */
-    //         countryRank.forEach(item => rankMap.set(item.name, item.global_rank === undefined ? 1000 : item.global_rank));
-    //         /* links.map(d=> console.log(d))
-    //          */
-    //         let global_rank = countryRank.map(d=>d.global_rank)
-    //         // console.log(global_rank)
-
-
-    //         // Filter the source-target array
-    //         return [links.filter(pair =>
-    //             rankMap.get(pair.target) < ranking && rankMap.get(pair.target) < ranking
-    //         ),global_rank];
-
-    //     }
-
-
-
-    
-            // .filter(d=>)
-
-        // console.log(config.ranking)
-        // let rankedCountries = filterSourceTarget(filteredData, flows,10000)
-        // filteredData = rankedCountries
-        // console.log(rankedCountries)
-        /*  let filteredData = filterSourceTarget(nldata.links,flows,40) */
-        // into both source & target
-        /* .filter(d=> d.source_target > threshold )    */
-
-        // FILTER BY THRESHOLD
-        /* .filter(d=> d.value > threshold )    */
-
-
-        // EXCLUDE NON-RECIPROCAL COUNTRIES / REFINE NAMES LIST
-        // The goal of this section is to refine the list of country names to be included in the visualization.
-        // It aims to ensure that the countries are part of meaningful bidirectional flows or significant overall flows
-        // after the initial top-N filtering by connection value.
-
-        // First, filter out connections where a region flows to itself (e.g. "Europe" to "Europe").
-        // This does not remove country-to-country flows within the same region.
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source); 
         
-        // removeNullNames aims to find countries that are part of some reciprocal interaction within dataSelect.
-        // A country is kept if it appears as both a source and a target within the selected (and self-region-flow-removed) dataset.
         function removeNullNames() {
             let names_source = Array.from(new Set(dataSelect.flatMap(d => d.source))); 
             let names_target = Array.from(new Set(dataSelect.flatMap(d => d.target)));
 
-            // Helper to find common elements in arrays (effectively an intersection)
             function common(...arr) {
                 return arr.reduce((first, second) => {
                     return first.filter(el => second.includes(el));
                 })
             }
             let innerjoin = common(names_source, names_target)
-            // Repeat filtering
-            // --- beware that i.e: countryA targeted countryB and countryC targeted countryA, after deleting countryB, countryA now shows no outflow, but it is still accounted
-            // filteredData = dataSelect.filter(d=> 
-            //     innerjoin.includes(d.source) && innerjoin.includes(d.target)
-            // )
             let sources = Array.from(new Set(filteredData.flatMap(d => d.source)))
             let targets = Array.from(new Set(filteredData.flatMap(d => d.target)))
             innerjoin = common(sources, targets)
 
-            // reindex joined names
             let names_indexed = names.filter(d => innerjoin.includes(d))
-            /* console.log(names.length, names_source.length, names_target.length, innerjoin.length) */
             return names_indexed
         }
-        // Clean country list
         names = Array.from(new Set(removeNullNames()))
         
-        // Filter by #selectedRanking top netflow values
-        // console.log(names)
-
-        // ranked_names = flows.filter(d=> isRegion(d.name) || d.rank < config.ranking).map(d=>d.name)
-        // ranked_names = flows.filter(d=> isRegion(d.name) || d.global_rank < config.ranking).map(d=>d.name)
-        // console.log(ranked_names)
-        // Re order names
-    /*     names = names.filter(d=> 
-                ranked_names.includes(d)
-        ) */
-        /* // Filter by limit #selectedConns 
-        limited_connections_names = flows.filter(d=> isRegion(d.name) || d.connections < config.limitConns).map(d=>d.name)
-        console.log(limited_connections_names)
-        names = names.filter(d=> 
-                limited_connections_names.includes(d)
-        )
-         */
-        // Match filtered countries to other data
-        // flows = flows.filter(d => names.includes(d.name))
-        // SET OUTPUT DATA
-        
-
         let finalData = filteredData.filter(d =>
             names.includes(d.source) && names.includes(d.target)
         )
@@ -628,20 +509,8 @@ function dataPrepare(input, config) {
             countryRange: countriesInRange 
         };
     }
-    // produce the filtered Matrix for a given a threshold value
-    // let dataSliced = filteredMatrix(data) // THIS WAS THE REDECLARATION - REMOVED. 
-    // dataSliced was already computed earlier (around line 216) using dataFromFilterYear.
-
-    data = dataSliced; // 'data' now correctly refers to the result of the single filteredMatrix call.
-                     // 'dataSliced' here refers to the one declared around L216.
-
-    flows = dataSliced.flows; // 'flows' also correctly refers to the flows from the single filteredMatrix call.
-    // console.log(dataSliced)
-   /*  sankey_names.filter(d=> 
-        limited_connections_names.includes(d)) */
-
-    // Nested getMeta function (previously around here) is now removed. 
-    // Calls will be updated to use global getBasicMeta.
+    data = dataSliced; 
+    flows = dataSliced.flows;
 
     // Produce layout for CHORD diagram based on config.regions
     let final_chord_indices = [];
@@ -690,86 +559,65 @@ function dataPrepare(input, config) {
     }
     let result = buildChordData(filteredLayout, data); // 'data' is dataSliced
 
-    // PREPARE SANKEY LAYOUT (uses dataSliced and config.regions directly)
-    // Note: Sankey specific logic for source/target selection from config.regions
     let sankeySourceRegionName = config.regions && config.regions.length > 0 ? config.regions[0] : undefined;
     let sankeyTargetRegionName = config.regions && config.regions.length > 1 ? config.regions[1] : undefined;
     
-    // If only one region is in config.regions for Sankey, treat it as source, and target becomes all other regions.
-    // Or, if a specific interaction model for Sankey is desired with one region selected, this logic might need adjustment.
-    // For now, assume config.regions[0] is source, config.regions[1] is target if they exist.
-
     let sankey_source_indices;
     let sankey_target_indices;
 
     if (sankeySourceRegionName && sankeyTargetRegionName) {
-        // Both source and target regions are specified for expansion
-        sankey_source_indices = expandRegion(data, sankeySourceRegionName).countryRange; // Only countries
-        sankey_target_indices = expandRegion(data, sankeyTargetRegionName).countryRange; // Only countries
+        sankey_source_indices = expandRegion(data, sankeySourceRegionName).countryRange; 
+        sankey_target_indices = expandRegion(data, sankeyTargetRegionName).countryRange; 
     } else if (sankeySourceRegionName) {
-        // Only source region is specified for expansion
-        sankey_source_indices = expandRegion(data, sankeySourceRegionName).countryRange; // Only countries
-        // Target becomes all other top-level regions (excluding the source region itself)
+        sankey_source_indices = expandRegion(data, sankeySourceRegionName).countryRange; 
         const sourceRegionNameIndex = data.names.indexOf(sankeySourceRegionName);
         sankey_target_indices = data.regions.filter(r_idx => r_idx !== sourceRegionNameIndex);
-        if (sankey_target_indices.length === 0 && data.regions.length > 0) { // Avoid empty target if possible, fallback to all regions if only one region exists overall
-             sankey_target_indices = data.regions.slice(); // Fallback if filtering left nothing
+        if (sankey_target_indices.length === 0 && data.regions.length > 0) { 
+             sankey_target_indices = data.regions.slice(); 
         }
     } else if (sankeyTargetRegionName) {
-        // Only target region is specified for expansion
-        sankey_target_indices = expandRegion(data, sankeyTargetRegionName).countryRange; // Only countries
-        // Source becomes all other top-level regions (excluding the target region itself)
+        sankey_target_indices = expandRegion(data, sankeyTargetRegionName).countryRange; 
         const targetRegionNameIndex = data.names.indexOf(sankeyTargetRegionName);
         sankey_source_indices = data.regions.filter(r_idx => r_idx !== targetRegionNameIndex);
-        if (sankey_source_indices.length === 0 && data.regions.length > 0) { // Avoid empty source if possible
-            sankey_source_indices = data.regions.slice(); // Fallback
+        if (sankey_source_indices.length === 0 && data.regions.length > 0) { 
+            sankey_source_indices = data.regions.slice(); 
         }
     } else {
-        // Neither source nor target region is specified for expansion (default view)
-        sankey_source_indices = data.regions.slice(); // All top-level regions
-        sankey_target_indices = data.regions.slice(); // All top-level regions
+        sankey_source_indices = data.regions.slice(); 
+        sankey_target_indices = data.regions.slice(); 
     }
 
-    // Convert indices to names
     let sankey_source_names = sankey_source_indices.map(d_idx => data.names[d_idx]);
     let sankey_target_names = sankey_target_indices.map(d_idx => data.names[d_idx]);
 
-    // Ensure consistent node ordering for Sankey if it relies on input order
     let sankey_display_names = [...new Set(sankey_source_names.concat(sankey_target_names))]
                                 .sort((a,b) => data.names.indexOf(a) - data.names.indexOf(b)); 
     
     let sankey_nodes = sankey_display_names.map(name => ({
         name: name,
-        // Use global getBasicMeta. 'input' is specificRawData (original JSON content), 'meta' is metadataCsv.
         id: getBasicMeta(name, input, meta).id 
     }));
 
-    // dataSliced.nldata contains all links AFTER ranking filter.
-    // Filter these links for Sankey based on the derived sankey_display_names.
     let selectedLinksForSankey = dataSliced.nldata.filter(link => 
         sankey_display_names.includes(link.source) && sankey_display_names.includes(link.target)
     );
 
-    let nldata = { // This nldata is now specifically for Sankey
+    let nldata = { 
         nodes: sankey_nodes,
         links: selectedLinksForSankey,
-        sankey_layout: { // Keep structure if sankey-chart.js expects this exact layout obj
-            source: sankey_source_names, // These are names, not indices
-            target: sankey_target_names  // These are names, not indices
+        sankey_layout: { 
+            source: sankey_source_names, 
+            target: sankey_target_names  
         }
     };
-
+   
     function setSelectors() {
-        // YEAR SELECTOR 
         let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
         const lastYearPlusFive = (+allYears[allYears.length - 1] + 5).toString()
 
-        /* config.year = allYears.reverse()[0] */
-        //--
         let allRangeYears = allYears.concat(lastYearPlusFive)
         let sliderticks = document.getElementById("sliderticks");
         let slider = document.getElementById("selectYear");
-        //--
         let sliderValue = parseInt(slider.value)
 
         function getTicks(year) {
@@ -786,7 +634,6 @@ function dataPrepare(input, config) {
 
         if (filename.includes("stock")) {
             function getTicks(year) {
-                /* console.log(year) */
                 let ticks = allYears.map(col =>
                     +col === +year ?
                     `<p><b>${col}</b></p   >` :
@@ -795,7 +642,6 @@ function dataPrepare(input, config) {
                 sliderticks.innerHTML = ticks
             }
             getTicks(sliderValue)
-            // Update the current slider value (each time you drag the slider handle)
             slider.oninput = function () {
                 let value = parseInt(this.value)
                 getTicks(value)
@@ -811,7 +657,6 @@ function dataPrepare(input, config) {
                 sliderticks.innerHTML = ticks
             }
             getTicks(sliderValue)
-            // Update the current slider value (each time you drag the slider handle)
             slider.oninput = function () {
                 let value = parseInt(this.value)
                 getTicks(value)
@@ -823,21 +668,20 @@ function dataPrepare(input, config) {
     
     return {
         common: {
-            allNames: dataSliced.names, // All relevant names after all filtering in dataPrepare
-            allRegions: dataSliced.regions, // Corresponding region indices from dataSliced
-            flows: flows, // This is dataSliced.flows
-            configSnapshot: {...config} // Shallow copy of the config used for this preparation
+            allNames: dataSliced.names, 
+            allRegions: dataSliced.regions, 
+            flows: flows, 
+            configSnapshot: {...config} 
         },
         chordData: {
-            names: result.names, // from buildChordData
-            matrix: result.matrix  // from buildChordData
+            names: result.names, 
+            matrix: result.matrix  
         },
         sankeyData: {
             nodes: nldata.nodes,
             links: nldata.links,
-            layout: nldata.sankey_layout // {source_names, target_names}
+            layout: nldata.sankey_layout
         }
-        /* old return was { result, flows, nldata } */
     };
     
 

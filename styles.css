@@ -764,3 +764,28 @@ select {
         transform: translate3d(-50%, -50%, 0);
         will-change: transform;
       }
+.dropdown-section {
+    background-color:#e7e7e7;
+    margin:0 0 0em; 
+    padding: 1em;
+}
+
+.viz-section {
+    margin:.5em; 
+    padding: 1em;
+}
+
+.viz-icon-chord {
+    width:30px;
+    vertical-align: middle;
+}
+
+.viz-icon-sankey {
+    width:40px;
+    vertical-align: middle;
+}
+
+.subtitle-text {
+    opacity:65%;
+    font-size: 1em;
+}
