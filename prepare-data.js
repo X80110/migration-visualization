@@ -45,19 +45,36 @@ function formatValue(nStr, seperator) {
 // build the data filename (json) with config values  ------------–––-------------------
 var fileName = (configs) => { // Changed let to var for wider global scope
     configs = {...config}
-
+    
     // build filename hierarchy
     let stockflow = config.stockflow
+    year = config.year
+    
     sex = config.sex === "all" || "" ?
         "" :
         "_" + config.sex
+    
+    sex2 = config.sex === "all" || "" ?
+        "" :
+        "/" + config.sex
+
     type = config.type + "_"
+    
     method = stockflow === "stock" ?
         "" :
         "_" + config.method || "_da_pb_closed"
+    
+    method2 = /* stockflow === "stock" ?
+        "" :
+        "/" + */ config.method || "da_pb_closed"
+
+
     let json = 'json/' + stockflow + '_' + sex + type + method + '.json'
+    let json2 = 'json/' + stockflow      + sex2 + '/' + method2 + '/' + year + '.json'
+
+    console.log(json2.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/"))
     // clean non-lineal irregularities
-    json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_")
+    json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
     return {
         json: json,
         values: stockflow,

@@ -214,12 +214,12 @@
 	   // This 'files' array lists all *possible* JSON files this page might need.
 	   // Specific files will be loaded on demand.
 	   let files = [
-		"json/flow_da_min_closed.json",
-		"json/flow_da_min_open.json",
-		"json/flow_da_pb_closed.json",
-		"json/flow_mig_rate.json",
-		"json/flow_sd_drop_neg.json",
-		"json/flow_sd_rev_neg.json",
+			"json/flow_da_min_closed.json",
+			"json/flow_da_min_open.json",
+			"json/flow_da_pb_closed.json",
+			"json/flow_mig_rate.json",
+			"json/flow_sd_drop_neg.json",
+			"json/flow_sd_rev_neg.json",
 		];
 		let markdown_file  = 'static/texts/flow-total-text.md';
 		let loadedJsonData = {}; // Cache for loaded JSON files
@@ -241,7 +241,10 @@
 					loadedJsonData[initialJsonFileName] = await d3.json(initialJsonFileName);
 				}
 				if (!initialMetadata) {
-					initialMetadata = await d3.csv("data/country-metadata-flags.csv");
+					flags = await d3.csv("data/country-metadata-flags.csv");
+					names = await d3.json("data/indexes-regions.json")
+					initialMetadata = flags
+					console.log(new Object(flags,names))
 				}
 				// The return value is mostly for signaling completion or passing metadata if needed by caller.
 				// The actual data is now in global `loadedJsonData` and `initialMetadata`.
@@ -254,6 +257,11 @@
 			}
 
 			function switchViz(chart){
+				const selectedViz = chart === null ? "chord" : chart;
+				const viz = ["chord","sankey","map"]; // Assuming 'map' might exist later
+				const currentVizEl = document.getElementById(selectedViz);
+				const notIn = viz.filter(d=> !d.includes(selectedViz));
+			
 				document.onreadystatechange = function() {
 					if (document.readyState !== "complete") {
 							document.querySelector("#chord").style.visibility = "hidden";
@@ -264,14 +272,13 @@
 							document.querySelector("#spin").style.visibility = "hidden";
 					}
 				};
-				const selectedViz = chart === null ? "chord" : chart;
-				viz = ["chord","sankey","map"]; // Assuming 'map' might exist later
-				notIn = viz.filter(d=> !d.includes(selectedViz));
+				
+				
 				notIn.forEach(id => {
 					const el = document.getElementById(id);
 					if (el) el.style.display = 'none';
 				});
-				const currentVizEl = document.getElementById(selectedViz);
+				
 				if (currentVizEl) currentVizEl.style.display = '';
 				
 				config.regions = []; // Reset regions when switching visualization type
@@ -279,10 +286,10 @@
 				loadInitialData().then(initialData => {
 					// Pass the whole collection of loaded data and the specific initial file if needed by update.
 					// update function will be refactored to handle this.
-					// For now, config.threshold might be set from the initially loaded data.
-					if (loadedJsonData[initialData.initial_filename] && loadedJsonData[initialData.initial_filename].threshold) {
-						config.threshold = loadedJsonData[initialData.initial_filename].threshold;
-					}
+					// // For now, config.threshold might be set from the initially loaded data.
+					// if (loadedJsonData[initialData.initial_filename] && loadedJsonData[initialData.initial_filename].threshold) {
+					// 	config.threshold = loadedJsonData[initialData.initial_filename].threshold;
+					// }
 					console.log("Initial data loaded for:", initialData.initial_filename);
 					update(loadedJsonData, initialMetadata, config); // Pass loadedJsonData and initialMetadata
 				});
@@ -332,7 +339,7 @@
 				}  else {
 					document.getElementById("reset").style.display = 'none'
 				}
-				d3.selectAll("#chord-chart g")
+				d3.selectAll("g")
 					.remove();
 				
 				// console.log(currentConfig);
@@ -364,11 +371,10 @@
 				// Always call drawChords as it might be the default or handle its own visibility/DOM.
 				const specificRawData = currentJsonDataCache[targetFileName]; // Data for the current view
 				const metadataCsv = currentMetadata; // Parsed CSV for flags
-
 				drawChords(
 					preparedDataResult.chordData, 
 					preparedDataResult.common, 
-					specificRawData, 
+					specificRawData,  
 					metadataCsv, 
 					currentConfig, 
 					width, height // Global width/height from prepare-data.js
@@ -422,8 +428,8 @@
 
 			// Details static/texts/*.md - parse to html 
 			async function getMarkdown(){							
-				const about_data = d3.text(markdown_file)			
-				return await about_data		
+				const about_data = await d3.text(markdown_file)			
+				return about_data		
 										
 			}
 

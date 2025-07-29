@@ -19,8 +19,6 @@ var chord = chord(true,false)
         .padAngle(0.02)
         .sortSubgroups(d3.descending)
 
-
-
 // Utils: return label position for given angle
 function labelPosition(angle) {
     var temp = angle.mod(2*Math.PI);
@@ -508,6 +506,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                         ${targetDisplay}  `)
             .transition('tooltip')
             .duration(15)
+            .delay(20)
             .style('background-color','#ffffff')
             .style('padding','1em')
             .style("top", (evt.pageY+20)+"px")
@@ -537,6 +536,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                         Total immigrants: <b> ${inflowDisplay} </b> `)
                 .transition('tooltip')
                 .duration(15)
+                .delay(20)
                 .style('background-color',isRegion(d_group.name) ? getRegionColor(d_group.name): colorCountries(d_group.name)) // Use d_group.name
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
@@ -549,6 +549,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                         Total Inflow: <b> ${inflowDisplay} </b> `)
                 .transition('tooltip')
                 .duration(15)
+                .delay(20)
                 .style('background-color',isRegion(d_group.name) ? getRegionColor(d_group.name): colorCountries(d_group.name))
                 .style("top", (evt.pageY+20)+"px")
                 .style("left", (evt.pageX+30)+"px")
@@ -606,21 +607,21 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 chords
                     // .selectAll(".path-item, .group-arc")
                     .selectAll(".path-item")
-                    .transition('hover-arc')
-                    .duration(50)
+                    .transition('ribbon-mouseover')
+                    .duration(80)
                     .style("transform", "translateZ(0)")
                     .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.09:0.80)
                 d3.select(this)
-                    .transition('hover-arc')
-                    .duration(50)
+                    .transition('ribbon-mouseover')
+                    .duration(80)
                     .style("transform", "translateZ(0)")
                     .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */ 0.80)
                         
             }
             else{
                 d3.select(this)
-                    .transition('hover')
-                    .duration(50)
+                    .transition('ribbon-mouseover')
+                    .duration(80)
                     .style("transform", "translateZ(0)")
                     .style("opacity",/*   p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03: */0.80)
                 }
@@ -629,10 +630,12 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     chordDiagram.selectAll("g")
         .on("mouseout", function (evt, d) {        
             chords.selectAll(".path-item, group-arc")
-                .transition('mouseout')
+                .transition('mouseout-paths')
                 .duration(30) 
+                .delay(20)
                 .style("transform", "translateZ(0)")
                 .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.09: 0.80)
+                
            /*  groups.selectAll(".group-arc")
                 .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
              */
@@ -642,15 +645,16 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     groups
         .on("mouseover", function(evt,d) {
             d3.select(this).selectAll(".group-arc, .region-label-text")
-                .transition('mouseover')
+                .transition('mouseove-r')
                 .duration(80) 
                 .style("transform", "translateZ(0)")
                 .attr("d", arc.outerRadius(outerRadius))    
         })
         .on("mouseout", function(evt,d) {
             d3.selectAll(".group-arc, .region-label-text")
-                .transition("mouseout")
+                .transition("mouseout-arc")
                 .duration(30)
+                .delay(20)
                 .style("transform", "translateZ(0)")
                 .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
         })
