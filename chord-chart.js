@@ -643,7 +643,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     groups
         .on("mouseover", function(evt,d) {
             d3.select(this).selectAll(".group-arc, .region-label-text")
-                .transition('mouseove-r')
+                .transition('mouseover')
                 .duration(80) 
                 .style("transform", "translateZ(0)")
                 .attr("d", arc.outerRadius(outerRadius))    

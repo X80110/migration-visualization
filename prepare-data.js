@@ -93,12 +93,11 @@ let filename = fileName(config).json
          return false;
     return input.regions.includes(nameIdx);
 }; */
-
-
 function createIsRegion(input) {
-  // Aquí analitzes l'input per preparar una lògica ràpida per saber si un nom és una regió
-  const regionNames = new Set(input.regions.map(d => d.name)); // per exemple
-  return function isRegion(name) {
+  // Extraiem els noms corresponents als índexs de regions
+  const regionNames = new Set(input.regions.map(i => input.names[i]));
+
+  return function(name) {
     return regionNames.has(name);
   };
 }
@@ -254,12 +253,13 @@ function dataPrepare(input, config) {
         return input.regions[r]; // Returns the region's ID (which is an index in input.names)
     };
     
-     
-    const isRegion = (name_string) => {
+    const isRegion = createIsRegion(input);
+    console.log(isRegion("Oceania"))
+    /* const isRegion = (name_string) => {
         const nameIdx = input.names.indexOf(name_string);
         if (nameIdx === -1) return false;
         return input.regions.includes(nameIdx);
-    };
+    }; */
 
     var dataFromFilterYear = filterYear(input, year);
     
