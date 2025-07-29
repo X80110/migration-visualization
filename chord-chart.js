@@ -104,9 +104,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     // Computes true if 'name' is identified as a region. Will be used to run conditional styles on each element. 
     // 'input' here is specificRawData.
-    function isRegion(name) {
-        return input.regions.includes(input.names.indexOf(name))
-    } 
+    const isRegion = createIsRegion(input);
     /* console.log(data.names.map(d=>getMeta(d))) */
     // Append variables to the processed data for d3 chord() data inputs
 

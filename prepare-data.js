@@ -86,6 +86,23 @@ var fileName = (configs) => { // Changed let to var for wider global scope
 }
 let filename = fileName(config).json
 
+
+/* const isRegion = (name_string) => {
+    const nameIdx = input.names.indexOf(name_string);
+    if (nameIdx === -1)
+         return false;
+    return input.regions.includes(nameIdx);
+}; */
+
+
+function createIsRegion(input) {
+  // Extraiem els noms corresponents als índexs de regions
+  const regionNames = new Set(input.regions.map(i => input.names[i]));
+
+  return function(name) {
+    return regionNames.has(name);
+  };
+}
 // --- Consolidated Metadata Function ---
 // Provides basic metadata: flag, id (index in currentRawData.names), 
 // region (index of parent region in currentRawData.names), and region_name.
@@ -238,11 +255,7 @@ function dataPrepare(input, config) {
         return input.regions[r]; // Returns the region's ID (which is an index in input.names)
     };
     
-    const isRegion = (name_string) => {
-        const nameIdx = input.names.indexOf(name_string);
-        if (nameIdx === -1) return false;
-        return input.regions.includes(nameIdx);
-    };
+    const isRegion = createIsRegion(input);
 
     var dataFromFilterYear = filterYear(input, year);
     
