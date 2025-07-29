@@ -123,6 +123,25 @@ function createRegionLookup(input) {
     return regionMap.get(index) || null;
   };
 }
+
+function createGetRegionColor(input, colours) {
+  const regionNames = input.regions.map(i => input.names[i]);
+  const colorPalette = colours || [
+    '#40A4D8', '#35B8BD', '#7FC05E', '#D0C628',
+    '#FDC32D', '#FBA127', '#F76F21', '#E5492D',
+    '#C44977', '#8561D5', '#0C5BCE'
+  ];
+
+  return function getRegionColor(name) {
+    const regionIndex = regionNames.indexOf(name);
+    if (regionIndex === -1) {
+      // fallback: return some default or null
+      return colorPalette[0];
+    }
+    return colorPalette[regionIndex % colorPalette.length];
+  };
+}
+
 // --- Consolidated Metadata Function ---
 // Provides basic metadata: flag, id (index in currentRawData.names), 
 // region (index of parent region in currentRawData.names), and region_name.

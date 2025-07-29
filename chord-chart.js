@@ -42,7 +42,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     } else {
       allYears = []; // Fallback if matrix is not available
     }
-   
+    
     // The following lines are removed as data preparation is now done externally:
     // let file_index = files.indexOf(filename) // 'filename' was removed, and 'files' global is not reliable here.
     // let raw_data = raw.raw_data[file_index]
@@ -58,7 +58,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // Let's alias specificRawData to 'input' for minimal changes to getMeta, getRegion, isRegion, getRegionColor etc.
     // This assumes specificRawData has .names, .regions, .colours properties.
     let input = specificRawData; 
-
+    const isRegion = createIsRegion(input);
     // Ensure flags are available for getMeta. Flags were originally from raw.metadata.
     // They are now passed as `metadata` argument which should be the CSV data.
     // `prepare-data.js` creates a `flags` variable from `meta`.
@@ -104,7 +104,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     // Computes true if 'name' is identified as a region. Will be used to run conditional styles on each element. 
     // 'input' here is specificRawData.
-    const isRegion = createIsRegion(input);
+    
     /* console.log(data.names.map(d=>getMeta(d))) */
     // Append variables to the processed data for d3 chord() data inputs
 
@@ -217,14 +217,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         return c;
       }
     
-    const getRegionColor = (name) => {
-        // 'input' here is specificRawData
-        const regionNames = input.regions.map((d)=> { return input.names[d]});
-        const regionIndex = regionNames.indexOf(name);
-        // Use colors from the specificRawData if available, otherwise fallback to a default (though not defined here)
-        const colorPalette = input.colours || ['#40A4D8', '#35B8BD', '#7FC05E', '#D0C628', '#FDC32D', '#FBA127', '#F76F21', '#E5492D', '#C44977', '#8561D5', '#0C5BCE'];
-        return colorPalette[regionIndex % colorPalette.length]; // Use modulo for safety
-    }
+    const getRegionColor = createGetRegionColor(input)
 
     const colorCountries = (name) => {
         // 'input' is specificRawData from drawChords scope, 'metadataCsv' is the metadata param from drawChords
