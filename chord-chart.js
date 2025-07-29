@@ -609,9 +609,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                     .transition('hover-arc')
                     .duration(50)
                     .style("transform", "translateZ(0)")
-                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.03:0.80)
-                /* arcs.selectAll(".group-arc")
-                .style("opacity",d=> isRegion(d.name) ? 0.03: 0.80) */
+                    .style("opacity", p=> p.source.id !== d.id && p.target.id !== d.id ? 0.09:0.80)
                 d3.select(this)
                     .transition('hover-arc')
                     .duration(50)
@@ -620,7 +618,6 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                         
             }
             else{
-                
                 d3.select(this)
                     .transition('hover')
                     .duration(50)
@@ -635,7 +632,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 .transition('mouseout')
                 .duration(30) 
                 .style("transform", "translateZ(0)")
-                .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.03: 0.80)
+                .style("opacity",d=> isRegion(d.source.name)&& config.regions.length > 0 ? 0.09: 0.80)
            /*  groups.selectAll(".group-arc")
                 .style("opacity",d=> isRegion(d.name) && config.regions.length > 0 ? 0.03: 0.80)
              */
