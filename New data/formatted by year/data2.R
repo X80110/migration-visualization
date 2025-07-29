@@ -1,0 +1,175 @@
+##
+## data1: json for flows
+## data2: json for flows by sex
+## data3: json for flows by type
+## data4: json for stocks
+## data5: json for stocks by sex
+##
+
+library(tidyverse)
+library(countrycode)
+library(migest)
+library(jsonlite)
+
+f <- read_csv("../refilterbynumberoflinks/data/bilat_mig_sex.csv")
+# f <- read_csv("..\\global-bilat-flow-sex\\est-v04\\bilat_mig_sex.csv")
+# f <- read_csv("https://ndownloader.figshare.com/files/27980682")
+
+d0 <- f %>%
+  mutate(
+    orig_area = countrycode(
+      sourcevar = orig, custom_dict = dict_ims,
+      origin = "iso3c", destination = "region_ac2022"),
+    dest_area = countrycode(
+      sourcevar = dest, custom_dict = dict_ims,
+      origin = "iso3c", destination = "region_ac2022")) %>%
+  pivot_longer(cols = 4:9 + 1, names_to = "method", values_to = "flow")
+
+d1 <- d0 %>%
+  group_by(method, year0, sex) %>%
+  sum_expand(guess_order = TRUE, return_matrix = FALSE)
+
+# expand data frame to get consistent dimensions over all periods
+d2 <- d1 %>%
+  ungroup() %>%
+  complete(orig, dest, year0, method, sex, fill = list(flow = 0))
+
+# order of regions and countries, following latest plots
+n0 <- unique(dict_ims$region_ac2022) %>%
+  .[c(1, 2, 8, 3, 7, 6, 4, 5, 11, 9, 10)]
+
+n1 <- tibble(lab0 = unique(d1$orig)) %>%
+  mutate(area = ifelse(str_length(lab0) > 3, lab0, NA),
+         lab1 = countrycode(sourcevar = lab0, custom_dict = dict_ims,
+                            origin = "iso3c", destination = "name_short"),
+         lab1 = stringi::stri_trans_general(str = lab1, id = "latin-ascii")) %>%
+  fill(area) %>%
+  mutate(area = factor(area, levels = n0)) %>%
+  arrange(area, lab1) %>%
+  mutate(lab1 = ifelse(is.na(lab1), as.character(area), lab1)) %>%
+  group_by(area) %>%
+  nest() %>%
+  mutate(d = map(.x = data, .f = ~slice(.x, n(), 1:(n()-1)))) %>%
+  select(-data) %>%
+  unnest(d) %>%
+  ungroup() %>%
+  mutate(flag = countrycode(sourcevar = lab0, origin = "iso3c", destination = "unicode.symbol"))
+
+# totals
+d3a <- d1 %>%
+  filter(orig %in% n0,
+         dest %in% n0) %>%
+  group_by(year0, method, sex) %>%
+  sum_country() %>%
+  select(-turn, -net) %>%
+  ungroup()
+
+d3b <- d1 %>%
+  filter(!orig %in% n0,
+         !dest %in% n0) %>%
+  group_by(year0, method, sex) %>%
+  sum_country() %>%
+  select(-turn, -net) %>%
+  ungroup() %>%
+  mutate(
+    country = countrycode(sourcevar = country, custom_dict = dict_ims,
+                          origin = "iso3c", destination = "name_short"),
+    country = stringi::stri_trans_general(str = country, id = "latin-ascii")
+  )
+
+d3 <- d3a %>%
+  bind_rows(d3b) %>%
+  mutate(country = factor(country, levels = n1$lab1)) %>%
+  arrange(country) 
+
+# matrices
+m <- d2 %>% 
+  mutate(orig = factor(orig, levels = n1$lab0), 
+         dest = factor(dest, levels = n1$lab0)) %>%
+  arrange(method, sex, year0, orig, dest) %>%
+  xtabs(formula = round(flow) ~ orig + dest + method + sex + year0, data = .,) %>%
+  array_tree(margin = c(3, 4, 5))
+
+# threshold
+thresholds <- d0 %>%
+  group_by(method, sex) %>%
+  summarise(threshold = 5000)
+
+# colours  
+p <- colorRampPalette(migest::umbrella)(length(which(n1$area == n1$lab1)))
+
+# Create flows directory if it doesn't exist
+if (!dir.exists("flows")) {
+  dir.create("flows")
+}
+
+# Process each method and sex combination
+methods <- names(m)
+sexes <- c("female", "male")
+
+for (method in methods) {
+  for (sex in sexes) {
+    # Create sex/method subdirectory
+    sex_dir <- file.path("flows", sex)
+    if (!dir.exists(sex_dir)) {
+      dir.create(sex_dir)
+    }
+    
+    method_dir <- file.path(sex_dir, method)
+    if (!dir.exists(method_dir)) {
+      dir.create(method_dir)
+    }
+    
+    # Prepare meta data
+    total_inflow <- d3 %>%
+      filter(method == !!method, sex == !!sex) %>%
+      rename(year = year0, dest = country) %>%
+      select(year, dest, imm) %>%
+      xtabs(formula = round(imm) ~ year + dest, data = .,) %>%
+      as.matrix() %>%
+      apply(2, max) %>%
+      unname()
+    
+    total_outflow <- d3 %>%
+      filter(method == !!method, sex == !!sex) %>%
+      rename(year = year0, orig = country) %>%
+      select(year, orig, emi) %>%
+      xtabs(formula = round(emi) ~ year - orig, data = .,) %>%
+      as.matrix() %>%
+      apply(2, max) %>%
+      unname()
+    
+    
+    # Process each year for this method/sex combination
+    year_data <- m[[method]][[sex]]
+    years <- names(year_data)
+    
+    meta <- list(
+      threshold = thresholds %>% filter(method == !!method, sex == !!sex) %>% pull(threshold),
+      years = years,
+      total_inflow = total_inflow,
+      total_outflow = total_outflow
+    )
+    
+    # Save meta.json
+    write_json(meta, file.path(method_dir, "meta.json"), auto_unbox = TRUE, pretty = TRUE)
+    
+    
+    for (year in years) {
+      # Create JSON with just the matrix
+      matrix_data <- list(matrix = year_data[[year]])
+      
+      # Save as year.json
+      write_json(matrix_data, file.path(method_dir, paste0(year, ".json")), 
+                 auto_unbox = TRUE, pretty = TRUE)
+    }
+  }
+}
+
+# j0 <- list(
+#   names = n1$lab1, 
+#   regions = a - 1,
+#   matrix = m
+# )
+# str(j0, max.level = 4)
+
