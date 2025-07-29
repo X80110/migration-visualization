@@ -101,6 +101,28 @@ function createIsRegion(input) {
     return regionNames.has(name);
   };
 }
+
+function createRegionLookup(input) {
+  const regionMap = new Map();
+
+  for (let i = 0; i < input.regions.length; i++) {
+    const regionIndex = input.regions[i];
+    const regionName = input.names[regionIndex];
+
+    // Determine where this region ends: before the next regionIndex or end of the array
+    const end = (i + 1 < input.regions.length) ? input.regions[i + 1] : input.names.length;
+
+    // Assign this region name to all indices from regionIndex to (end - 1)
+    for (let j = regionIndex; j < end; j++) {
+      regionMap.set(j, regionName);
+    }
+  }
+
+  // Return a function that, given an index, returns the corresponding region name
+  return function getRegionName(index) {
+    return regionMap.get(index) || null;
+  };
+}
 // --- Consolidated Metadata Function ---
 // Provides basic metadata: flag, id (index in currentRawData.names), 
 // region (index of parent region in currentRawData.names), and region_name.
@@ -241,20 +263,8 @@ function dataPrepare(input, config) {
 
     // UTILS needed by filteredMatrix - defined here so they are in scope when filteredMatrix is called.
     // These operate on 'input' (input_data.raw_data - the raw JSON for the current file).
-    const getRegion = (index_in_input_names) => {
-        var r = 0;
-        // input.regions contains indices relative to input.names
-        for (var i = 0; i < input.regions.length; i++) {
-            if (input.regions[i] > index_in_input_names) {
-                break;
-            }
-            r = i;
-        }
-        return input.regions[r]; // Returns the region's ID (which is an index in input.names)
-    };
-    
+    const getRegion = createRegionLookup(input)
     const isRegion = createIsRegion(input);
-    console.log(isRegion("Oceania"))
     /* const isRegion = (name_string) => {
         const nameIdx = input.names.indexOf(name_string);
         if (nameIdx === -1) return false;
