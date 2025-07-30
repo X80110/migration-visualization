@@ -244,7 +244,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         .attr("class","container")
         .attr("id","container")
         /* .attr("viewBox", "xMinYMax meet) */    
-    console.log(data)
+
     const groups = container.append("g")        
         .attr("class","groups")
         .selectAll("g")
@@ -575,7 +575,8 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             if (indexToRemove > -1) {
                 config.regions.splice(indexToRemove, 1);
             }
-            
+            d3.selectAll("g#tooltip")
+                .remove()    
             // Call the global update function from index.html
             update(loadedJsonData, initialMetadata, config);
         });
@@ -583,8 +584,8 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     chordDiagram.selectAll(".group-arc, .region-label-text")
         .on("click", function (evt, d) {                    
             config.previous = data 
-            /* d3.selectAll("g#tooltip")
-                        .remove()     */
+            d3.selectAll("g#tooltip")
+                        .remove()    
             // Call the global update function from index.html
             update(loadedJsonData, initialMetadata, config);
         })

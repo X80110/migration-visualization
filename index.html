@@ -300,6 +300,7 @@
 			// Show/Hide 'reset selection' button
 			function resetData(){
 				config.regions = [];
+				config.previous = data 
 				// Call update directly, assuming necessary data is already loaded or will be handled by update
 				update(loadedJsonData, initialMetadata, config);
 			}
