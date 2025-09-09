@@ -34,14 +34,7 @@ function labelPosition(angle) {
 // - `chartWidth` and `chartHeight` are now passed in.
 // - Arguments changed to: chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight
 function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight){
-    // allYears = Object.keys(raw.raw_data[0].matrix); // This was for the old 'raw' structure, specificRawData is one dataset
-    // If allYears is still needed, it should be derived from specificRawData.matrix keys (passed as specificRawData).
-    // For now, assuming it might not be directly needed or its source will be specificRawData.
-    if (specificRawData && specificRawData.matrix) {
-      allYears = Object.keys(specificRawData.matrix);
-    } else {
-      allYears = []; // Fallback if matrix is not available
-    }
+    // allYears is no longer needed here, it's handled in index.html for the slider.
     
     // The following lines are removed as data preparation is now done externally:
     // let file_index = files.indexOf(filename) // 'filename' was removed, and 'files' global is not reliable here.

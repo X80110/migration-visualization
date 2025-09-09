@@ -49,41 +49,30 @@ var fileName = (configs) => { // Changed let to var for wider global scope
     // build filename hierarchy
     let stockflow = config.stockflow
     year = config.year
-    
-    sex = config.sex === "all" || "" ?
-        "" :
-        "_" + config.sex
-    
+
     sex2 = config.sex === "all" || "" ?
         "" :
         "/" + config.sex
 
-    type = config.type + "_"
-    
-    method = stockflow === "stock" ?
-        "" :
-        "_" + config.method || "_da_pb_closed"
-    
     method2 = /* stockflow === "stock" ?
         "" :
         "/" + */ config.method || "da_pb_closed"
 
 
-    let json = 'json/' + stockflow + '_' + sex + type + method + '.json'
-    let json2 = 'json/' + stockflow      + sex2 + '/' + method2 + '/' + year + '.json'
-    let meta = 'json/' + stockflow      + sex2 + '/' + method2 + '/meta.json'
-
+    let json = 'json/' + stockflow + sex2 + '/' + method2 + '/' + year + '.json'
+    let dataset_meta = 'json/' + stockflow + sex2 + '/' + method2 + '/dataset_meta.json'
     
     // clean non-lineal irregularities
     json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
+    dataset_meta = dataset_meta.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
+
     return {
         json: json,
-        json2: json2,
+        dataset_meta: dataset_meta,
         values: stockflow,
-        sex,
-        type,
-        method,
-        type: config.type
+        sex: config.sex,
+        type: config.type,
+        method: config.method
     }
 }
 let filename = fileName(config).json
@@ -106,7 +95,7 @@ function createIsRegion(input) {
 
 function createRegionLookup(input) {
   const regionMap = new Map();
-
+    
   for (let i = 0; i < input.regions.length; i++) {
     const regionIndex = input.regions[i];
     const regionName = input.names[regionIndex];
@@ -146,7 +135,7 @@ function createGetRegionColor(input, colours) {
 
 function createGetMeta(input) {
     const currentRawData = input.raw_data;
-    const metadataCsv = input.metadata;
+    const metadataCsv = input.metadata.flags; // Adapted to new metadata structure
 
     // Create a lookup map for faster access
     const metadataMap = new Map();
@@ -251,7 +240,7 @@ d3.select("#selectedRanking") // populate html
 
 
 // Get year data  ------------–––-----------------------------------–--------------------
-function filterYear(input, year) {
+/* function filterYear(input, year) {
     year = +year
     nodes = input
     // Total flows from file
@@ -269,17 +258,76 @@ function filterYear(input, year) {
         total_inflow
     };
     return result;
-}
+} */
 // Commented out allTimeMax function removed.
 
 // #########################################################################################
 // #########################################################################################
 //  DATA PREPARE
+function setSelectors(allYears) {
+    if (!allYears || allYears.length === 0) {
+        console.error("setSelectors called with no years.");
+        return;
+    }
+    const lastYearPlusFive = (+allYears[allYears.length - 1] + 5).toString()
+
+    let allRangeYears = allYears.concat(lastYearPlusFive)
+    let sliderticks = document.getElementById("sliderticks");
+    let slider = document.getElementById("selectYear");
+    let sliderValue = parseInt(slider.value)
+
+    function getTicks(year) {
+        let ticks = allYears.map(col =>
+            +col === +year ?
+            `<p><b>${col}</b></p   >` :
+            `<p>${col}</p   >`
+        ).join("");
+        sliderticks.innerHTML = ticks
+    }
+    slider.setAttribute("min", allYears[0]);
+    slider.setAttribute("max", allYears[allYears.length - 1]);
+
+    if (fileName(config).json.includes("stock")) {
+        function getTicks(year) {
+            let ticks = allYears.map(col =>
+                +col === +year ?
+                `<p><b>${col}</b></p   >` :
+                `<p>${col}</p   >`
+            ).join("");
+            sliderticks.innerHTML = ticks
+        }
+        getTicks(sliderValue)
+        slider.oninput = function () {
+            let value = parseInt(this.value)
+            getTicks(value)
+        }
+    } else if (fileName(config).json.includes("flow")) {
+        function getTicks(year) {
+
+            let ticks = allRangeYears.map(col =>
+                +col === +year || +col === +year + 5 ?
+                `<p><b>${col}</b></p   >` :
+                `<p>${col}</p   >`
+            ).join("");
+            sliderticks.innerHTML = ticks
+        }
+        getTicks(sliderValue)
+        slider.oninput = function () {
+            let value = parseInt(this.value)
+            getTicks(value)
+        }
+    }
+}
 function dataPrepare(input, config) {
 
     var input_data = {...input}
-    const getMeta = createGetMeta(input_data);
-    var meta = input_data.metadata // meta is input.metadata (parsed CSV)
+	
+    // Add names and regions to raw_data from metadata
+    input_data.raw_data.names = input_data.metadata.names;
+    input_data.raw_data.regions = input_data.metadata.regions;
+
+    const getMeta = createGetMeta({raw_data: input_data.raw_data, metadata: input_data.metadata.flags});
+    var meta = input_data.metadata.flags // meta is input.metadata (parsed CSV)
     threshold = 10000 || +config.threshold
     ranking = 10000 || +config.ranking
     
@@ -297,7 +345,7 @@ function dataPrepare(input, config) {
         return input.regions.includes(nameIdx);
     }; */
 
-    var dataFromFilterYear = filterYear(input, year);
+    var dataFromFilterYear = input;
     
     let dataSliced = filteredMatrix(dataFromFilterYear); // Pass dataFromFilterYear to filteredMatrix
 
@@ -332,6 +380,23 @@ function dataPrepare(input, config) {
     function filteredMatrix(input) {
         data = input
         const countryNames = data.names
+        
+        // Compute total inflow and outflow from the matrix if they are not pre-calculated
+        if (!data.total_outflow || !data.total_inflow) {
+            const matrix = data.matrix;
+            const n = matrix.length;
+            const total_outflow = new Array(n).fill(0);
+            const total_inflow = new Array(n).fill(0);
+
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    total_outflow[i] += matrix[i][j];
+                    total_inflow[j] += matrix[i][j];
+                }
+            }
+            data.total_outflow = total_outflow;
+            data.total_inflow = total_inflow;
+        }
         // GET SOURCE-TARGET STRUCTURE 
         // Create array of name & connections objects
         let matrix = data.names.map((d, i) => {
@@ -681,60 +746,6 @@ function dataPrepare(input, config) {
         }
     };
    
-    function setSelectors() {
-        let allYears = [...new Set(Object.keys(input_data.raw_data.matrix))]
-        const lastYearPlusFive = (+allYears[allYears.length - 1] + 5).toString()
-
-        let allRangeYears = allYears.concat(lastYearPlusFive)
-        let sliderticks = document.getElementById("sliderticks");
-        let slider = document.getElementById("selectYear");
-        let sliderValue = parseInt(slider.value)
-
-        function getTicks(year) {
-
-            let ticks = allYears.map(col =>
-                +col === +year ?
-                `<p><b>${col}</b></p   >` :
-                `<p>${col}</p   >`
-            ).join("");
-            sliderticks.innerHTML = ticks
-        }
-        slider.setAttribute("min", allYears[0]);
-        slider.setAttribute("max", allYears[allYears.length - 1]);
-
-        if (filename.includes("stock")) {
-            function getTicks(year) {
-                let ticks = allYears.map(col =>
-                    +col === +year ?
-                    `<p><b>${col}</b></p   >` :
-                    `<p>${col}</p   >`
-                ).join("");
-                sliderticks.innerHTML = ticks
-            }
-            getTicks(sliderValue)
-            slider.oninput = function () {
-                let value = parseInt(this.value)
-                getTicks(value)
-            }
-        } else if (filename.includes("flow")) {
-            function getTicks(year) {
-
-                let ticks = allRangeYears.map(col =>
-                    +col === +year || +col === +year + 5 ?
-                    `<p><b>${col}</b></p   >` :
-                    `<p>${col}</p   >`
-                ).join("");
-                sliderticks.innerHTML = ticks
-            }
-            getTicks(sliderValue)
-            slider.oninput = function () {
-                let value = parseInt(this.value)
-                getTicks(value)
-            }
-        }
-    }
-
-    setSelectors()
     
     return {
         common: {

@@ -10,7 +10,6 @@
 
 		<!-- <link rel="preload" href="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js" as="script"> -->
 		<!-- <link rel="preload" href="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js" as="script"> -->
-		<link rel="preload" href="json/flow_da_pb_closed.json" as="fetch" crossorigin="anonymous">
 		
 		<link href="styles.css" rel="stylesheet" media="all">
 				<!-- Google tag (gtag.js) -->
@@ -213,16 +212,10 @@
 	   /* console.log(filename) */
 	   // This 'files' array lists all *possible* JSON files this page might need.
 	   // Specific files will be loaded on demand.
-	   let files = [
-			"json/flow_da_min_closed.json",
-			"json/flow_da_min_open.json",
-			"json/flow_da_pb_closed.json",
-			"json/flow_mig_rate.json",
-			"json/flow_sd_drop_neg.json",
-			"json/flow_sd_rev_neg.json",
-		];
+	   // let files = [ ... ]; // This is no longer needed as filenames are generated dynamically.
 		let markdown_file  = 'static/texts/flow-total-text.md';
 		let loadedJsonData = {}; // Cache for loaded JSON files
+		let datasetMetaCache = {}; // Cache for loaded dataset metadata files
 		let initialMetadata = null; // To store metadata
 		let dataPrepareCache = new Map(); // Cache for dataPrepare function outputs
 	</script>
@@ -234,24 +227,42 @@
 	<!-- RUN DATA AND DRAW CHART	 -->
 	<script>			
 			// Load initial site data (default JSON and metadata)
-			async function loadInitialData() {      
-				const initialJsonFileName = fileName(config).json; // Determine default JSON based on initial config
-				const initialJsonFileName2 = fileName(config).json2; // Determine default JSON based on initial config
+			async function loadInitialData() {
+				const { json: initialJsonFileName, dataset_meta: initialDatasetMetaName } = fileName(config);
+
+				if (!initialMetadata) {
+					const [flags, namesAndRegions] = await Promise.all([
+						d3.csv("data/country-metadata-flags.csv"),
+						d3.json("data/indexes-regions.json")
+					]);
+					initialMetadata = {
+						flags: flags,
+						names: namesAndRegions.names,
+						regions: namesAndRegions.regions
+					};
+				}
+
+				// Load dataset metadata if not in cache
+				if (!datasetMetaCache[initialDatasetMetaName]) {
+					try {
+						const meta = await d3.json(initialDatasetMetaName);
+						datasetMetaCache[initialDatasetMetaName] = meta;
+						setSelectors(meta.years); // Populate year slider
+					} catch (e) {
+						console.error(`Failed to load metadata ${initialDatasetMetaName}`);
+					}
+				} else {
+					setSelectors(datasetMetaCache[initialDatasetMetaName].years);
+				}
 				
+				// Now load the specific year's data
 				if (!loadedJsonData[initialJsonFileName]) {
 					loadedJsonData[initialJsonFileName] = await d3.json(initialJsonFileName);
 				}
-				if (!initialMetadata) {
-					flags = await d3.csv("data/country-metadata-flags.csv");
-					names = await d3.json("data/indexes-regions.json")
-					initialMetadata = flags
 
-					// console.log(new Object(flags,names))
-				}
-				// The return value is mostly for signaling completion or passing metadata if needed by caller.
-				// The actual data is now in global `loadedJsonData` and `initialMetadata`.
 				return { initial_filename: initialJsonFileName, metadata: initialMetadata };
 			};
+
 
 			// run visualization selected on #anchor link
 			function getAnchor() {
@@ -286,12 +297,6 @@
 				config.regions = []; // Reset regions when switching visualization type
 				
 				loadInitialData().then(initialData => {
-					// Pass the whole collection of loaded data and the specific initial file if needed by update.
-					// update function will be refactored to handle this.
-					// // For now, config.threshold might be set from the initially loaded data.
-					// if (loadedJsonData[initialData.initial_filename] && loadedJsonData[initialData.initial_filename].threshold) {
-					// 	config.threshold = loadedJsonData[initialData.initial_filename].threshold;
-					// }
 					console.log("Initial data loaded for:", initialData.initial_filename);
 					update(loadedJsonData, initialMetadata, config); // Pass loadedJsonData and initialMetadata
 				});
@@ -309,31 +314,40 @@
 
 			// update visualization for the selected values
 			async function update(currentJsonDataCache, currentMetadata, currentConfig){
-				const targetFileName = fileName(currentConfig).json;
-				const spinner = document.querySelector("#spin"); // Get the spinner element
+				const { json: targetFileName, dataset_meta: targetDatasetMetaName } = fileName(currentConfig);
+				const spinner = document.querySelector("#spin");
 
-				// Ensure data is loaded (On-Demand Loading)
+				// Load dataset metadata if not in cache
+				if (!datasetMetaCache[targetDatasetMetaName]) {
+					try {
+						datasetMetaCache[targetDatasetMetaName] = await d3.json(targetDatasetMetaName);
+						setSelectors(datasetMetaCache[targetDatasetMetaName].years); // Update slider
+					} catch (e) {
+						console.error(`Failed to load metadata ${targetDatasetMetaName}`);
+						// Handle metadata load failure, maybe show an error and return
+						return;
+					}
+				}
+
+				// Ensure data for the specific year is loaded
 				if (!currentJsonDataCache[targetFileName]) {
 					console.log(`Data for ${targetFileName} not found. Loading...`);
-					if(spinner) spinner.style.visibility = "visible"; // Show spinner
+					if(spinner) spinner.style.visibility = "visible";
 
 					try {
 						const newData = await d3.json(targetFileName);
 						currentJsonDataCache[targetFileName] = newData;
 						console.log(`${targetFileName} loaded successfully.`);
-						
-						// If threshold needs to be updated from newly loaded file:
-                        if (newData && newData.threshold) {
+						if (newData && newData.threshold) {
                             currentConfig.threshold = newData.threshold;
                         }
 					} catch (error) {
 						console.error(`Failed to load ${targetFileName}:`, error);
-						if(spinner) spinner.style.visibility = "hidden"; // Hide spinner on error
-						// Handle error appropriately, maybe show a message to the user in the UI
+						if(spinner) spinner.style.visibility = "hidden";
 						document.getElementById("markdown_text").innerHTML = `<p style="color:red;">Error loading data for ${targetFileName}. Please try different selections or refresh.</p>`;
 						return; 
 					} finally {
-						if(spinner) spinner.style.visibility = "hidden"; // Hide spinner after loading attempt
+						if(spinner) spinner.style.visibility = "hidden";
 					}
 				}
 				
@@ -345,9 +359,6 @@
 				d3.selectAll("#chord-chart g")
 					.remove();
 				
-				// console.log(currentConfig);
-				
-				// Generate cache key for dataPrepare
 				const dpCacheKey = targetFileName + "|" + 
 								   currentConfig.year + "|" + 
 								   currentConfig.ranking + "|" + 
@@ -367,23 +378,17 @@
 					dataPrepareCache.set(dpCacheKey, preparedDataResult);
 				}
 
-				// Now call drawChords and setData with the specific data and preparedData
-				// Note: The 'files' global variable is used by fileName() inside chart files for event handlers.
-				// This is acceptable for now as event handlers call the main 'update' which correctly sources data.
-				
-				// Always call drawChords as it might be the default or handle its own visibility/DOM.
-				const specificRawData = currentJsonDataCache[targetFileName]; // Data for the current view
-				const metadataCsv = currentMetadata; // Parsed CSV for flags
+				const specificRawData = currentJsonDataCache[targetFileName];
+				const metadataCsv = currentMetadata;
 				drawChords(
 					preparedDataResult.chordData, 
 					preparedDataResult.common, 
 					specificRawData,  
 					metadataCsv, 
 					currentConfig, 
-					width, height // Global width/height from prepare-data.js
+					width, height
 				);
 				
-				// Conditionally call setData for Sankey
 				const sankeyChartElement = document.getElementById('sankey');
 				if (sankeyChartElement && sankeyChartElement.style.display !== 'none') {
 					console.log("Sankey is visible, calling setData");
@@ -393,7 +398,7 @@
 						specificRawData, 
 						metadataCsv, 
 						currentConfig, 
-						width, height // Global width/height
+						width, height
 					);
 				} else {
 					console.log("Sankey is not visible, skipping setData");
@@ -403,12 +408,10 @@
 					parsed_text = parseMarkdown(text)
 						.replace(" - See file","</p><p>See file");
 					let method = parseMarkdown(method_text[currentConfig.method]);
-					// Set threshold population and replace in text
 					let currentThreshold = currentJsonDataCache[targetFileName] ? currentJsonDataCache[targetFileName].threshold : "N/A";
 					if (typeof currentThreshold === 'number') {
 						currentThreshold = d3.format(",.2r")(currentThreshold);
 					} else if (currentConfig.threshold && typeof currentConfig.threshold === 'number') {
-						// Fallback to config.threshold if available from initial load
 						currentThreshold = d3.format(",.2r")(currentConfig.threshold);
 					}
 					output_text = parsed_text
@@ -417,7 +420,7 @@
 
 					document.getElementById("markdown_text").innerHTML = output_text;
 					
-					const currentFilenameForMarkdown = fileName(currentConfig).json; // get current filename
+					const currentFilenameForMarkdown = fileName(currentConfig).json;
 					if (currentFilenameForMarkdown.includes("flow")){
 						const el = document.querySelector("#markdown_text > p:nth-child(8) > a");
 						if (el) el.className = 'drop-link';
