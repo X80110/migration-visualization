@@ -71,12 +71,14 @@ var fileName = (configs) => { // Changed let to var for wider global scope
 
     let json = 'json/' + stockflow + '_' + sex + type + method + '.json'
     let json2 = 'json/' + stockflow      + sex2 + '/' + method2 + '/' + year + '.json'
+    let meta = 'json/' + stockflow      + sex2 + '/' + method2 + '/meta.json'
 
-    console.log(json2.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/"))
+    
     // clean non-lineal irregularities
     json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
     return {
         json: json,
+        json2: json2,
         values: stockflow,
         sex,
         type,
@@ -142,56 +144,60 @@ function createGetRegionColor(input, colours) {
   };
 }
 
-// --- Consolidated Metadata Function ---
-// Provides basic metadata: flag, id (index in currentRawData.names), 
-// region (index of parent region in currentRawData.names), and region_name.
-// Does not include flow data.
-function getBasicMeta(name, currentRawData, metadataCsv) {
-    if (!name || !currentRawData || !currentRawData.names || !currentRawData.regions || !metadataCsv) {
-        return { flag: "", id: -1, region: -1, region_name: "N/A" };
+function createGetMeta(input) {
+    const currentRawData = input.raw_data;
+    const metadataCsv = input.metadata;
+
+    // Create a lookup map for faster access
+    const metadataMap = new Map();
+    if (metadataCsv) {
+        for (const row of metadataCsv) {
+            metadataMap.set(row.origin_name, row);
+        }
     }
 
-    const id = currentRawData.names.indexOf(name);
-    if (id === -1) {
-        return { flag: "", id: -1, region: -1, region_name: "N/A" };
-    }
+    return function getMeta(name) {
+        if (!name || !currentRawData || !currentRawData.names || !currentRawData.regions) {
+            return { flag: "", id: -1, region: -1, region_name: "N/A" };
+        }
 
-    let flag = "";
-    const metaRow = metadataCsv.find(row => row.origin_name === name);
-    if (metaRow) {
-        flag = metaRow.origin_flag || "";
-    }
+        const id = currentRawData.names.indexOf(name);
+        if (id === -1) {
+            return { flag: "", id: -1, region: -1, region_name: "N/A" };
+        }
 
-    // Helper to find the region index (value from currentRawData.regions) for a given nameIndex
-    // This is the index that points to the region's name in currentRawData.names
-    const getRegionValueForNameIndex = (nameIndex, regionsArray, namesArrayLength) => {
-        let regionVal = -1; // Default if not found or is a top-level region not further categorized
-        // Find which region group the nameIndex belongs to
-        // regionsArray contains the start indices of each region
-        for (let i = 0; i < regionsArray.length; i++) {
-            const currentRegionStartIndex = regionsArray[i];
-            const nextRegionStartIndex = (i + 1 < regionsArray.length) ? regionsArray[i + 1] : namesArrayLength;
-            if (nameIndex >= currentRegionStartIndex && nameIndex < nextRegionStartIndex) {
-                regionVal = currentRegionStartIndex; // This IS the region index (value)
-                break;
+        let flag = "";
+        const metaRow = metadataMap.get(name); // Use the map for O(1) lookup
+        if (metaRow) {
+            flag = metaRow.origin_flag || "";
+        }
+
+        const getRegionValueForNameIndex = (nameIndex, regionsArray, namesArrayLength) => {
+            let regionVal = -1;
+            for (let i = 0; i < regionsArray.length; i++) {
+                const currentRegionStartIndex = regionsArray[i];
+                const nextRegionStartIndex = (i + 1 < regionsArray.length) ? regionsArray[i + 1] : namesArrayLength;
+                if (nameIndex >= currentRegionStartIndex && nameIndex < nextRegionStartIndex) {
+                    regionVal = currentRegionStartIndex;
+                    break;
+                }
             }
-        }
-        // If the name itself is a region, its region is itself.
-        if (regionsArray.includes(nameIndex)) {
-            regionVal = nameIndex;
-        }
-        return regionVal;
-    };
+            if (regionsArray.includes(nameIndex)) {
+                regionVal = nameIndex;
+            }
+            return regionVal;
+        };
 
-    const regionValue = getRegionValueForNameIndex(id, currentRawData.regions, currentRawData.names.length);
-    const region_name = (regionValue !== -1 && currentRawData.names[regionValue]) ? currentRawData.names[regionValue] : "N/A";
+        const regionValue = getRegionValueForNameIndex(id, currentRawData.regions, currentRawData.names.length);
+        const region_name = (regionValue !== -1 && currentRawData.names[regionValue]) ? currentRawData.names[regionValue] : "N/A";
 
-    return { 
-        flag: flag, 
-        id: id,                   // Index of 'name' in currentRawData.names
-        region: regionValue,      // Index of the region's name in currentRawData.names
-        region_name: region_name
-    };
+        return {
+            flag: flag,
+            id: id,
+            region: regionValue,
+            region_name: region_name
+        };
+    }
 }
 
 
@@ -272,7 +278,8 @@ function filterYear(input, year) {
 function dataPrepare(input, config) {
 
     var input_data = {...input}
-    meta = input_data.metadata // meta is input.metadata (parsed CSV)
+    const getMeta = createGetMeta(input_data);
+    var meta = input_data.metadata // meta is input.metadata (parsed CSV)
     threshold = 10000 || +config.threshold
     ranking = 10000 || +config.ranking
     
@@ -384,7 +391,7 @@ function dataPrepare(input, config) {
             let net_flow = outflow - inflow
             let total_flow = outflow + inflow
             let connections = number_connections.map(d=>d.connections)[i]
-            let basicMetaData = getBasicMeta(name, input, meta); 
+            let basicMetaData = getMeta(name); 
             let region_name = basicMetaData.region_name;
             { return {
                     region_name,
@@ -658,7 +665,7 @@ function dataPrepare(input, config) {
     
     let sankey_nodes = sankey_display_names.map(name => ({
         name: name,
-        id: getBasicMeta(name, input, meta).id 
+        id: getMeta(name).id 
     }));
 
     let selectedLinksForSankey = dataSliced.nldata.filter(link => 

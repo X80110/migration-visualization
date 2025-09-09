@@ -236,6 +236,7 @@
 			// Load initial site data (default JSON and metadata)
 			async function loadInitialData() {      
 				const initialJsonFileName = fileName(config).json; // Determine default JSON based on initial config
+				const initialJsonFileName2 = fileName(config).json2; // Determine default JSON based on initial config
 				
 				if (!loadedJsonData[initialJsonFileName]) {
 					loadedJsonData[initialJsonFileName] = await d3.json(initialJsonFileName);
@@ -244,7 +245,8 @@
 					flags = await d3.csv("data/country-metadata-flags.csv");
 					names = await d3.json("data/indexes-regions.json")
 					initialMetadata = flags
-					console.log(new Object(flags,names))
+
+					// console.log(new Object(flags,names))
 				}
 				// The return value is mostly for signaling completion or passing metadata if needed by caller.
 				// The actual data is now in global `loadedJsonData` and `initialMetadata`.

@@ -57,7 +57,8 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // Used for things like input.regions, input.names (original lists), input.colours
     // Let's alias specificRawData to 'input' for minimal changes to getMeta, getRegion, isRegion, getRegionColor etc.
     // This assumes specificRawData has .names, .regions, .colours properties.
-    let input = specificRawData; 
+    let input = specificRawData;
+    const getMeta = createGetMeta({ raw_data: specificRawData, metadata: metadataCsv });
     const isRegion = createIsRegion(input);
     // Ensure flags are available for getMeta. Flags were originally from raw.metadata.
     // They are now passed as `metadata` argument which should be the CSV data.
@@ -108,14 +109,14 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     function computedChords(data)  {        // data for each arrow
         let chords = chord(data.matrix).map(d=> {
             d.source.name = data.names[d.source.index];
-            const sourceBasicMeta = getBasicMeta(d.source.name, input, metadataCsv); // 'input' is specificRawData, 'metadataCsv' is metadata
+            const sourceBasicMeta = getMeta(d.source.name); // 'input' is specificRawData, 'metadataCsv' is metadata
             // Flow data is not directly needed for source.region and source.id for chord structure
             d.source.region = sourceBasicMeta.region;
             d.source.id = sourceBasicMeta.id;
 
             //-----
             d.target.name = data.names[d.target.index];
-            const targetBasicMeta = getBasicMeta(d.target.name, input, metadataCsv);
+            const targetBasicMeta = getMeta(d.target.name);
             d.target.region = targetBasicMeta.region;
             d.target.id = targetBasicMeta.id;
 
@@ -133,7 +134,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         let groups = chord(data.matrix).groups
         groups.map(d=>{
             d.name = data.names[d.index];
-            const groupBasicMeta = getBasicMeta(d.name, input, metadataCsv);
+            const groupBasicMeta = getMeta(d.name);
             d.id = groupBasicMeta.id;
             d.region = groupBasicMeta.region;
             d.angle = (d.startAngle  + (d.endAngle - d.startAngle) / 2);
@@ -218,7 +219,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     const colorCountries = (name) => {
         // 'input' is specificRawData from drawChords scope, 'metadataCsv' is the metadata param from drawChords
-        const countryBasicMeta = getBasicMeta(name, input, metadataCsv); 
+        const countryBasicMeta = getMeta(name); 
         let color_country = getRegionColor(countryBasicMeta.region_name); // getRegionColor uses 'input'
         let hsl = d3.hsl(color_country);
         
@@ -312,7 +313,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             ${d.angle > Math.PI ? "rotate(180)" : ""}
         `)
         .text(d => {
-            const labelBasicMeta = getBasicMeta(d.name, input, metadataCsv);
+            const labelBasicMeta = getMeta(d.name);
             return d.angle > Math.PI
                 ? d.name+ " "+ labelBasicMeta.flag
                 :  labelBasicMeta.flag+ " "+  d.name;
@@ -461,11 +462,11 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         .style('box-shadow','rgba(0, 0, 0, 0.35) 0px 5px 15px')   
         
     function tooltipCountry(evt,d_link)  { // d_link is the link object from D3 {source, target, value}
-        const sourceBasicMeta = getBasicMeta(d_link.source.name, input, metadataCsv);
+        const sourceBasicMeta = getMeta(d_link.source.name);
         const sourceFlowInfo = flows.find(f => f.name === d_link.source.name) || {}; // 'flows' is commonData.flows
         const sourceFullMeta = { ...sourceBasicMeta, ...sourceFlowInfo };
 
-        const targetBasicMeta = getBasicMeta(d_link.target.name, input, metadataCsv);
+        const targetBasicMeta = getMeta(d_link.target.name);
         const targetFlowInfo = flows.find(f => f.name === d_link.target.name) || {};
         const targetFullMeta = { ...targetBasicMeta, ...targetFlowInfo };
 
@@ -504,7 +505,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     }
 
     function tooltipRegion(evt,d_group) { // d_group is a group object
-        const basicMeta = getBasicMeta(d_group.name, input, metadataCsv);
+        const basicMeta = getMeta(d_group.name);
         const flowInfo = flows.find(f => f.name === d_group.name) || {}; // 'flows' is commonData.flows
         const fullMeta = { ...basicMeta, ...flowInfo };
 
@@ -568,7 +569,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             return d.id !== d.region;
         })
         .on('click', function(evt, d_country_group) { // d_country_group is a group object for a country
-            const basicMeta = getBasicMeta(d_country_group.name, input, metadataCsv);
+            const basicMeta = getMeta(d_country_group.name);
             // Flow data not needed here, just region_name from basicMeta
             const regionNameToRemove = basicMeta.region_name;
             const indexToRemove = config.regions.indexOf(regionNameToRemove);
@@ -687,7 +688,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     //         return d.id !== d.region;
     //     })
     //     .on('click', function(evt, d_country_group) { // d_country_group is a group object for a country
-    //         const basicMeta = getBasicMeta(d_country_group.name, input, metadataCsv);
+    //         const basicMeta = getMeta(d_country_group.name);
     //         // Flow data not needed here, just region_name from basicMeta
     //         const regionNameToRemove = basicMeta.region_name;
     //         const indexToRemove = config.regions.indexOf(regionNameToRemove);

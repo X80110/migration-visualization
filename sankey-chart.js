@@ -43,27 +43,6 @@ const getRegionColor_sankey = (name, current_specificRawData) => { // Retained, 
     return colorPalette[regionIndex % colorPalette.length];
 }
 
-const colorCountries_sankey = (name, current_specificRawData, current_metadata_csv /* current_prepared_flows not needed here directly */) => {
-    // Uses global getBasicMeta. current_metadata_csv is the metadata param from setData.
-    const countryBasicMeta = getBasicMeta(name, current_specificRawData, current_metadata_csv); 
-    
-    let color_country = getRegionColor_sankey(countryBasicMeta.region_name, current_specificRawData);
-    let hsl = d3.hsl(color_country);
-
-    const id = Number(countryBasicMeta.id);
-    const region = Number(countryBasicMeta.region); // This is the ID of the region name from getBasicMeta
-
-    if (isNaN(id) || isNaN(region)) {
-        // console.warn('colorCountries_sankey: Invalid id or region for name', name, countryBasicMeta);
-        const r_palette_fallback = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
-        return r_palette_fallback[0]; // Return a default/fallback color
-    }
-    
-    const r_palette = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
-    let palleteIndex = (id - region); 
-    palleteIndex = ((palleteIndex % 5) + 5) % 5; // Ensure positive and within 0-4 range
-    return r_palette[palleteIndex];
-}
 // --- End of Top-Level Helper Functions ---
 
 // Define chart-specific dimensions to avoid ReferenceError if global width/height are not yet defined
@@ -145,6 +124,27 @@ const tooltip = d3.select('body').append('g')
 // - `chartWidth` and `chartHeight` are now passed in.
 // - Arguments changed to: sankeyData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight
 function setData(sankeyData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight){
+    const getMeta = createGetMeta({ raw_data: specificRawData, metadata: metadataCsv });
+    const colorCountries_sankey = (name) => {
+        const countryBasicMeta = getMeta(name); 
+        
+        let color_country = getRegionColor_sankey(countryBasicMeta.region_name, specificRawData);
+        let hsl = d3.hsl(color_country);
+    
+        const id = Number(countryBasicMeta.id);
+        const region = Number(countryBasicMeta.region); // This is the ID of the region name from getBasicMeta
+    
+        if (isNaN(id) || isNaN(region)) {
+            // console.warn('colorCountries_sankey: Invalid id or region for name', name, countryBasicMeta);
+            const r_palette_fallback = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
+            return r_palette_fallback[0]; // Return a default/fallback color
+        }
+        
+        const r_palette = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
+        let palleteIndex = (id - region); 
+        palleteIndex = ((palleteIndex % 5) + 5) % 5; // Ensure positive and within 0-4 range
+        return r_palette[palleteIndex];
+    }
     // GET SELECTED DATASET - This section is removed as specificRawData is now passed directly.
     // filename = fileName(config).json; // Tooltips derive this locally if needed.
     // file_index = files.indexOf(filename); // 'files' global might not be reliable
@@ -248,7 +248,7 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("stroke-width", function(d) { return Math.max(1, d.width); })
         .attr("stroke", d=> isRegion_sankey(d.source.name, specificRawData) 
                             ? getRegionColor_sankey(d.source.name, specificRawData) 
-                            : colorCountries_sankey(d.source.name, specificRawData, metadataCsv /* flows not needed for color */))
+                            : colorCountries_sankey(d.source.name))
     
     link
         .transition('link')
@@ -258,7 +258,7 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("stroke-width", function(d) { return Math.max(1, d.width); })
         .attr("stroke", d=> isRegion_sankey(d.source.name, specificRawData) 
                             ? getRegionColor_sankey(d.source.name, specificRawData)
-                            : colorCountries_sankey(d.source.name, specificRawData, metadataCsv /* flows not needed for color */))
+                            : colorCountries_sankey(d.source.name))
 
     link.exit().remove();
     
@@ -276,7 +276,7 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("width", d=> d.x1 - d.x0)
         .attr("fill", d=> isRegion_sankey(d.name, specificRawData) 
                         ? getRegionColor_sankey(d.name, specificRawData) 
-                        : colorCountries_sankey(d.name, specificRawData, metadataCsv /* flows not needed for color */))
+                        : colorCountries_sankey(d.name))
         
     node.select("rect")  
         .transition('node')
@@ -286,7 +286,7 @@ function updateSankey(raw, input, config, graph_data){ */
         .attr("height", d=> d.y1 - d.y0 )
         .attr("fill", d=> isRegion_sankey(d.name, specificRawData) 
                         ? getRegionColor_sankey(d.name, specificRawData) 
-                        : colorCountries_sankey(d.name, specificRawData, metadataCsv /* flows not needed for color */))
+                        : colorCountries_sankey(d.name))
         .style("opacity",d=> isRegion_sankey(d.name, specificRawData) && config.regions.length > 0 ? 0.1: 0.7)
 
     nodeEnter.append("text")
@@ -309,7 +309,7 @@ function updateSankey(raw, input, config, graph_data){ */
             if(d.x0 > chartWidth / 2 && !isReg) {return "start"}         
         })
         .text(d => {
-            const basicMeta = getBasicMeta(d.name, specificRawData, metadataCsv); // Use specificRawData & metadataCsv
+            const basicMeta = getMeta(d.name); // Use specificRawData & metadataCsv
             return d.sourceLinks.length > 0
                 ?  d.name+ " "+ basicMeta.flag
                 :  basicMeta.flag+ " "+  d.name;
@@ -337,7 +337,7 @@ function updateSankey(raw, input, config, graph_data){ */
             if(d.x0 > chartWidth / 2 && isReg) {return "start"} // Typo fixed: was !isReg, should be isReg for consistency of logic with previous block
         })
         .text(d => {
-            const basicMeta = getBasicMeta(d.name, specificRawData, metadataCsv); // Use specificRawData & metadataCsv
+            const basicMeta = getMeta(d.name); // Use specificRawData & metadataCsv
             return d.sourceLinks.length > 0
                 ?  d.name+ " "+ basicMeta.flag
                 :  basicMeta.flag+ " "+  d.name;
@@ -380,7 +380,7 @@ function updateSankey(raw, input, config, graph_data){ */
             // This click handler might be redundant if the one above correctly sets config.regions,
             // and a click on a country effectively means clicking its parent region to toggle.
             // However, this provides explicit "close parent region" behavior.
-            const basicMeta = getBasicMeta(d_node.name, specificRawData, metadataCsv);
+            const basicMeta = getMeta(d_node.name);
             const regionNameToConsider = basicMeta.region_name;
             
             // Determine if this country's region is currently the source or target selection
@@ -422,16 +422,16 @@ function updateSankey(raw, input, config, graph_data){ */
         })    
    
     function tooltipCountry(evt,d_link)  { 
-        const sourceBasicMeta = getBasicMeta(d_link.source.name, specificRawData, metadataCsv);
-        const targetBasicMeta = getBasicMeta(d_link.target.name, specificRawData, metadataCsv);
+        const sourceBasicMeta = getMeta(d_link.source.name);
+        const targetBasicMeta = getMeta(d_link.target.name);
 
         var sourceDisplay = isRegion_sankey(d_link.source.name, specificRawData)  
             ? `<span style="color:${ getRegionColor_sankey(d_link.source.name, specificRawData)}"> ${d_link.source.name}</span>`
-            : `<span style="color:${ colorCountries_sankey(d_link.source.name, specificRawData, metadataCsv)}"> ${sourceBasicMeta.flag+ " "+  d_link.source.name}</span>`;
+            : `<span style="color:${ colorCountries_sankey(d_link.source.name)}"> ${sourceBasicMeta.flag+ " "+  d_link.source.name}</span>`;
         
         var targetDisplay = isRegion_sankey(d_link.target.name, specificRawData) 
             ? `<span style="color:${ getRegionColor_sankey(d_link.target.name, specificRawData)}"> ${d_link.target.name}</span>`
-            : `<span style="color:${ colorCountries_sankey(d_link.target.name, specificRawData, metadataCsv)}"> ${targetBasicMeta.flag+ " "+  d_link.target.name}</span>`;
+            : `<span style="color:${ colorCountries_sankey(d_link.target.name)}"> ${targetBasicMeta.flag+ " "+  d_link.target.name}</span>`;
         
         let currentFilename = fileName(config).json; 
         let valueDisplay;
@@ -449,7 +449,7 @@ function updateSankey(raw, input, config, graph_data){ */
     }
 
     function tooltipRegion(evt,d_node) { 
-        const basicMeta = getBasicMeta(d_node.name, specificRawData, metadataCsv);
+        const basicMeta = getMeta(d_node.name);
         // commonData.flows is an array of {name, outflow, inflow, ...}
         const flowInfo = commonData.flows.find(f => f.name === d_node.name) || { outflow: 0, inflow: 0 }; // Use commonData.flows
         const fullMeta = { ...basicMeta, ...flowInfo }; // Augment basicMeta with flow data
@@ -472,7 +472,7 @@ function updateSankey(raw, input, config, graph_data){ */
             .html(htmlContent)
             .style('background-color',isRegion_sankey(d_node.name, specificRawData) 
                                     ? getRegionColor_sankey(d_node.name, specificRawData)
-                                    : colorCountries_sankey(d_node.name, specificRawData, metadataCsv))
+                                    : colorCountries_sankey(d_node.name))
             .style("top", (evt.pageY+20)+"px").style("left", (evt.pageX+30)+"px")
             .style("visibility", "visible");
     }
