@@ -189,7 +189,6 @@ function createGetMeta(input) {
     }
 }
 
-
 // Method labels ------------–––------------------------------------------------------
 let methods_indexed = ["sd_drop_neg", "sd_rev_neg", "mig_rate", "da_min_open", "da_min_closed", "da_pb_closed"]
 let methods_labels_indexed = ["Stock Difference Drop Negative", "Stock Differencing Reverse Negative", "Migration Rates", "Open Demographic Accounting Minimisation", "Closed Demographic Accounting Minimisation", "Closed Demographic Accounting Pseudo-Bayesian"]
@@ -318,10 +317,13 @@ function setSelectors(allYears) {
         }
     }
 }
+
+
+
 function dataPrepare(input, config) {
 
     var input_data = {...input}
-	
+	console.log(input)
     // Add names and regions to raw_data from metadata
     input_data.raw_data.names = input_data.metadata.names;
     input_data.raw_data.regions = input_data.metadata.regions;
@@ -383,25 +385,26 @@ function dataPrepare(input, config) {
         
         // Compute total inflow and outflow from the matrix if they are not pre-calculated
     
-            const matrix = data.matrix;
-            const n = matrix.length;
-            const total_outflow = new Array(n).fill(0);
-            const total_inflow = new Array(n).fill(0);
+        const matrix = data.matrix;
+        const n = matrix.length;
+        const total_outflow = new Array(n).fill(0);
+        const total_inflow = new Array(n).fill(0);
 
-            for (let i = 0; i < n; i++) {
-                for (let j = 0; j < n; j++) {
-                    total_outflow[i] += matrix[i][j];
-                    total_inflow[j] += matrix[i][j];
-                }
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                total_outflow[i] += matrix[i][j];
+                total_inflow[j] += matrix[i][j];
             }
-            data.total_outflow = total_outflow;
+        }
+        data.total_outflow = total_outflow;
             data.total_inflow = total_inflow;
         
         // GET SOURCE-TARGET STRUCTURE 
         // Create array of name & connections objects
+
         let matrix_connections = data.names.map((d, i) => {
             let name = d
-            let regionName = countryNames[getRegion(i)]
+            let regionName = getRegion(i)
             let connections = data.matrix.map(a => a[i])
             return {
                 name: name,
@@ -409,6 +412,7 @@ function dataPrepare(input, config) {
                 connections: connections
             }
         })
+        
         let nodes = matrix_connections
         // Create object to push links during loop
         let links = []
@@ -450,35 +454,44 @@ function dataPrepare(input, config) {
         }); 
 
         // COMPUTE TOTAL FLOWS
-        console.log(nldata)
-        let flows = names.map((name, i) => {
-             // let country_totals = unfilteredNL.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
-        // let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
-        // let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
+        // console.log(nldata)
+        let country_totals = unfilteredNL.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
+
+        let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
+        let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
+        // let country_inflows = fastRollup(country_totals, 'target', 'value');
+        // let country_outflows = fastRollup(country_totals, 'source', 'value');
+        // console.log(country_inflows)
         // //--
-        // // let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
+        let region_totals = unfilteredNL.links.filter(d=> isRegion(d.source) && isRegion(d.target))
+        // let region_inflows = fastRollup(region_totals, 'target', 'value');
+        // let region_outflows = fastRollup(region_totals, 'source', 'value');
         // let region_totals = unfilteredNL.links.filter(d=> !isRegion(d.source) && !isRegion(d.target))
-        // let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
-        // let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
+        let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
+        let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
         // /* console.log(region_outflows) */
-        // /* console.log(region_outflows) */
-            let outflow = data.total_outflow[i]
-            let inflow = data.total_inflow[i]
-            let net_flow = outflow - inflow
-            let total_flow = outflow + inflow
+        let outflows = region_outflows.concat(country_outflows)
+        let inflows = region_inflows.concat(country_inflows)
+        
+        let flows = names.map((name, i) => {
+            console.log()
+            let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
+            let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
+            let net_flow = outflows[i] - inflow[i]
+            let total_flow = outflows[i] + inflow[i]
             let connections = number_connections.map(d=>d.connections)[i]
             let basicMetaData = getMeta(name); 
             let region_name = basicMetaData.region_name;
-            { return {
-                    region_name,
-                    name,
-                    outflow,
-                    inflow,
-                    net_flow,
-                    total_flow,
-                    connections
+                { return {
+                        region_name,
+                        name,
+                        outflow,
+                        inflow,
+                        net_flow,
+                        total_flow,
+                        connections
+                    }
                 }
-            }
         })
 
         // RANK COUNTRIES BY NET_FLOW
