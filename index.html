@@ -218,89 +218,83 @@
 		let datasetMetaCache = {}; // Cache for loaded dataset metadata files
 		let initialMetadata = null; // To store metadata
 		let dataPrepareCache = new Map(); // Cache for dataPrepare function outputs
-	</script>
-
-	
-	
-
-	
-	<!-- RUN DATA AND DRAW CHART	 -->
-	<script>			
-			// Load initial site data (default JSON and metadata)
-			async function loadInitialData() {
-				const { json: initialJsonFileName, dataset_meta: initialDatasetMetaName } = fileName(config);
-
-				if (!initialMetadata) {
-					const [flags, namesAndRegions] = await Promise.all([
-						d3.csv("data/country-metadata-flags.csv"),
-						d3.json("data/indexes-regions.json")
-					]);
-					initialMetadata = {
-						flags: flags,
-						names: namesAndRegions.names,
-						regions: namesAndRegions.regions
-					};
-				}
-
-				// Load dataset metadata if not in cache
-				if (!datasetMetaCache[initialDatasetMetaName]) {
-					try {
-						const meta = await d3.json(initialDatasetMetaName);
-						datasetMetaCache[initialDatasetMetaName] = meta;
-						setSelectors(meta.years); // Populate year slider
-					} catch (e) {
-						console.error(`Failed to load metadata ${initialDatasetMetaName}`);
-					}
-				} else {
-					setSelectors(datasetMetaCache[initialDatasetMetaName].years);
-				}
-				
-				// Now load the specific year's data
-				if (!loadedJsonData[initialJsonFileName]) {
-					loadedJsonData[initialJsonFileName] = await d3.json(initialJsonFileName);
-				}
-
-				return { initial_filename: initialJsonFileName, metadata: initialMetadata };
-			};
-
-
-			// run visualization selected on #anchor link
-			function getAnchor() {
-				return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
-			}
-
-			function switchViz(chart){
-				const selectedViz = chart === null ? "chord" : chart;
-				const viz = ["chord","sankey","map"]; // Assuming 'map' might exist later
-				const currentVizEl = document.getElementById(selectedViz);
-				const notIn = viz.filter(d=> !d.includes(selectedViz));
 			
-				document.onreadystatechange = function() {
-					if (document.readyState !== "complete") {
-							document.querySelector("#chord").style.visibility = "hidden";
-							document.querySelector("#spin").style.visibility = "visible";
-					} else {
-						setTimeout(d=> {
-							document.querySelector("#chord").style.visibility = "visible";},2000)
-							document.querySelector("#spin").style.visibility = "hidden";
-					}
+		// Load initial site data (default JSON and metadata)
+		async function loadInitialData() {
+			const { json: initialJsonFileName, dataset_meta: initialDatasetMetaName } = fileName(config);
+
+			if (!initialMetadata) {
+				const [flags, namesAndRegions] = await Promise.all([
+					d3.csv("data/country-metadata-flags.csv"),
+					d3.json("data/indexes-regions.json")
+				]);
+				initialMetadata = {
+					flags: flags,
+					names: namesAndRegions.names,
+					regions: namesAndRegions.regions
 				};
-				
-				
-				notIn.forEach(id => {
-					const el = document.getElementById(id);
-					if (el) el.style.display = 'none';
-				});
-				
-				if (currentVizEl) currentVizEl.style.display = '';
-				
-				config.regions = []; // Reset regions when switching visualization type
-				
-				loadInitialData().then(initialData => {
-					console.log("Initial data loaded for:", initialData.initial_filename);
-					update(loadedJsonData, initialMetadata, config); // Pass loadedJsonData and initialMetadata
-				});
 			}
+
+			// Load dataset metadata if not in cache
+			if (!datasetMetaCache[initialDatasetMetaName]) {
+				try {
+					const meta = await d3.json(initialDatasetMetaName);
+					datasetMetaCache[initialDatasetMetaName] = meta;
+					setSelectors(meta.years); // Populate year slider
+				} catch (e) {
+					console.error(`Failed to load metadata ${initialDatasetMetaName}`);
+				}
+			} else {
+				setSelectors(datasetMetaCache[initialDatasetMetaName].years);
+			}
+			
+			// Now load the specific year's data
+			if (!loadedJsonData[initialJsonFileName]) {
+				loadedJsonData[initialJsonFileName] = await d3.json(initialJsonFileName);
+			}
+			
+			return { initial_filename: initialJsonFileName, metadata: initialMetadata };
+		};
+
+
+		// run visualization selected on #anchor link
+		function getAnchor() {
+			return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
+		}
+
+		function switchViz(chart){
+			const selectedViz = chart === null ? "chord" : chart;
+			const viz = ["chord","sankey","map"]; // Assuming 'map' might exist later
+			const currentVizEl = document.getElementById(selectedViz);
+			const notIn = viz.filter(d=> !d.includes(selectedViz));
+		
+			document.onreadystatechange = function() {
+				if (document.readyState !== "complete") {
+						document.querySelector("#chord").style.visibility = "hidden";
+						document.querySelector("#spin").style.visibility = "visible";
+				} else {
+					setTimeout(d=> {
+						document.querySelector("#chord").style.visibility = "visible";},2000)
+						document.querySelector("#spin").style.visibility = "hidden";
+				}
+			};
+				
+				
+			notIn.forEach(id => {
+				const el = document.getElementById(id);
+				if (el) el.style.display = 'none';
+			});
+			
+			if (currentVizEl) currentVizEl.style.display = '';
+			
+			config.regions = []; // Reset regions when switching visualization type
+			
+			loadInitialData().then(initialData => {
+				console.log(loadedJsonData)
+				console.log("Initial data loaded for:", initialData.initial_filename);
+				update(loadedJsonData, initialMetadata, config); // Pass loadedJsonData and initialMetadata
+			});
+		}
 			// switchViz(getAnchor()); // Moved to DOMContentLoaded listener
 			
 			// These functions are called in the visualizations at updating the filtering context

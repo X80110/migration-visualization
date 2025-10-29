@@ -382,7 +382,7 @@ function dataPrepare(input, config) {
         const countryNames = data.names
         
         // Compute total inflow and outflow from the matrix if they are not pre-calculated
-        if (!data.total_outflow || !data.total_inflow) {
+    
             const matrix = data.matrix;
             const n = matrix.length;
             const total_outflow = new Array(n).fill(0);
@@ -396,31 +396,31 @@ function dataPrepare(input, config) {
             }
             data.total_outflow = total_outflow;
             data.total_inflow = total_inflow;
-        }
+        
         // GET SOURCE-TARGET STRUCTURE 
         // Create array of name & connections objects
-        let matrix = data.names.map((d, i) => {
+        let matrix_connections = data.names.map((d, i) => {
             let name = d
             let regionName = countryNames[getRegion(i)]
-            let matrix = data.matrix.map(a => a[i])
+            let connections = data.matrix.map(a => a[i])
             return {
                 name: name,
                 region: regionName,
-                connections: matrix
+                connections: connections
             }
         })
-        let nodes = matrix
+        let nodes = matrix_connections
         // Create object to push links during loop
         let links = []
-        let l = 0 // <- iterator         
-        for (let j in matrix) {
-            let target_region = matrix[j].region // <- include region why not
-            let target = matrix[j].name
+        let l = 0 // <- iterator
+        for (let j in matrix_connections) {
+            let target_region = matrix_connections[j].region // <- include region why not
+            let target = matrix_connections[j].name
             // loop (into each 1st level array)
-            for (let k in matrix[j].connections) {
-                let source = matrix[k].name
-                let source_region = matrix[k].region // <- include region why not
-                let value = matrix[j].connections[k]
+            for (let k in matrix_connections[j].connections) {
+                let source = matrix_connections[k].name
+                let source_region = matrix_connections[k].region // <- include region why not
+                let value = matrix_connections[j].connections[k]
                 links[l] = {
                     source_region,
                     source,
@@ -450,7 +450,18 @@ function dataPrepare(input, config) {
         }); 
 
         // COMPUTE TOTAL FLOWS
+        console.log(nldata)
         let flows = names.map((name, i) => {
+             // let country_totals = unfilteredNL.links.filter(d=> d.source_region != d.target && d.target_region != d.source && !isRegion(d.source) && !isRegion(d.target) ) // remove values for regions targeting countries
+        // let country_inflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.target) 
+        // let country_outflows = d3.flatRollup(country_totals, v => d3.sum(v, d => d.value), d => d.source) 
+        // //--
+        // // let region_totals = nldata.links.filter(d=> isRegion(d.source) && isRegion(d.target))
+        // let region_totals = unfilteredNL.links.filter(d=> !isRegion(d.source) && !isRegion(d.target))
+        // let region_inflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.target_region) 
+        // let region_outflows = d3.flatRollup(region_totals, v => d3.sum(v, d => d.value), d => d.source_region) 
+        // /* console.log(region_outflows) */
+        // /* console.log(region_outflows) */
             let outflow = data.total_outflow[i]
             let inflow = data.total_inflow[i]
             let net_flow = outflow - inflow

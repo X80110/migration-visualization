@@ -649,7 +649,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 .attr("d",  arc.outerRadius(d=>isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius))
         })
   
-    chordDiagram.selectAll(".path-item, .country-label-text")
+    chordDiagram.selectAll(".path-item, .country-label")
         .on("mousemove", tooltipCountry)
         /* .on("mouseout", d=> tooltip.style("visibility", "hidden")) */
 
