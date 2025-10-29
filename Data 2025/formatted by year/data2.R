@@ -152,7 +152,7 @@ for (method in methods) {
     )
     
     # Save meta.json
-    write_json(meta, file.path(method_dir, "meta.json"), auto_unbox = TRUE, pretty = TRUE)
+    write_json(meta, file.path(method_dir, "dataset_meta.json"), auto_unbox = TRUE, pretty = TRUE)
     
     
     for (year in years) {

@@ -156,7 +156,7 @@ for (sex in sexes) {
   )
   
   # Save meta.json
-  write_json(meta, file.path(sex_dir, "meta.json"), auto_unbox = TRUE, pretty = TRUE)
+  write_json(meta, file.path(sex_dir, "dataset_meta.json"), auto_unbox = TRUE, pretty = TRUE)
   
   # Process each year for this sex
   

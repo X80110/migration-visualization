@@ -141,7 +141,7 @@ meta <- list(
 )
 
 # Save meta.json
-write_json(meta, file.path("stocks", "meta.json"), auto_unbox = TRUE, pretty = TRUE)
+write_json(meta, file.path("stocks", "dataset_meta.json"), auto_unbox = TRUE, pretty = TRUE)
 
 # Process each year
 
