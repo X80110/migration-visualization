@@ -789,3 +789,25 @@ select {
     opacity:65%;
     font-size: 1em;
 }
+.country-label {
+    font-size: 9px;
+}
+
+.flag-emoji {
+    font-size: 7px !important;
+}
+
+.country-label {
+  transition: font-size 0.1s ease;
+}
+
+.country-label.highlighted {
+  font-size: 12px !important;
+  font-weight: bold;
+  fill: #000;
+}
+
+.chord-path.highlighted {
+  opacity: 1 !important;
+  filter: brightness(1.2);
+}

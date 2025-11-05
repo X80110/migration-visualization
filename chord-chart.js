@@ -49,7 +49,8 @@ function createArcFunctions(config, input) {
     };
 }
 
-// #########################   DRAW 
+
+// ========== CHORD CHArt ==========
 function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight) {
     let data = chordData;
     let flows = commonData.flows;
@@ -261,28 +262,29 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     countryLabels.exit().remove();
 
-    const countryLabelsEnter = countryLabels.enter()
-        .append("text")
-        .attr("class", "country-label")
-        .attr("font-size", 9)
-        /* .style("opacity", 0); */
+  const countryLabelsEnter = countryLabels.enter()
+    .append("text")
+    .attr("class", "country-label")
+    .attr("font-size", 9);
 
     countryLabelsEnter.merge(countryLabels)
-        /* .style("opacity", 1) */
         .text(d => d.angle > Math.PI
-                ? d.name+ " "+ getMeta(d.name).flag
-                :  getMeta(d.name).flag+ " "+  d.name
-            )
+            ? d.name + " " + getMeta(d.name).flag
+            : getMeta(d.name).flag + " " + d.name
+        )
         .attr("text-anchor", d => d.angle > Math.PI ? "end" : "start")
+        .html(d => d.angle > Math.PI
+            ? d.name + ' <tspan class="flag-emoji">' + getMeta(d.name).flag + '</tspan>'
+            : '<tspan class="flag-emoji">' + getMeta(d.name).flag + '</tspan> ' + d.name
+        )
         .transition('country-label')
         .attrTween("transform", function(d) {
-            var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] ||/*  meltPreviousGroupArc(d) ||  */{ angle: 0 }, d);
+            var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || { angle: 0 }, d);
             return function (t) {
                 var t = labelPosition(i(t).angle);
-                  return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
-              };
+                return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';
+            };
         });
-
     // ========== REGION LABELS ==========
     /* const regionLabelsData = groupData.filter(d => isRegion(d.name)); */
     
@@ -539,16 +541,16 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     
     chordsMerged
         .on("mouseover", function (evt, d) {
-            clearTimeout(hoverTimeout);
+       /*      clearTimeout(hoverTimeout);
             if (config.regions.length < 1) {
-                chordsMerged.style("opacity", p => p.id === d.id ? 0.80 : 0.09);
-            }
+                chordsMerged.style("opacity", p => p.id === d.id ? 0.80 : 1);
+            } */
         })
         .on("mousemove", tooltipCountry)
         .on("mouseout", function () {
             hoverTimeout = setTimeout(() => {
                 chordsMerged.style("opacity", d => 
-                    isRegion(d.source.name) && config.regions.length > 0 ? 0.09 : 0.80
+                    isRegion(d.source.name) && config.regions.length > 0 ? 0.09 : 1
                 );
                 tooltip.style("visibility", "hidden");
             }, 50);
