@@ -164,8 +164,8 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // EXIT - Simple exit animation
     groups.exit()
         .transition()
-        .duration(400)
-        /* .style("opacity", 0) */
+        .duration(100)
+        .style("opacity", 0.3)
         .remove();
 
     // ENTER - Simple enter
@@ -268,7 +268,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         /* .style("opacity", 0); */
 
     countryLabelsEnter.merge(countryLabels)
-        .style("opacity", 1)
+        /* .style("opacity", 1) */
         .text(d => d.angle > Math.PI
                 ? d.name+ " "+ getMeta(d.name).flag
                 :  getMeta(d.name).flag+ " "+  d.name
@@ -376,7 +376,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     regionLabelTextsMerged
         .transition()
         .duration(600)
-        .style("opacity", 1);
+/*         .style("opacity", 1); */
 
 
 
