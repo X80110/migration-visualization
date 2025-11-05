@@ -34,6 +34,21 @@ function labelPosition(angle) {
 // Global variable to track if this is first draw
 let isFirstDraw = true;
 
+// Create arc functions factory
+function createArcFunctions(config, input) {
+    const isRegion = createIsRegion(input);
+    
+    return {
+        arc: d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(d => isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius),
+        
+        arcHover: d3.arc()
+            .innerRadius(innerRadius)
+            .outerRadius(outerRadius)
+    };
+}
+
 // #########################   DRAW 
 function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight) {
     let data = chordData;
@@ -45,6 +60,9 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     let previous = config.previous || data;
     var aLittleBit = Math.PI / 100000;
+
+    // Create arc functions
+    const { arc, arcHover } = createArcFunctions(config, input);
 
     function computedChords(data) {
         let chords = chord(data.matrix).map(d => {
@@ -103,11 +121,6 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         chords: computedChords(data).reduce((sum, d) => { sum[d.id] = d; return sum; }, {}),
         groups: computedGroups(data).reduce((sum, d) => { sum[d.id] = d; return sum; }, {})
     };
-
-    // Define svg geometries
-    var arc = d3.arc()
-        .innerRadius(innerRadius)
-        .outerRadius(d => isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius)
 
     var ribbon = d3.ribbonArrow()
         .sourceRadius(innerRadius)
@@ -492,6 +505,11 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // ========== INTERACTIONS ==========
     config.maxRegionsOpen = 2;
 
+    // Clear any existing hover timeout
+    if (window.chordHoverTimeout) {
+        clearTimeout(window.chordHoverTimeout);
+    }
+
     // Click interactions
     groupsMerged.on('click', function (evt, d) {
         evt.stopPropagation();
@@ -542,7 +560,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             d3.select(this).select(".group-arc")
                 .transition()
                 .duration(100)
-                .attr("d", arc.outerRadius(outerRadius));
+                .attr("d", arcHover); // Use hover-specific arc
         })
         .on("mousemove", tooltipRegion)
         .on("mouseout", function (evt, d) {
@@ -550,7 +568,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 d3.select(this).select(".group-arc")
                     .transition()
                     .duration(100)
-                    .attr("d", arc.outerRadius(isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius));
+                    .attr("d", arc); // Use original arc
                 tooltip.style("visibility", "hidden");
             }, 50);
         });
