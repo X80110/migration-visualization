@@ -42,40 +42,40 @@ function formatValue(nStr, seperator) {
 //     return ((this % n) + n) % n
 //   };
 
-// build the data filename (json) with config values  ------------–––-------------------
-var fileName = (configs) => { // Changed let to var for wider global scope
-    configs = {...config}
+// // build the data filename (json) with config values  ------------–––-------------------
+// var fileName = (configs) => { // Changed let to var for wider global scope
+//     configs = {...config}
     
-    // build filename hierarchy
-    let stockflow = config.stockflow
-    year = config.year
+//     // build filename hierarchy
+//     let stockflow = config.stockflow
+//     year = config.year
 
-    sex2 = config.sex === "all" || "" ?
-        "" :
-        "/" + config.sex
+//     sex2 = config.sex === "all" || "" ?
+//         "" :
+//         "/" + config.sex
 
-    method2 = /* stockflow === "stock" ?
-        "" :
-        "/" + */ config.method || "da_pb_closed"
+//     method2 = /* stockflow === "stock" ?
+//         "" :
+//         "/" + */ config.method || "da_pb_closed"
 
 
-    let json = 'json/' + stockflow + sex2 + '/' + method2 + '/' + year + '.json'
-    let dataset_meta = 'json/' + stockflow + sex2 + '/' + method2 + '/dataset_meta.json'
+//     let json = 'json/' + stockflow + sex2 + '/' + method2 + '/' + year + '.json'
+//     let dataset_meta = 'json/' + stockflow + sex2 + '/' + method2 + '/dataset_meta.json'
     
-    // clean non-lineal irregularities
-    json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
-    dataset_meta = dataset_meta.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
+//     // clean non-lineal irregularities
+//     json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
+//     dataset_meta = dataset_meta.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
 
-    return {
-        json: json,
-        dataset_meta: dataset_meta,
-        values: stockflow,
-        sex: config.sex,
-        type: config.type,
-        method: config.method
-    }
-}
-let filename = fileName(config).json
+//     return {
+//         json: json,
+//         dataset_meta: dataset_meta,
+//         values: stockflow,
+//         sex: config.sex,
+//         type: config.type,
+//         method: config.method
+//     }
+// }
+// let filename = fileName(config).json
 
 
 /* const isRegion = (name_string) => {
@@ -551,18 +551,18 @@ function dataPrepare(input, config) {
             d.global_rank = global_rank[i]
         })
         
-       let filteredData = nldata.links
-       const connectionsWithRelevance = filteredData.map(conn => {
+        let filteredData = nldata.links
+        const connectionsWithRelevance = filteredData.map(conn => {
             const sourceNode = flows.find(node => node.name === conn.source);
             const targetNode = flows.find(node => node.name === conn.target);
             const relevance = (sourceNode.total_flow + targetNode.total_flow) * conn.value; 
             return { ...conn, relevance }; 
-      });
-    
-      connectionsWithRelevance.sort((a, b) => b.value - a.value);
+        });
 
-      const filteredConnections = connectionsWithRelevance.slice(0, config.ranking);
-      filteredData = filteredConnections; 
+        connectionsWithRelevance.sort((a, b) => b.value - a.value);
+
+        const filteredConnections = connectionsWithRelevance.slice(0, config.ranking);
+        filteredData = filteredConnections; 
 
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source); 
         

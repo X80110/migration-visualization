@@ -99,7 +99,7 @@
 		  	<div class="slider-container">
 				<label for="selectedRanking"></label>
 				<div class="slider-value">Connections displayed</div>
-				<input  class="range-slider" type="range" id="selectedRanking" name="slider" min="100" max="900" step="400" value="1000">
+				<input  class="range-slider" type="range" id="selectedRanking" name="slider" min="100" max="900" step="400" value="100000">
 				<div class="ticks">
 					<span>100</span>
 					<span>500</span>
@@ -195,7 +195,7 @@
 	
 	<!-- SETTINGS -->
    <script>
-		let config = {
+	/* 	let config = {
 			stockflow: "flow",
 			sex: "",
 			type: "",
@@ -204,238 +204,482 @@
 			ranking: "",
 			regions: []
 			};
-
+ */
 		const allMethods = ['mig_rate', 'da_min_closed', 'da_min_open','da_pb_closed', 'sd_rev_neg', 'sd_drop_neg'];
 		const allTypes = ['outward','transit','return'];
 		const allSexes = ['male', 'female'].reverse();
-	
-	   /* console.log(filename) */
-	   // This 'files' array lists all *possible* JSON files this page might need.
-	   // Specific files will be loaded on demand.
-	   // let files = [ ... ]; // This is no longer needed as filenames are generated dynamically.
 		let markdown_file  = 'static/texts/flow-total-text.md';
-		let loadedJsonData = {}; // Cache for loaded JSON files
-		let datasetMetaCache = {}; // Cache for loaded dataset metadata files
-		let initialMetadata = null; // To store metadata
-		let dataPrepareCache = new Map(); // Cache for dataPrepare function outputs
-			
-		// Load initial site data (default JSON and metadata)
-		async function loadInitialData() {
-			const { json: initialJsonFileName, dataset_meta: initialDatasetMetaName } = fileName(config);
 
-			if (!initialMetadata) {
-				const [flags, namesAndRegions] = await Promise.all([
-					d3.csv("data/country-metadata-flags.csv"),
-					d3.json("data/indexes-regions.json")
-				]);
-				initialMetadata = {
-					flags: flags,
-					names: namesAndRegions.names,
-					regions: namesAndRegions.regions
-				};
-			}
-
-			// Load dataset metadata if not in cache
-			if (!datasetMetaCache[initialDatasetMetaName]) {
-				try {
-					const meta = await d3.json(initialDatasetMetaName);
-					datasetMetaCache[initialDatasetMetaName] = meta;
-					setSelectors(meta.years); // Populate year slider
-				} catch (e) {
-					console.error(`Failed to load metadata ${initialDatasetMetaName}`);
-				}
-			} else {
-				setSelectors(datasetMetaCache[initialDatasetMetaName].years);
-			}
-			
-			// Now load the specific year's data
-			if (!loadedJsonData[initialJsonFileName]) {
-				loadedJsonData[initialJsonFileName] = await d3.json(initialJsonFileName);
-			}
-			
-			return { initial_filename: initialJsonFileName, metadata: initialMetadata };
-		};
-
-
-		// run visualization selected on #anchor link
-		function getAnchor() {
-			return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
-		}
-
-		function switchViz(chart){
-			const selectedViz = chart === null ? "chord" : chart;
-			const viz = ["chord","sankey","map"]; // Assuming 'map' might exist later
-			const currentVizEl = document.getElementById(selectedViz);
-			const notIn = viz.filter(d=> !d.includes(selectedViz));
+	// ============================================================================
+	// FILE PATH BUILDER
+	// ============================================================================
+	var fileName = (configs) => { // Changed let to var for wider global scope
+		configs = {...config}
 		
-			document.onreadystatechange = function() {
-				if (document.readyState !== "complete") {
-						document.querySelector("#chord").style.visibility = "hidden";
-						document.querySelector("#spin").style.visibility = "visible";
-				} else {
-					setTimeout(d=> {
-						document.querySelector("#chord").style.visibility = "visible";},2000)
-						document.querySelector("#spin").style.visibility = "hidden";
-				}
-			};
-				
-				
-			notIn.forEach(id => {
-				const el = document.getElementById(id);
-				if (el) el.style.display = 'none';
-			});
-			
-			if (currentVizEl) currentVizEl.style.display = '';
-			
-			config.regions = []; // Reset regions when switching visualization type
-			
-			loadInitialData().then(initialData => {
-				console.log(loadedJsonData)
-				console.log("Initial data loaded for:", initialData.initial_filename);
-				update(loadedJsonData, initialMetadata, config); // Pass loadedJsonData and initialMetadata
-			});
+		// build filename hierarchy
+		let stockflow = config.stockflow
+		year = config.year
+
+		sex2 = config.sex === "all" || "" ?
+			"" :
+			"/" + config.sex
+
+		method2 = /* stockflow === "stock" ?
+			"" :
+			"/" + */ config.method || "da_pb_closed"
+
+
+		let json = 'json/' + stockflow + sex2 + '/' + method2 + '/' + year + '.json'
+		let dataset_meta = 'json/' + stockflow + sex2 + '/' + method2 + '/dataset_meta.json'
+		
+		// clean non-lineal irregularities
+		json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
+		dataset_meta = dataset_meta.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
+
+		return {
+			json: json,
+			dataset_meta: dataset_meta,
+			values: stockflow,
+			sex: config.sex,
+			type: config.type,
+			method: config.method
 		}
-			// switchViz(getAnchor()); // Moved to DOMContentLoaded listener
+	}
+	
+
+	// ============================================================================
+	// DATA CACHE MANAGER
+	// ============================================================================
+	class DataCache {
+		constructor() {
+			this.globalMetadata = null;
+			this.datasetMeta = new Map();
+			this.matrices = new Map();
+			this.preparedData = new Map();
+		}
+
+		// Load global metadata (regions, names, flags) - only once
+		async loadGlobalMetadata() {
+			if (this.globalMetadata) {
+				return this.globalMetadata;
+			}
+
+			const [flags, namesAndRegions] = await Promise.all([
+				d3.csv("data/country-metadata-flags.csv"),
+				d3.json("data/indexes-regions.json")
+			]);
+
+			this.globalMetadata = {
+				flags,
+				names: namesAndRegions.names,
+				regions: namesAndRegions.regions
+			};
+
+			return this.globalMetadata;
+		}
+
+		// Load dataset metadata (threshold, years, max/min flows)
+		async loadDatasetMeta(path) {
+			if (this.datasetMeta.has(path)) {
+				return this.datasetMeta.get(path);
+			}
+
+			try {
+				const meta = await d3.json(path);
+				this.datasetMeta.set(path, meta);
+				return meta;
+			} catch (error) {
+				console.error(`Failed to load dataset metadata: ${path}`, error);
+				throw error;
+			}
+		}
+
+		// Load matrix data for specific year
+		async loadMatrix(path) {
+			if (this.matrices.has(path)) {
+				return this.matrices.get(path);
+			}
+
+			try {
+				const matrix = await d3.json(path);
+				this.matrices.set(path, matrix);
+				return matrix;
+			} catch (error) {
+				console.error(`Failed to load matrix: ${path}`, error);
+				throw error;
+			}
+		}
+
+		// Get prepared data from cache
+		getPreparedData(key) {
+			return this.preparedData.get(key);
+		}
+
+		// Set prepared data in cache
+		setPreparedData(key, data) {
+			this.preparedData.set(key, data);
+		}
+
+		// Generate cache key for prepared data
+		static generatePreparedDataKey(config) {
+			const { year, ranking, regions = [] } = config;
+			const paths = fileName(config);
+			return `${paths.json}|${year}|${ranking}|${regions.slice().sort().join(',')}`;
+		}
+	}
+
+	// ============================================================================
+	// DATA LOADER
+	// ============================================================================
+	class DataLoader {
+		constructor() {
+			this.cache = new DataCache();
+		}
+
+		// Load all necessary data for current config
+		async loadData(config) {
+			const paths = fileName(config);
 			
-			// These functions are called in the visualizations at updating the filtering context
-			// Show/Hide 'reset selection' button
-			function resetData(){
-				config.regions = [];
-				config.previous = data 
-				// Call update directly, assuming necessary data is already loaded or will be handled by update
-				update(loadedJsonData, initialMetadata, config);
+			// Load all data in parallel
+			const [globalMeta, datasetMeta, matrix] = await Promise.all([
+				this.cache.loadGlobalMetadata(),
+				this.cache.loadDatasetMeta(paths.dataset_meta),
+				this.cache.loadMatrix(paths.json)
+			]);
+
+			// Enhance matrix data with metadata (names and regions)
+			// This ensures the matrix has all the properties needed by helper functions
+			const enhancedMatrix = {
+				...matrix,
+				names: globalMeta.names,
+				regions: globalMeta.regions
+			};
+
+			return {
+				matrix: enhancedMatrix,
+				metadata: globalMeta,
+				datasetMeta,
+				paths
+			};
+		}
+
+		// Prepare data with caching
+		prepareData(rawData, config, dataPrepareFunc) {
+			const cacheKey = DataCache.generatePreparedDataKey(config);
+			
+			// Check cache first
+			let prepared = this.cache.getPreparedData(cacheKey);
+			if (prepared) {
+				console.log("Using cached prepared data:", cacheKey);
+				return prepared;
 			}
 
-			// update visualization for the selected values
-			async function update(currentJsonDataCache, currentMetadata, currentConfig){
-				const { json: targetFileName, dataset_meta: targetDatasetMetaName } = fileName(currentConfig);
-				const spinner = document.querySelector("#spin");
+			// Prepare new data
+			console.log("Preparing new data:", cacheKey);
+			const input = {
+				raw_data: rawData.matrix,
+				metadata: rawData.metadata
+			};
+			
+			prepared = dataPrepareFunc(input, config);
+			this.cache.setPreparedData(cacheKey, prepared);
+			
+			return prepared;
+		}
 
-				// Load dataset metadata if not in cache
-				if (!datasetMetaCache[targetDatasetMetaName]) {
-					try {
-						datasetMetaCache[targetDatasetMetaName] = await d3.json(targetDatasetMetaName);
-						setSelectors(datasetMetaCache[targetDatasetMetaName].years); // Update slider
-					} catch (e) {
-						console.error(`Failed to load metadata ${targetDatasetMetaName}`);
-						// Handle metadata load failure, maybe show an error and return
-						return;
-					}
-				}
+		// Get dataset metadata (for updating selectors, etc.)
+		async getDatasetMeta(config) {
+			const paths = fileName(config);
+			return this.cache.loadDatasetMeta(paths.dataset_meta);
+		}
+	}
 
-				// Ensure data for the specific year is loaded
-				if (!currentJsonDataCache[targetFileName]) {
-					console.log(`Data for ${targetFileName} not found. Loading...`);
-					if(spinner) spinner.style.visibility = "visible";
+	// ============================================================================
+	// GLOBAL STATE
+	// ============================================================================
 
-					try {
-						const newData = await d3.json(targetFileName);
-						currentJsonDataCache[targetFileName] = newData;
-						console.log(`${targetFileName} loaded successfully.`);
-						if (newData && newData.threshold) {
-                            currentConfig.threshold = newData.threshold;
-                        }
-					} catch (error) {
-						console.error(`Failed to load ${targetFileName}:`, error);
-						if(spinner) spinner.style.visibility = "hidden";
-						document.getElementById("markdown_text").innerHTML = `<p style="color:red;">Error loading data for ${targetFileName}. Please try different selections or refresh.</p>`;
-						return; 
-					} finally {
-						if(spinner) spinner.style.visibility = "hidden";
-					}
-				}
-				
-				if (currentConfig.regions.length > 0){
-					document.getElementById("reset").style.display = ''
-				}  else {
-					document.getElementById("reset").style.display = 'none'
-				}
-				d3.selectAll("#chord-chart g")
-					.remove();
-				
-				const dpCacheKey = targetFileName + "|" + 
-								   currentConfig.year + "|" + 
-								   currentConfig.ranking + "|" + 
-								   currentConfig.regions.slice().sort().join(',');
+	// Initialize loader
+	const dataLoader = new DataLoader();
 
-				let preparedDataResult;
-				if (dataPrepareCache.has(dpCacheKey)) {
-					preparedDataResult = dataPrepareCache.get(dpCacheKey);
-					console.log("Using cached preparedData for key:", dpCacheKey);
-				} else {
-					console.log("Preparing data for key:", dpCacheKey);
-					const dataPrepareInput = { 
-						raw_data: currentJsonDataCache[targetFileName], 
-						metadata: currentMetadata 
-					};
-					preparedDataResult = dataPrepare(dataPrepareInput, currentConfig);
-					dataPrepareCache.set(dpCacheKey, preparedDataResult);
-				}
+	// Configuration
+	let config = {
+		stockflow: "flow",
+		sex: "",
+		type: "",
+		method: "da_pb_closed",
+		year: 1990,
+		threshold: "",
+		ranking: "",
+		regions: [],
+		currentViz: "chord" // Track current visualization
+	};
 
-				const specificRawData = currentJsonDataCache[targetFileName];
-				const metadataCsv = currentMetadata;
-				drawChords(
-					preparedDataResult.chordData, 
-					preparedDataResult.common, 
-					specificRawData,  
-					metadataCsv, 
-					currentConfig, 
-					width, height
-				);
-				
-				const sankeyChartElement = document.getElementById('sankey');
-				if (sankeyChartElement && sankeyChartElement.style.display !== 'none') {
-					console.log("Sankey is visible, calling setData");
-					setData(
-						preparedDataResult.sankeyData, 
-						preparedDataResult.common, 
-						specificRawData, 
-						metadataCsv, 
-						currentConfig, 
-						width, height
-					);
-				} else {
-					console.log("Sankey is not visible, skipping setData");
-				}
-				
-				getMarkdown().then(text => {
-					parsed_text = parseMarkdown(text)
-						.replace(" - See file","</p><p>See file");
-					let method = parseMarkdown(method_text[currentConfig.method]);
-					let currentThreshold = currentJsonDataCache[targetFileName] ? currentJsonDataCache[targetFileName].threshold : "N/A";
-					if (typeof currentThreshold === 'number') {
-						currentThreshold = d3.format(",.2r")(currentThreshold);
-					} else if (currentConfig.threshold && typeof currentConfig.threshold === 'number') {
-						currentThreshold = d3.format(",.2r")(currentConfig.threshold);
-					}
-					output_text = parsed_text
-						.replace("[METHOD]",method)
-						.replace("X???", currentThreshold);
+	// Store current data for visualization switching
+	let currentData = null;
+	let currentPrepared = null;
 
-					document.getElementById("markdown_text").innerHTML = output_text;
-					
-					const currentFilenameForMarkdown = fileName(currentConfig).json;
-					if (currentFilenameForMarkdown.includes("flow")){
-						const el = document.querySelector("#markdown_text > p:nth-child(8) > a");
-						if (el) el.className = 'drop-link';
-					} 
-					else if (currentFilenameForMarkdown.includes("stock")) {
-						const el = document.getElementById("markdown_text").querySelectorAll('a')[2];
-						if (el) el.className = 'drop-link';
-					}
-				});
-			}
+	// ============================================================================
+	// VISUALIZATION SWITCHING
+	// ============================================================================
 
-			// Details static/texts/*.md - parse to html 
-			async function getMarkdown(){							
-				const about_data = await d3.text(markdown_file)			
-				return about_data		
-										
-			}
+	function getAnchor() {
+		return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
+	}
 
-			document.addEventListener('DOMContentLoaded', function() {
-				switchViz(getAnchor());
+	function switchViz(chart) {
+		const selectedViz = chart || "chord";
+		const viz = ["chord", "sankey", "map"];
+		
+		// Hide all visualizations
+		viz.forEach(id => {
+			const el = document.getElementById(id);
+			if (el) el.style.display = 'none';
+		});
+		
+		// Show selected visualization
+		const currentVizEl = document.getElementById(selectedViz);
+		if (currentVizEl) currentVizEl.style.display = '';
+		
+		// Update config
+		config.currentViz = selectedViz;
+		config.regions = []; // Reset regions when switching
+		
+		// If we have data loaded, just redraw
+		if (currentData && currentPrepared) {
+			updateVisualization(currentPrepared, currentData, config);
+		} else {
+			// Otherwise, load data first
+			initializeApp();
+		}
+		
+		return false; // Prevent default link behavior
+	}
+
+	// ============================================================================
+	// SPINNER MANAGEMENT
+	// ============================================================================
+
+	function showSpinner() {
+		const spinner = document.querySelector("#spin");
+		const chordContainer = document.querySelector("#chord");
+		
+		if (spinner) spinner.style.visibility = "visible";
+		if (chordContainer) chordContainer.style.visibility = "hidden";
+	}
+
+	function hideSpinner() {
+		const spinner = document.querySelector("#spin");
+		const chordContainer = document.querySelector("#chord");
+		
+		if (spinner) spinner.style.visibility = "hidden";
+		if (chordContainer) chordContainer.style.visibility = "visible";
+	}
+
+	// ============================================================================
+	// INITIALIZATION
+	// ============================================================================
+
+	// Initialize selectors once
+	function initializeSelectors() {
+		d3.selectAll("#selectYear")
+			.on("input", function(d) {
+				const newYear = +d3.select(this).property("value");
+				update({ year: newYear });
 			});
+
+		d3.selectAll("#stockFlow")
+			.on("change", function(d) {
+				const newStockFlow = d3.select(this).property("value");
+				update({ stockflow: newStockFlow });
+			});
+
+		d3.selectAll("#selectMethod")
+			.on("change", function(d) {
+				const newMethod = d3.select(this).property("value");
+				update({ method: newMethod });
+			});
+
+		d3.selectAll(".selectSex")
+			.on("change", function(d) {
+				const newSex = d3.select(this).property("value");
+				update({ sex: newSex });
+			});
+
+		d3.selectAll(".selectType")
+			.on("change", function(d) {
+				const newType = d3.select(this).property("value");
+				update({ type: newType });
+			});
+
+		d3.selectAll("#selectedRanking")
+			.on("change", function(d) {
+				const newRanking = +d3.select(this).property("value");
+				update({ ranking: newRanking });
+			});
+	}
+
+	// Initial load
+	async function initializeApp() {
+		showSpinner();
+		
+		try {
+			// Load initial data
+			const data = await dataLoader.loadData(config);
+			
+			// Update UI selectors with dataset metadata
+			setSelectors(data.datasetMeta.years);
+			
+			// Initialize selector event listeners
+			initializeSelectors();
+			
+			// Prepare data for visualization
+			const prepared = dataLoader.prepareData(data, config, dataPrepare);
+			
+			// For first load, set previous to initial state (for smooth entry animation)
+			config.previous = {
+				names: prepared.chordData.names,
+				matrix: prepared.chordData.matrix.map(row => row.map(() => 0)) // All zeros for entry animation
+			};
+			
+			// Store for switching
+			currentData = data;
+			currentPrepared = prepared;
+			
+			// Draw visualization
+			updateVisualization(prepared, data, config);
+			
+		} catch (error) {
+			console.error("Initialization failed:", error);
+			showError("Failed to load initial data. Please refresh the page.");
+		} finally {
+			hideSpinner();
+		}
+	}
+
+	// Update when config changes
+	async function update(newConfig) {
+		const spinner = document.querySelector("#spin");
+		
+		try {
+			if (spinner) spinner.style.visibility = "visible";
+			
+			// Merge config
+			config = { ...config, ...newConfig };
+			
+			// Load data (uses cache when possible)
+			const data = await dataLoader.loadData(config);
+			
+			// Update selectors if needed
+			setSelectors(data.datasetMeta.years);
+			
+			// Prepare data (uses cache when possible)
+			const prepared = dataLoader.prepareData(data, config, dataPrepare);
+			
+			// Update visualization
+			updateVisualization(prepared, data, config);
+			
+		} catch (error) {
+			console.error("Update failed:", error);
+			showError(`Failed to load data. Please try different selections.`);
+		} finally {
+			if (spinner) spinner.style.visibility = "hidden";
+		}
+	}
+
+	// Helper function to update visualization
+	function updateVisualization(prepared, rawData, config) {
+		// Show/hide reset button
+		const resetBtn = document.getElementById("reset");
+		if (resetBtn) {
+			resetBtn.style.display = config.regions.length > 0 ? '' : 'none';
+		}
+		
+		// Only draw the currently visible visualization
+		if (config.currentViz === "chord") {
+			// Remove only the container group, not the entire SVG
+			// This preserves the SVG element but clears the content for redrawing
+			d3.select("#chord-chart svg g.container").remove();
+			
+			drawChords(
+				prepared.chordData,
+				prepared.common,
+				rawData.matrix,
+				rawData.metadata,
+				config,
+				width,
+				height
+			);
+		}
+		
+		// Draw sankey if it's the current viz
+		if (config.currentViz === "sankey") {
+			// Clear sankey chart before redrawing
+			d3.selectAll("#sankey-chart g").remove();
+			setData(
+				prepared.sankeyData,
+				prepared.common,
+				rawData.matrix,
+				rawData.metadata,
+				config,
+				width,
+				height
+			);
+		}
+		
+		// Update markdown text
+		updateMarkdownText(rawData, config);
+	}
+
+	// Reset selection
+	function resetData() {
+		update({ regions: [] });
+	}
+
+	// Helper function to show errors
+	function showError(message) {
+		const markdownEl = document.getElementById("markdown_text");
+		if (markdownEl) {
+			markdownEl.innerHTML = `<p style="color:red;">${message}</p>`;
+		}
+	}
+
+	// Update markdown text
+	async function updateMarkdownText(rawData, config) {
+		try {
+			const text = await d3.text(markdown_file);
+			let parsed = parseMarkdown(text).replace(" - See file", "</p><p>See file");
+			let method = parseMarkdown(method_text[config.method]);
+			
+			let threshold = rawData.datasetMeta.threshold;
+			if (typeof threshold === 'number') {
+				threshold = d3.format(",.2r")(threshold);
+			}
+			
+			const output = parsed
+				.replace("[METHOD]", method)
+				.replace("X???", threshold);
+			
+			document.getElementById("markdown_text").innerHTML = output;
+			
+			// Add class to appropriate link
+			const paths = fileName(config);
+			if (paths.json.includes("flow")) {
+				const el = document.querySelector("#markdown_text > p:nth-child(8) > a");
+				if (el) el.className = 'drop-link';
+			} else if (paths.json.includes("stock")) {
+				const el = document.getElementById("markdown_text").querySelectorAll('a')[2];
+				if (el) el.className = 'drop-link';
+			}
+		} catch (error) {
+			console.error("Failed to update markdown text:", error);
+		}
+	}
+
+	// Initialize on DOM ready
+	document.addEventListener('DOMContentLoaded', function() {
+		// Initialize with anchor or default to chord
+		switchViz(getAnchor())
+	});
    </script>
 
 </html>
