@@ -354,7 +354,7 @@
 				names: globalMeta.names,
 				regions: globalMeta.regions
 			};
-
+			
 			return {
 				matrix: enhancedMatrix,
 				metadata: globalMeta,
@@ -386,12 +386,12 @@
 			
 			return prepared;
 		}
-
+/* 
 		// Get dataset metadata (for updating selectors, etc.)
 		async getDatasetMeta(config) {
 			const paths = fileName(config);
 			return this.cache.loadDatasetMeta(paths.dataset_meta);
-		}
+		} */
 	}
 
 	// ============================================================================
@@ -528,10 +528,10 @@
 			
 			// Update UI selectors with dataset metadata
 			setSelectors(data.datasetMeta.years);
-			
+			console.log
 			// Initialize selector event listeners
 			initializeSelectors();
-			
+			/* console.log(data) */
 			// Prepare data for visualization
 			const prepared = dataLoader.prepareData(data, config, dataPrepare);
 			

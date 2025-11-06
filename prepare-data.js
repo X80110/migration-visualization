@@ -321,7 +321,6 @@ function setSelectors(allYears) {
 
 
 function dataPrepare(input, config) {
-
     var input_data = {...input}
 	console.log(input)
     // Add names and regions to raw_data from metadata

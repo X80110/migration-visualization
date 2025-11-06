@@ -50,12 +50,12 @@ function createArcFunctions(config, input) {
 }
 
 
-// ========== CHORD CHArt ==========
+// ========== CHORD CHART ==========
 function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight) {
     let data = chordData;
     let flows = commonData.flows;
     let input = specificRawData;
-    
+    console.log(specificRawData)
     const getMeta = createGetMeta({ raw_data: specificRawData, metadata: metadataCsv });
     const isRegion = createIsRegion(input);
 
@@ -512,6 +512,56 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         clearTimeout(window.chordHoverTimeout);
     }
 
+    // PERFORMANCE FIX: Debounce opacity changes to prevent excessive DOM updates
+    let pendingOpacityUpdate = null;
+    let opacityUpdateScheduled = false;
+
+    function scheduleOpacityUpdate(updateFn) {
+        pendingOpacityUpdate = updateFn;
+        if (!opacityUpdateScheduled) {
+            opacityUpdateScheduled = true;
+            requestAnimationFrame(() => {
+                if (pendingOpacityUpdate) {
+                    pendingOpacityUpdate();
+                    pendingOpacityUpdate = null;
+                }
+                opacityUpdateScheduled = false;
+            });
+        }
+    }
+
+    // Function to highlight a specific ribbon (single ribbon hover)
+    function highlightSingleRibbon(ribbonId) {
+        scheduleOpacityUpdate(() => {
+            chordsMerged.style("opacity", d => d.id === ribbonId ? 1 : 0.1);
+        });
+    }
+
+    // Function to highlight all ribbons related to a region or country
+    function highlightRelatedRibbons(entityName) {
+        scheduleOpacityUpdate(() => {
+            chordsMerged.style("opacity", d => {
+                const sourceIsTargetEntity = d.source.name === entityName;
+                const targetIsTargetEntity = d.target.name === entityName;
+                
+                if (sourceIsTargetEntity || targetIsTargetEntity) {
+                    return 1;
+                } else {
+                    return 0.1;
+                }
+            });
+        });
+    }
+
+    // Function to reset ribbon highlighting
+    function resetRibbonHighlighting() {
+        scheduleOpacityUpdate(() => {
+            chordsMerged.style("opacity", d => 
+                isRegion(d.source.name) && config.regions.length > 0 ? 0.1 : 1
+            );
+        });
+    }
+
     // Click interactions
     groupsMerged.on('click', function (evt, d) {
         evt.stopPropagation();
@@ -533,36 +583,48 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         }
         
         tooltip.style("visibility", "hidden");
+        resetRibbonHighlighting();
         update({ regions: [...config.regions] });
     });
 
     // Hover interactions - optimized to reduce violations
     let hoverTimeout;
     
+    // Ribbon hover - highlight single ribbon
     chordsMerged
         .on("mouseover", function (evt, d) {
-       /*      clearTimeout(hoverTimeout);
-            if (config.regions.length < 1) {
-                chordsMerged.style("opacity", p => p.id === d.id ? 0.80 : 1);
-            } */
+            clearTimeout(hoverTimeout);
+            highlightSingleRibbon(d.id);
+            
+            // Also highlight connected arcs
+            groupsMerged.select(".group-arc")
+                .style("opacity", groupD => {
+                    return (groupD.name === d.source.name || groupD.name === d.target.name) ? 1 : 1;
+                });
         })
         .on("mousemove", tooltipCountry)
         .on("mouseout", function () {
             hoverTimeout = setTimeout(() => {
-                chordsMerged.style("opacity", d => 
-                    isRegion(d.source.name) && config.regions.length > 0 ? 0.09 : 1
-                );
+                resetRibbonHighlighting();
+                // Reset arc opacities
+                groupsMerged.select(".group-arc").style("opacity", 1);
                 tooltip.style("visibility", "hidden");
             }, 50);
         });
 
+    // Arc hover - highlight all related ribbons
     groupsMerged
         .on("mouseover", function (evt, d) {
             clearTimeout(hoverTimeout);
+            
+            // Highlight the hovered arc
             d3.select(this).select(".group-arc")
                 .transition()
                 .duration(100)
-                .attr("d", arcHover); // Use hover-specific arc
+                .attr("d", arcHover);
+            
+            // Highlight all ribbons related to this entity (region or country)
+            highlightRelatedRibbons(d.name);
         })
         .on("mousemove", tooltipRegion)
         .on("mouseout", function (evt, d) {
@@ -570,10 +632,49 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 d3.select(this).select(".group-arc")
                     .transition()
                     .duration(100)
-                    .attr("d", arc); // Use original arc
+                    .attr("d", arc);
+                
+                resetRibbonHighlighting();
                 tooltip.style("visibility", "hidden");
             }, 50);
         });
+
+    // Region label text hover - also highlight all related ribbons
+    regionLabelTextsMerged
+        .on("mouseover", function (evt, d) {
+            clearTimeout(hoverTimeout);
+            
+            // Find the parent group and highlight its arc
+            const parentGroup = d3.select(this.parentNode);
+            parentGroup.select(".group-arc")
+                .transition()
+                .duration(100)
+                .attr("d", arcHover);
+            
+            // Highlight all ribbons related to this region
+            highlightRelatedRibbons(d.name);
+        })
+        .on("mousemove", tooltipRegion)
+        .on("mouseout", function (evt, d) {
+            hoverTimeout = setTimeout(() => {
+                const parentGroup = d3.select(this.parentNode);
+                parentGroup.select(".group-arc")
+                    .transition()
+                    .duration(100)
+                    .attr("d", arc);
+                
+                resetRibbonHighlighting();
+                tooltip.style("visibility", "hidden");
+            }, 50);
+        });
+
+  /*   // Add mouseout event for the entire container to reset highlighting
+    container.on("mouseout", function() {
+        hoverTimeout = setTimeout(() => {
+            resetRibbonHighlighting();
+            groupsMerged.select(".group-arc").style("opacity", 1);
+        }, 50);
+    }); */
 
     isFirstDraw = false;
 }
