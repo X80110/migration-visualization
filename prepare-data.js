@@ -476,8 +476,8 @@ function dataPrepare(input, config) {
             console.log()
             let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
             let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
-            let net_flow = outflows[i] - inflow[i]
-            let total_flow = outflows[i] + inflow[i]
+         /*    let net_flow = outflow[i] - inflow[i]
+            let total_flow = outflows[i] + inflow[i] */
             let connections = number_connections.map(d=>d.connections)[i]
             let basicMetaData = getMeta(name); 
             let region_name = basicMetaData.region_name;
@@ -486,8 +486,8 @@ function dataPrepare(input, config) {
                         name,
                         outflow,
                         inflow,
-                        net_flow,
-                        total_flow,
+           /*              net_flow,
+                        total_flow, */
                         connections
                     }
                 }
@@ -544,8 +544,8 @@ function dataPrepare(input, config) {
             g_rank = Object(g_rank).global_rank
             return g_rank
         })
-        
         flows.forEach((d, i) => {
+            console.log(d)
             d.rank = region_rank[i]
             d.global_rank = global_rank[i]
         })

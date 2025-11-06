@@ -631,7 +631,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             hoverTimeout = setTimeout(() => {
                 d3.select(this).select(".group-arc")
                     .transition()
-                    .duration(100)
+                    .duration(150)
                     .attr("d", arc);
                 
                 resetRibbonHighlighting();
@@ -660,7 +660,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 const parentGroup = d3.select(this.parentNode);
                 parentGroup.select(".group-arc")
                     .transition()
-                    .duration(100)
+                    .duration(150)
                     .attr("d", arc);
                 
                 resetRibbonHighlighting();
