@@ -322,7 +322,6 @@ function setSelectors(allYears) {
 
 function dataPrepare(input, config) {
     var input_data = {...input}
-	console.log(input)
     // Add names and regions to raw_data from metadata
     input_data.raw_data.names = input_data.metadata.names;
     input_data.raw_data.regions = input_data.metadata.regions;
@@ -395,8 +394,8 @@ function dataPrepare(input, config) {
                 total_inflow[j] += matrix[i][j];
             }
         }
-        data.total_outflow = total_outflow;
-            data.total_inflow = total_inflow;
+   /*      data.total_outflow = total_outflow;
+            data.total_inflow = total_inflow; */
         
         // GET SOURCE-TARGET STRUCTURE 
         // Create array of name & connections objects
@@ -548,20 +547,20 @@ function dataPrepare(input, config) {
             d.rank = region_rank[i]
             d.global_rank = global_rank[i]
         })
-        console.log(flows)
+
         let filteredData = nldata.links
         const connectionsWithRelevance = filteredData.map(conn => {
             const sourceNode = flows.find(node => node.name === conn.source);
             const targetNode = flows.find(node => node.name === conn.target);
             const relevance = (sourceNode.connections + targetNode.connections) * conn.value; 
-            /* console.log(relevance) */
+
             return { ...conn, relevance }; 
         });
         connectionsWithRelevance.sort((a, b) => b.value - a.value);
-        console.log(connectionsWithRelevance)
-        const filteredConnections = connectionsWithRelevance.slice(0, config.ranking+100 || connectionsWithRelevance.length);
+
+        const filteredConnections = connectionsWithRelevance.slice(0, config.ranking+250 || connectionsWithRelevance.length);
         filteredData = filteredConnections; 
-        console.log(filteredData)
+
         
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source); 
         

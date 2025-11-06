@@ -106,9 +106,11 @@
 					<span>All (>1000)</span>
 				</div>
 			</div>
-	
 		</div>
-		
+		<div class="control-group checkbox-group">
+				<input type="checkbox" id="scale-toggle" name="scale-toggle">
+				<label for="scale-toggle">Use Max Flow for Arc Scale</label>
+		   </div>
 		<div id="reset" class="drop-link" style="display:none">
 			<a name="resetButton" type="button" onclick="resetData()">Collapse regions</a>
 		</div>
@@ -376,10 +378,11 @@
 
 			// Prepare new data
 			console.log("Preparing new data:", cacheKey);
+
 			const input = {
 				raw_data: rawData.matrix,
-				metadata: rawData.metadata
-			};
+				metadata: rawData.metadata,
+				dataset_meta: rawData.datasetMeta,};
 			
 			prepared = dataPrepareFunc(input, config);
 			this.cache.setPreparedData(cacheKey, prepared);
