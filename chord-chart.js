@@ -620,7 +620,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             // Highlight the hovered arc
             d3.select(this).select(".group-arc")
                 .transition()
-                .duration(100)
+                .duration(150)
                 .attr("d", arcHover);
             
             // Highlight all ribbons related to this entity (region or country)

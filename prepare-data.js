@@ -473,7 +473,7 @@ function dataPrepare(input, config) {
         let inflows = region_inflows.concat(country_inflows)
         
         let flows = names.map((name, i) => {
-            console.log()
+
             let outflow =  outflows.filter(d=> d[0].includes(name)).flat()[1]
             let inflow =  inflows.filter(d=> d[0].includes(name)).flat()[1]
          /*    let net_flow = outflow[i] - inflow[i]
@@ -545,24 +545,24 @@ function dataPrepare(input, config) {
             return g_rank
         })
         flows.forEach((d, i) => {
-            console.log(d)
             d.rank = region_rank[i]
             d.global_rank = global_rank[i]
         })
-        
+        console.log(flows)
         let filteredData = nldata.links
         const connectionsWithRelevance = filteredData.map(conn => {
             const sourceNode = flows.find(node => node.name === conn.source);
             const targetNode = flows.find(node => node.name === conn.target);
-            const relevance = (sourceNode.total_flow + targetNode.total_flow) * conn.value; 
+            const relevance = (sourceNode.connections + targetNode.connections) * conn.value; 
+            /* console.log(relevance) */
             return { ...conn, relevance }; 
         });
-
         connectionsWithRelevance.sort((a, b) => b.value - a.value);
-
-        const filteredConnections = connectionsWithRelevance.slice(0, config.ranking);
+        console.log(connectionsWithRelevance)
+        const filteredConnections = connectionsWithRelevance.slice(0, config.ranking+100 || connectionsWithRelevance.length);
         filteredData = filteredConnections; 
-
+        console.log(filteredData)
+        
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source); 
         
         function removeNullNames() {
