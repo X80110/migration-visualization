@@ -2,7 +2,7 @@
 var width = 800;
 var height = width - 50;
 let regionIndex = 1
-let ranking = 6000
+let ranking = 500000
 let regionColors = []
 
 // #########################################################################################
