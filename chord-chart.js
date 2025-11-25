@@ -55,7 +55,6 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     let data = chordData;
     let flows = commonData.flows;
     let input = specificRawData;
-    console.log(specificRawData)
     const getMeta = createGetMeta({ raw_data: specificRawData, metadata: metadataCsv });
     const isRegion = createIsRegion(input);
 

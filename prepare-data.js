@@ -322,15 +322,20 @@ function setSelectors(allYears) {
 
 function dataPrepare(input, config) {
     var input_data = {...input}
+    
     // Add names and regions to raw_data from metadata
     input_data.raw_data.names = input_data.metadata.names;
     input_data.raw_data.regions = input_data.metadata.regions;
 
     const getMeta = createGetMeta({raw_data: input_data.raw_data, metadata: input_data.metadata.flags});
     var meta = input_data.metadata.flags // meta is input.metadata (parsed CSV)
+    config.threshold = input_data.dataset_meta.threshold
     threshold = 10000 || +config.threshold
     ranking = 10000 || +config.ranking
     
+    const datasetMeta = input_data.dataset_meta
+    const maxFlows = datasetMeta.max_total_inflow.map((val, d) => val + datasetMeta.max_total_outflow[d])
+
     input = input_data.raw_data; // Alias for the specific JSON data content
     year = +config.year;
     sex = config.sex;
@@ -596,7 +601,6 @@ function dataPrepare(input, config) {
                 regions.push(i)
             }
         })
-
         return {
             names: names,
             matrix: filteredMatrix,
@@ -695,6 +699,7 @@ function dataPrepare(input, config) {
         final_chord_indices = data.regions.slice();
     }
     final_chord_indices = [...new Set(final_chord_indices)].sort((a, b) => a - b);
+    
     let filteredLayout = final_chord_indices; // This is the list of indices for the chord diagram
 
     // Function to create matrix and names for Chord
@@ -702,17 +707,19 @@ function dataPrepare(input, config) {
         let new_names = [];
         let new_unfiltered_matrix_rows = [];
         let new_matrix = [];
+        let new_maxFlows = [];
 
         layout_indices.forEach(idx => { // Use forEach for clarity if map's return isn't used
             new_names.push(source_data.names[idx]);
             new_unfiltered_matrix_rows.push(source_data.matrix[idx]);
+            new_maxFlows.push(maxFlows[idx])
         });
 
         new_unfiltered_matrix_rows.forEach(row_data => { // Use forEach
             let filtered_row = layout_indices.map(col_idx => row_data[col_idx]);
             new_matrix.push(filtered_row);
         });
-        return { names: new_names, matrix: new_matrix };
+        return { names: new_names, matrix: new_matrix, maxFlows: new_maxFlows};
     }
     let result = buildChordData(filteredLayout, data); // 'data' is dataSliced
 
@@ -778,7 +785,8 @@ function dataPrepare(input, config) {
         },
         chordData: {
             names: result.names, 
-            matrix: result.matrix  
+            matrix: result.matrix,
+            maxFlows: result.maxFlows
         },
         sankeyData: {
             nodes: nldata.nodes,
