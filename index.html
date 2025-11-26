@@ -519,6 +519,12 @@
 				const newRanking = +d3.select(this).property("value");
 				update({ ranking: newRanking });
 			});
+
+		d3.select("#scale-toggle")
+			.on("change", function(d) {
+				const newScale = d3.select(this).property("checked");
+				update({ scale: newScale });
+			});
 	}
 
 	// Initial load
