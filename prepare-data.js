@@ -568,7 +568,7 @@ function dataPrepare(input, config) {
 
         
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source); 
-        
+
         function removeNullNames() {
             let names_source = Array.from(new Set(dataSelect.flatMap(d => d.source))); 
             let names_target = Array.from(new Set(dataSelect.flatMap(d => d.target)));
@@ -591,6 +591,7 @@ function dataPrepare(input, config) {
         let finalData = filteredData.filter(d =>
             names.includes(d.source) && names.includes(d.target)
         )
+        console.log(names)
         // Generate back the matrix with filtered values
         let filteredMatrix = getMatrix(names, finalData)
 
@@ -708,17 +709,20 @@ function dataPrepare(input, config) {
         let new_unfiltered_matrix_rows = [];
         let new_matrix = [];
         let new_maxFlows = [];
-
+        
+        console.log(source_data.names)
         layout_indices.forEach(idx => { // Use forEach for clarity if map's return isn't used
+            original_id = getMeta(source_data.names[idx]).id
             new_names.push(source_data.names[idx]);
             new_unfiltered_matrix_rows.push(source_data.matrix[idx]);
-            new_maxFlows.push(maxFlows[idx])
+            new_maxFlows.push(maxFlows[original_id])
         });
 
         new_unfiltered_matrix_rows.forEach(row_data => { // Use forEach
             let filtered_row = layout_indices.map(col_idx => row_data[col_idx]);
             new_matrix.push(filtered_row);
         });
+        console.log(new_maxFlows)
         return { names: new_names, matrix: new_matrix, maxFlows: new_maxFlows};
     }
     let result = buildChordData(filteredLayout, data); // 'data' is dataSliced
