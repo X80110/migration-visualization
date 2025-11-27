@@ -31,8 +31,74 @@ function labelPosition(angle) {
     };
 }
 
-// Global variable to track if this is first draw
-let isFirstDraw = true;
+function scaleChordLayout(chordData, metadata) {
+    const { matrix, names, maxFlows } = chordData;
+    const getMeta = createGetMeta({ raw_data: { names, regions: metadata.regions }, metadata: metadata.flags });
+
+    // Create a map from name to its original index for stable ordering.
+    const nameToIndex = new Map(names.map((name, i) => [name, i]));
+
+    // Create the max flow matrix using the stable name order. This matrix is diagonal,
+    // with each group's max flow on the diagonal. This is a trick to use d3.chord()
+    // to calculate the arc lengths for the max flow values.
+    const maxFlowMatrix = Array.from({ length: names.length }, () => Array(names.length).fill(0));
+    maxFlows.forEach((flow, i) => {
+        const index = nameToIndex.get(names[i]);
+        if (index !== undefined) {
+            maxFlowMatrix[index][index] = flow;
+        }
+    });
+
+    // Create layouts for max flow and the current year's data.
+    const maxFlowLayout = d3.chord().padAngle(0.02).sortSubgroups(d3.descending)(maxFlowMatrix);
+    const yearLayout = d3.chord().padAngle(0.02).sortSubgroups(d3.descending)(matrix);
+
+    // Create the scaled groups. The start and end angles are taken from the max flow layout,
+    // while other properties are taken from the current year's layout.
+    const scaledGroups = maxFlowLayout.groups.map(maxGroup => {
+        const groupName = names[maxGroup.index];
+        const yearGroup = yearLayout.groups.find(g => names[g.index] === groupName);
+        return {
+            ...(yearGroup || {}), // Take properties from the year's group
+            startAngle: maxGroup.startAngle,
+            endAngle: maxGroup.endAngle,
+            name: groupName,
+            id: getMeta(groupName).id,
+            region: getMeta(groupName).region,
+            angle: (maxGroup.startAngle + maxGroup.endAngle) / 2,
+        };
+    });
+
+    const groupNameToScaledGroup = new Map(scaledGroups.map(g => [g.name, g]));
+
+    // Scale the chords to fit within the new group arcs.
+    const scaledChords = yearLayout.map(chord => {
+        const sourceName = names[chord.source.index];
+        const targetName = names[chord.target.index];
+
+        const scaledSourceGroup = groupNameToScaledGroup.get(sourceName);
+        const scaledTargetGroup = groupNameToScaledGroup.get(targetName);
+
+        const sourceYearGroup = yearLayout.groups.find(g => names[g.index] === sourceName);
+        const targetYearGroup = yearLayout.groups.find(g => names[g.index] === targetName);
+
+        // Calculate the ratio to scale the chord's width.
+        const sourceRatio = (scaledSourceGroup.endAngle - scaledSourceGroup.startAngle) / sourceYearGroup.value;
+        const targetRatio = (scaledTargetGroup.endAngle - scaledTargetGroup.startAngle) / targetYearGroup.value;
+
+        // The start angle of the chord is the start angle of the group, plus the widths of all
+        // previous chords in that group. This is what creates the "stacking" effect.
+        const sourceStartAngle = scaledSourceGroup.startAngle + (chord.source.startAngle - sourceYearGroup.startAngle) * sourceRatio;
+        const targetStartAngle = scaledTargetGroup.startAngle + (chord.target.startAngle - targetYearGroup.startAngle) * targetRatio;
+
+        return {
+            source: { ...chord.source, startAngle: sourceStartAngle, endAngle: sourceStartAngle + chord.source.value * sourceRatio, name: sourceName },
+            target: { ...chord.target, startAngle: targetStartAngle, endAngle: targetStartAngle + chord.target.value * targetRatio, name: targetName }
+        };
+    });
+
+    return { chords: scaledChords, groups: scaledGroups };
+}
 
 // Create arc functions factory
 function createArcFunctions(config, input) {
@@ -52,6 +118,11 @@ function createArcFunctions(config, input) {
 
 // ========== CHORD CHART ==========
 function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight) {
+    if (config.useMaxFlow) {
+        const scaledLayout = scaleChordLayout(chordData, { ...specificRawData, ...metadataCsv});
+        chordData.chords = scaledLayout.chords;
+        chordData.groups = scaledLayout.groups;
+    }
     let data = chordData;
     let flows = commonData.flows;
     let input = specificRawData;
@@ -65,7 +136,22 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     const { arc, arcHover } = createArcFunctions(config, input);
 
     function computedChords(data) {
-        let chords = chord(data.matrix).map(d => {
+        if (data.chords) {
+            return data.chords.map(d => {
+                const sourceBasicMeta = getMeta(d.source.name);
+                d.source.region = sourceBasicMeta.region;
+                d.source.id = sourceBasicMeta.id;
+
+                const targetBasicMeta = getMeta(d.target.name);
+                d.target.region = targetBasicMeta.region;
+                d.target.id = targetBasicMeta.id;
+
+                let direction = d.source.id > d.target.id ? 'source' : 'target'
+                d.id = direction + `-` + d.source.id + `-` + d.target.id
+                return { id: d.id, source: d.source, target: d.target };
+            });
+        }
+        return chord(data.matrix).map(d => {
             d.source.name = data.names[d.source.index];
             const sourceBasicMeta = getMeta(d.source.name);
             d.source.region = sourceBasicMeta.region;
@@ -78,21 +164,22 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
             let direction = d.source.id > d.target.id ? 'source' : 'target'
             d.id = direction + `-` + d.source.id + `-` + d.target.id
-            return { id: d.id, source: d.source, target: d.target }
-        })
-        return chords
+            return { id: d.id, source: d.source, target: d.target };
+        });
     }
 
     function computedGroups(data) {
-        let groups = chord(data.matrix).groups
-        groups.map(d => {
+        if (data.groups) {
+            return data.groups;
+        }
+        return chord(data.matrix).groups.map(d => {
             d.name = data.names[d.index];
             const groupBasicMeta = getMeta(d.name);
             d.id = groupBasicMeta.id;
             d.region = groupBasicMeta.region;
-            d.angle = (d.startAngle + (d.endAngle - d.startAngle) / 2);
-        })
-        return groups
+            d.angle = (d.startAngle + d.endAngle) / 2;
+            return d;
+        });
     }
 
     // Process previous data
@@ -675,5 +762,4 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         }, 50);
     }); */
 
-    isFirstDraw = false;
 }
