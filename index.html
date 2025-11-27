@@ -412,8 +412,9 @@
 		method: "da_pb_closed",
 		year: 2015,
 		threshold: "",
-		ranking: "",
+		ranking: 1,
 		regions: [],
+		useMaxFlow: false,
 		currentViz: "chord" // Track current visualization
 	};
 
@@ -518,6 +519,11 @@
 			.on("change", function(d) {
 				const newRanking = +d3.select(this).property("value");
 				update({ ranking: newRanking });
+			});
+		d3.selectAll("#scale-toggle")
+			.on("change", function(d) {
+				const useMaxFlow = d3.select(this).property("checked")
+				update({ useMaxFlow: useMaxFlow });
 			});
 	}
 
