@@ -1,4 +1,44 @@
 //  INITIAL PARAMETERS
+let maxFlowsCache = new Map();
+
+async function calculateMaxFlows(config, datasetMeta, metadata) {
+    const numNames = metadata.names.length;
+    const allMaxFlows = new Array(numNames).fill(0);
+    const baseConfig = { ...config };
+
+    for (const year of datasetMeta.years) {
+        baseConfig.year = year;
+        const yearPath = fileName(baseConfig).json;
+        try {
+            const matrixData = await d3.json(yearPath);
+            const matrix = matrixData.matrix;
+            const n = numNames;
+
+            if (matrix.length !== n) {
+                console.warn(`Matrix for year ${year} has length ${matrix.length}, expected ${n}. Skipping.`);
+                continue;
+            }
+
+            for (let i = 0; i < n; i++) {
+                let inflow = 0;
+                let outflow = 0;
+                for (let j = 0; j < n; j++) {
+                    outflow += matrix[i][j] || 0;
+                    inflow += matrix[j][i] || 0;
+                }
+                const totalFlow = inflow + outflow;
+                if (totalFlow > allMaxFlows[i]) {
+                    allMaxFlows[i] = totalFlow;
+                }
+            }
+        } catch (error) {
+            console.error(`Failed to load or process matrix for year ${year}: ${yearPath}`, error);
+        }
+    }
+    return allMaxFlows;
+}
+
+
 var width = 800;
 var height = width - 50;
 let regionIndex = 1
@@ -320,7 +360,7 @@ function setSelectors(allYears) {
 
 
 
-function dataPrepare(input, config) {
+async function dataPrepare(input, config) {
     var input_data = {...input}
     
     // Add names and regions to raw_data from metadata
@@ -332,10 +372,14 @@ function dataPrepare(input, config) {
     config.threshold = input_data.dataset_meta.threshold
     threshold = 10000 || +config.threshold
     ranking = 10000 || +config.ranking
-    
-    const datasetMeta = input_data.dataset_meta
-    const maxFlows = datasetMeta.max_total_inflow.map((val, d) => val + datasetMeta.max_total_outflow[d])
 
+    const datasetMeta = input_data.dataset_meta;
+    const cacheKey = fileName(config).dataset_meta;
+    let maxFlows = maxFlowsCache.get(cacheKey);
+    if (!maxFlows) {
+        maxFlows = await calculateMaxFlows(config, datasetMeta, input_data.metadata);
+        maxFlowsCache.set(cacheKey, maxFlows);
+    }
     input = input_data.raw_data; // Alias for the specific JSON data content
     year = +config.year;
     sex = config.sex;

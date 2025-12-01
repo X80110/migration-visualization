@@ -366,7 +366,7 @@
 		}
 
 		// Prepare data with caching
-		prepareData(rawData, config, dataPrepareFunc) {
+		async prepareData(rawData, config, dataPrepareFunc) {
 			const cacheKey = DataCache.generatePreparedDataKey(config);
 			
 			// Check cache first
@@ -384,7 +384,7 @@
 				metadata: rawData.metadata,
 				dataset_meta: rawData.datasetMeta,};
 			
-			prepared = dataPrepareFunc(input, config);
+			prepared = await dataPrepareFunc(input, config);
 			this.cache.setPreparedData(cacheKey, prepared);
 			
 			return prepared;
@@ -542,7 +542,7 @@
 			initializeSelectors();
 
 			// Prepare data for visualization
-			const prepared = dataLoader.prepareData(data, config, dataPrepare);
+			const prepared = await dataLoader.prepareData(data, config, dataPrepare);
 			
 			// For first load, set previous to initial state (for smooth entry animation)
 			config.previous = {
@@ -582,7 +582,7 @@
 			setSelectors(data.datasetMeta.years);
 			
 			// Prepare data (uses cache when possible)
-			const prepared = dataLoader.prepareData(data, config, dataPrepare);
+			const prepared = await dataLoader.prepareData(data, config, dataPrepare);
 			
 			// Update visualization
 			updateVisualization(prepared, data, config);
