@@ -11,7 +11,7 @@ library(countrycode)
 library(migest)
 library(jsonlite)
 
-f <- read_csv("../refilterbynumberoflinks/data/bilat_mig.csv")
+f <- read_csv("./data/bilat_mig.csv")
 # f <- read_csv("..\\global-bilat-flow-sex\\est-v04\\bilat_mig.csv")
 # f <- read_csv("https://ndownloader.figshare.com/files/26239945")
 
