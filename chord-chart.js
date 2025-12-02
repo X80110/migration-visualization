@@ -51,6 +51,111 @@ function createArcFunctions(config, input) {
 
 
 // ========== CHORD CHART ==========
+
+// Helper: Function to manually scale chord endpoints
+function scaleChordLayout(currentYearLayoutChords,
+                           currentYearGroupsByIndex,
+                           baseLayoutGroupsByIndex,
+                           maxFlows)
+{
+    const scaledChords = [];
+    const groupScalingInfo = {};
+    const epsilon = 1e-6; // Small number for float comparisons/division
+
+    Object.keys(baseLayoutGroupsByIndex).forEach(indexStr => {
+        const i = parseInt(indexStr);
+        const baseGroup = baseLayoutGroupsByIndex[i];
+        const currentGroup = currentYearGroupsByIndex[i];
+
+        if (!currentGroup || !baseGroup) {
+            groupScalingInfo[i] = { isValid: false }; return;
+        }
+
+        // --- Pre-calculate scaling factors and angles for each group ---
+        const maxFlow = maxFlows[i];
+        const currentFlow = currentGroup.value;
+        const isAtMax = Math.abs(currentFlow - maxFlow) < epsilon;
+
+        // How much of the max-flow arc should the current year's flow occupy?
+        const scaleFactor = maxFlow > epsilon ? currentFlow / maxFlow : 0;
+
+        // The full width of the arc in the stable (max-flow) layout.
+        const baseAngleWidth = baseGroup.endAngle - baseGroup.startAngle;
+        const safeBaseAngleWidth = baseAngleWidth > epsilon ? baseAngleWidth : epsilon;
+
+        // The scaled width for the current year's data within the stable arc.
+        const scaledAngleWidth = safeBaseAngleWidth * scaleFactor;
+
+        // The original width of the arc in the dynamic (current-year) layout.
+        const currentAngleWidth = currentGroup.endAngle - currentGroup.startAngle;
+        const safeCurrentAngleWidth = currentAngleWidth > epsilon ? currentAngleWidth : epsilon;
+
+        groupScalingInfo[i] = {
+            isValid: true, isAtMax: isAtMax, scaleFactor: scaleFactor,
+            baseStartAngle: baseGroup.startAngle, baseAngleWidth: safeBaseAngleWidth,
+            scaledAngleWidth: scaledAngleWidth, currentStartAngle: currentGroup.startAngle,
+            currentAngleWidth: safeCurrentAngleWidth
+        };
+    });
+
+    currentYearLayoutChords.forEach(chord => {
+        const sIndex = chord.source.index;
+        const tIndex = chord.target.index;
+        const sInfo = groupScalingInfo[sIndex];
+        const tInfo = groupScalingInfo[tIndex];
+
+        if (!sInfo?.isValid || !tInfo?.isValid) return;
+
+        // --- Calculate scaled start and end angles for the SOURCE of the chord ---
+        let scaledSourceStartAngle, scaledSourceEndAngle;
+        // Find the proportional start position and width of the chord within its original group arc.
+        const sourcePropStart = (chord.source.startAngle - sInfo.currentStartAngle) / sInfo.currentAngleWidth;
+        const sourcePropWidth = (chord.source.endAngle - chord.source.startAngle) / sInfo.currentAngleWidth;
+
+        // Apply these proportions to the new, scaled arc width.
+        if (sInfo.isAtMax) {
+             // If the flow is at its max, use the full base arc width.
+            scaledSourceStartAngle = sInfo.baseStartAngle + sourcePropStart * sInfo.baseAngleWidth;
+            scaledSourceEndAngle = scaledSourceStartAngle + sourcePropWidth * sInfo.baseAngleWidth;
+        } else if (sInfo.scaleFactor > epsilon) {
+            scaledSourceStartAngle = sInfo.baseStartAngle + sourcePropStart * sInfo.scaledAngleWidth;
+            scaledSourceEndAngle = scaledSourceStartAngle + sourcePropWidth * sInfo.scaledAngleWidth;
+        } else {
+            scaledSourceStartAngle = sInfo.baseStartAngle;
+            scaledSourceEndAngle = sInfo.baseStartAngle;
+        }
+        
+        // --- Calculate scaled start and end angles for the TARGET of the chord ---
+         let scaledTargetStartAngle, scaledTargetEndAngle;
+        // Find the proportional start position and width of the chord within its original group arc.
+         const targetPropStart = (chord.target.startAngle - tInfo.currentStartAngle) / tInfo.currentAngleWidth;
+         const targetPropWidth = (chord.target.endAngle - chord.target.startAngle) / tInfo.currentAngleWidth;
+
+        // Apply these proportions to the new, scaled arc width.
+        if (tInfo.isAtMax) {
+            scaledTargetStartAngle = tInfo.baseStartAngle + targetPropStart * tInfo.baseAngleWidth;
+            scaledTargetEndAngle = scaledTargetStartAngle + targetPropWidth * tInfo.baseAngleWidth;
+        } else if (tInfo.scaleFactor > epsilon) {
+            scaledTargetStartAngle = tInfo.baseStartAngle + targetPropStart * tInfo.scaledAngleWidth;
+            scaledTargetEndAngle = scaledTargetStartAngle + targetPropWidth * tInfo.scaledAngleWidth;
+        } else {
+            scaledTargetStartAngle = tInfo.baseStartAngle;
+            scaledTargetEndAngle = tInfo.baseStartAngle;
+        }
+
+         if ([scaledSourceStartAngle, scaledSourceEndAngle, scaledTargetStartAngle, scaledTargetEndAngle].some(isNaN)) {
+            console.warn("NaN angle detected, skipping chord:", chord, " Scaling Info S:", sInfo, " T:", tInfo);
+            return;
+         }
+
+         scaledChords.push({
+             source: { ...chord.source, startAngle: scaledSourceStartAngle, endAngle: scaledSourceEndAngle },
+             target: { ...chord.target, startAngle: scaledTargetStartAngle, endAngle: scaledTargetEndAngle }
+         });
+    });
+    return scaledChords;
+}
+
 function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight) {
     let data = chordData;
     let flows = commonData.flows;
@@ -64,35 +169,113 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // Create arc functions
     const { arc, arcHover } = createArcFunctions(config, input);
 
-    function computedChords(data) {
-        let chords = chord(data.matrix).map(d => {
-            d.source.name = data.names[d.source.index];
-            const sourceBasicMeta = getMeta(d.source.name);
-            d.source.region = sourceBasicMeta.region;
-            d.source.id = sourceBasicMeta.id;
+    // B. --- BASE LAYOUT FOR SCALING (MANUAL) ---
+    // This layout establishes a stable reference for group positions.
+    // Manual calculation is used to avoid a bug in the custom chord layout library with diagonal matrices.
+    const padAngle = 0.02;
+    // The custom chord library seems to double-count flows for directed chords when calculating total circumference, so we do the same for consistency.
+    const totalMaxFlow = chordData.maxFlows.reduce((a, b) => a + b, 0) * 2;
+    const angleScale = (2 * Math.PI - data.names.length * padAngle) / totalMaxFlow;
 
-            d.target.name = data.names[d.target.index];
-            const targetBasicMeta = getMeta(d.target.name);
-            d.target.region = targetBasicMeta.region;
-            d.target.id = targetBasicMeta.id;
+    let currentAngle = 0;
+    const manualBaseGroups = chordData.maxFlows.map((flow, i) => {
+        const startAngle = currentAngle;
+        // The value for the group is doubled, so we scale the angle accordingly.
+        const endAngle = startAngle + (flow * 2) * angleScale;
+        currentAngle = endAngle + padAngle;
+        return {
+            index: i,
+            startAngle: startAngle,
+            endAngle: endAngle,
+            value: flow
+        };
+    });
 
-            let direction = d.source.id > d.target.id ? 'source' : 'target'
-            d.id = direction + `-` + d.source.id + `-` + d.target.id
-            return { id: d.id, source: d.source, target: d.target }
-        })
-        return chords
+    const baseGroupsByIndex = manualBaseGroups.reduce((acc, g) => { acc[g.index] = g; return acc; }, {});
+    const baseLayout = { groups: manualBaseGroups }; // Mock the layout object
+
+
+    function computedChords(data, useMaxScale) {
+        const currentYearSortedLayout = chord(data.matrix);
+
+        if (useMaxScale) {
+            // Create an unsorted layout for the current year to get stable group values
+             const totalFlow = data.matrix.flat().reduce((a, b) => a + b, 0) * 2;
+             const angleScale = (2 * Math.PI - data.names.length * padAngle) / totalFlow;
+ 
+             let currentAngle = 0;
+             const currentYearGroupsByIndex = {};
+             data.matrix.forEach((row, i) => {
+                 const startAngle = currentAngle;
+                 const sum = (row.reduce((a, b) => a + b, 0) + d3.sum(data.matrix, d => d[i])) * angleScale;
+                 const endAngle = startAngle + sum;
+                 currentAngle = endAngle + padAngle;
+                 currentYearGroupsByIndex[i] = {
+                     value: d3.sum(row) + d3.sum(data.matrix, d => d[i]),
+                     startAngle: startAngle,
+                     endAngle: endAngle
+                 };
+             });
+
+            const scaledChordsData = scaleChordLayout(
+                currentYearSortedLayout,
+                currentYearGroupsByIndex,
+                baseGroupsByIndex,
+                chordData.maxFlows
+            );
+            // Enrich with metadata
+            return scaledChordsData.map(d => {
+                d.source.name = data.names[d.source.index];
+                const sourceBasicMeta = getMeta(d.source.name);
+                d.source.region = sourceBasicMeta.region;
+                d.source.id = sourceBasicMeta.id;
+
+                d.target.name = data.names[d.target.index];
+                const targetBasicMeta = getMeta(d.target.name);
+                d.target.region = targetBasicMeta.region;
+                d.target.id = targetBasicMeta.id;
+
+                let direction = d.source.id > d.target.id ? 'source' : 'target'
+                d.id = direction + `-` + d.source.id + `-` + d.target.id
+                return { id: d.id, source: d.source, target: d.target }
+            })
+
+        } else {
+             // Enrich with metadata
+            return currentYearSortedLayout.map(d => {
+                d.source.name = data.names[d.source.index];
+                const sourceBasicMeta = getMeta(d.source.name);
+                d.source.region = sourceBasicMeta.region;
+                d.source.id = sourceBasicMeta.id;
+
+                d.target.name = data.names[d.target.index];
+                const targetBasicMeta = getMeta(d.target.name);
+                d.target.region = targetBasicMeta.region;
+                d.target.id = targetBasicMeta.id;
+
+                let direction = d.source.id > d.target.id ? 'source' : 'target'
+                d.id = direction + `-` + d.source.id + `-` + d.target.id
+                return { id: d.id, source: d.source, target: d.target }
+            })
+        }
     }
 
-    function computedGroups(data) {
-        let groups = chord(data.matrix).groups
-        groups.map(d => {
+    function computedGroups(data, useMaxScale) {
+        let groups;
+        if (useMaxScale) {
+            groups = baseLayout.groups;
+        } else {
+            groups = chord(data.matrix).groups;
+        }
+        // Enrich with metadata
+        groups.forEach(d => {
             d.name = data.names[d.index];
             const groupBasicMeta = getMeta(d.name);
             d.id = groupBasicMeta.id;
             d.region = groupBasicMeta.region;
             d.angle = (d.startAngle + (d.endAngle - d.startAngle) / 2);
-        })
-        return groups
+        });
+        return groups;
     }
 
     // Process previous data
@@ -103,12 +286,12 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         previousChords = previous.chords;
         previousGroups = previous.groups;
     } else if (previous && previous.names && previous.matrix) {
-        previousChords = computedChords(previous).reduce(function (sum, d) {
+        previousChords = computedChords(previous, config.useMaxFlow).reduce(function (sum, d) {
             sum[d.id] = d;
             return sum;
         }, {});
 
-        previousGroups = computedGroups(previous).reduce(function (sum, d) {
+        previousGroups = computedGroups(previous, config.useMaxFlow).reduce(function (sum, d) {
             sum[d.id] = d;
             return sum;
         }, {});
@@ -118,8 +301,8 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     config.previous = {
         names: data.names,
         matrix: data.matrix,
-        chords: computedChords(data).reduce((sum, d) => { sum[d.id] = d; return sum; }, {}),
-        groups: computedGroups(data).reduce((sum, d) => { sum[d.id] = d; return sum; }, {})
+        chords: computedChords(data, config.useMaxFlow).reduce((sum, d) => { sum[d.id] = d; return sum; }, {}),
+        groups: computedGroups(data, config.useMaxFlow).reduce((sum, d) => { sum[d.id] = d; return sum; }, {})
     };
 
     var ribbon = d3.ribbonArrow()
@@ -155,7 +338,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         groupsContainer = container.append("g").attr("class", "groups");
     }
 
-    const groupData = computedGroups(data);
+    const groupData = computedGroups(data, config.useMaxFlow);
     
     const groups = groupsContainer
         .selectAll("g.group")
@@ -205,7 +388,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         chordsContainer = container.append("g").attr("class", "chords");
     }
 
-    const chordsDataComputed = computedChords(data);
+    const chordsDataComputed = computedChords(data, config.useMaxFlow);
     
     const chords = chordsContainer
         .selectAll("path.chord-path")
