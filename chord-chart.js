@@ -159,6 +159,7 @@ function scaleChordLayout(currentYearLayoutChords,
 function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight) {
     let data = chordData;
     let flows = commonData.flows;
+    console.log(flows)
     let input = specificRawData;
     const getMeta = createGetMeta({ raw_data: specificRawData, metadata: metadataCsv });
     const isRegion = createIsRegion(input);

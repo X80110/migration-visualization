@@ -11,7 +11,7 @@ library(countrycode)
 library(migest)
 library(jsonlite)
 
-f <- read_csv("../refilterbynumberoflinks/data/bilat_mig.csv")
+f <- read_csv("./data/bilat_mig.csv")
 # f <- read_csv("..\\global-bilat-flow-sex\\est-v04\\bilat_mig.csv")
 # f <- read_csv("https://ndownloader.figshare.com/files/26239945")
 
@@ -113,20 +113,12 @@ for (method in methods) {
   }
   
   # Prepare meta data
-  total_inflow <- d3 %>%
+  total_flow <- d3 %>%
     filter(method == !!method) %>%
+    mutate(total = imm + emi) %>%
     rename(year = year0, dest = country) %>%
-    select(year, dest, imm) %>%
-    xtabs(formula = round(imm) ~ year + dest, data = .,) %>%
-    as.matrix() %>%
-    apply(2, max) %>%
-    unname()
-  
-  total_outflow <- d3 %>%
-    filter(method == !!method) %>%
-    rename(year = year0, orig = country) %>%
-    select(year, orig, emi) %>%
-    xtabs(formula = round(emi) ~ year - orig, data = .,) %>%
+    select(year, dest, total) %>%
+    xtabs(formula = round(total) ~ year + dest, data = .,) %>%
     as.matrix() %>%
     apply(2, max) %>%
     unname()
@@ -138,8 +130,7 @@ for (method in methods) {
   meta <- list(
     threshold = thresholds %>% filter(method == !!method) %>% pull(threshold),
     years = years,
-    max_total_inflow = total_inflow,
-    max_total_outflow = total_outflow
+    max_total_flow = total_flow
   )
   
   # Save meta.json

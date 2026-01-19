@@ -11,7 +11,7 @@ library(countrycode)
 library(migest)
 library(jsonlite)
 
-f <- read_csv("../refilterbynumberoflinks/data/stock_undesa_ims2024.csv", guess_max = 1e6)
+f <- read_csv("./data/stock_undesa_ims2024.csv", guess_max = 1e6)
 # f <- read_csv("https://ndownloader.figshare.com/files/33893906?private_link=d610aa95f97bb441c762")
 
 d0 <- f %>%
@@ -111,18 +111,11 @@ if (!dir.exists("stocks")) {
 }
 
 # Prepare meta data
-total_inflow <- d3 %>%
+total_flow <- d3 %>%
+  mutate(total = imm + emi) %>%
   rename(dest = country) %>%
-  select(year, dest, imm) %>%
-  xtabs(formula = round(imm) ~ year + dest, data = .,) %>%
-  as.matrix() %>%
-  apply(2, max) %>%
-  unname()
-
-total_outflow <- d3 %>%
-  rename(orig = country) %>%
-  select(year, orig, emi) %>%
-  xtabs(formula = round(emi) ~ year - orig, data = .,) %>%
+  select(year, dest, total) %>%
+  xtabs(formula = round(total) ~ year + dest, data = .,) %>%
   as.matrix() %>%
   apply(2, max) %>%
   unname()
@@ -132,8 +125,7 @@ years <- names(m)
 meta <- list(
   threshold = threshold_value,
   years = years,
-  max_total_inflow = total_inflow,
-  max_total_outflow = total_outflow
+  max_total_flow = total_flow
   # names = n1$lab1,
   # flags = n1$flag,
   # regions = which(n1$area == n1$lab1) - 1,
