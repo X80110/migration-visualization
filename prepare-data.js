@@ -713,55 +713,95 @@ async function dataPrepare(input, config) {
     }
     let result = buildChordData(filteredLayout, data); // 'data' is dataSliced
 
-    let sankeySourceRegionName = config.regions && config.regions.length > 0 ? config.regions[0] : undefined;
-    let sankeyTargetRegionName = config.regions && config.regions.length > 1 ? config.regions[1] : undefined;
 
-    let sankey_source_indices;
-    let sankey_target_indices;
+    // Use the exact same data as Chord Diagram for the base matrix logic,
+    // but re-evaluate layout for Sankey based on specific source/target expansion.
 
-    if (sankeySourceRegionName && sankeyTargetRegionName) {
-        sankey_source_indices = expandRegion(data, sankeySourceRegionName).countryRange;
-        sankey_target_indices = expandRegion(data, sankeyTargetRegionName).countryRange;
-    } else if (sankeySourceRegionName) {
-        sankey_source_indices = expandRegion(data, sankeySourceRegionName).countryRange;
-        const sourceRegionNameIndex = data.names.indexOf(sankeySourceRegionName);
-        sankey_target_indices = data.regions.filter(r_idx => r_idx !== sourceRegionNameIndex);
-        if (sankey_target_indices.length === 0 && data.regions.length > 0) {
-            sankey_target_indices = data.regions.slice();
+    // Helper to get expansion list for a specific region name
+    function getExpandedLayout(regionName) {
+        if (regionName) {
+            const expansion = expandRegion(data, regionName);
+            // Combine expanded countries with other regions
+            let indices = [...expansion.countryRange];
+
+            // Add all regions EXCEPT the one being expanded
+            data.regions.forEach(rIdx => {
+                if (data.names[rIdx] !== regionName) {
+                    indices.push(rIdx);
+                }
+            });
+            return [...new Set(indices)].sort((a, b) => a - b);
+        } else {
+            // Return just regions
+            return data.regions.slice().sort((a, b) => a - b);
         }
-    } else if (sankeyTargetRegionName) {
-        sankey_target_indices = expandRegion(data, sankeyTargetRegionName).countryRange;
-        const targetRegionNameIndex = data.names.indexOf(sankeyTargetRegionName);
-        sankey_source_indices = data.regions.filter(r_idx => r_idx !== targetRegionNameIndex);
-        if (sankey_source_indices.length === 0 && data.regions.length > 0) {
-            sankey_source_indices = data.regions.slice();
-        }
-    } else {
-        sankey_source_indices = data.regions.slice();
-        sankey_target_indices = data.regions.slice();
     }
 
-    let sankey_source_names = sankey_source_indices.map(d_idx => data.names[d_idx]);
-    let sankey_target_names = sankey_target_indices.map(d_idx => data.names[d_idx]);
+    // Determine Source and Target Layouts independently
+    // config.regions[0] = source expansion
+    // config.regions[1] = target expansion
 
-    let sankey_display_names = [...new Set(sankey_source_names.concat(sankey_target_names))]
-        .sort((a, b) => data.names.indexOf(a) - data.names.indexOf(b));
+    // Ensure config.regions has at least 2 elements if not present
+    const regionsConfig = config.regions || [];
+    const sourceLayoutIndices = getExpandedLayout(regionsConfig[0]);
+    const targetLayoutIndices = getExpandedLayout(regionsConfig[1]);
 
-    let sankey_nodes = sankey_display_names.map(name => ({
-        name: name,
-        id: getMeta(name).id
+    // We need to build specific lists of names for source and target sides
+    // This effectively creates the "nodes" for the sankey
+
+    // 1. Create Source Nodes (Left Side)
+    const sourceNodes = sourceLayoutIndices.map(idx => ({
+        name: data.names[idx],
+        id: getMeta(data.names[idx]).id,
+        type: 'source'
     }));
 
-    let selectedLinksForSankey = dataSliced.nldata.filter(link =>
-        sankey_display_names.includes(link.source) && sankey_display_names.includes(link.target)
-    );
+    // 2. Create Target Nodes (Right Side)
+    const targetNodes = targetLayoutIndices.map(idx => ({
+        name: data.names[idx],
+        id: getMeta(data.names[idx]).id,
+        type: 'target'
+    }));
+
+    const sankeyNodes = [...sourceNodes, ...targetNodes];
+    const sankeyLinks = [];
+    const n = sourceNodes.length + targetNodes.length; // offset not needed if we push objects directly, but useful for matrix interaction
+
+    // Iterate through the FULL matrix (data.matrix) but only create links if
+    // source is in sourceLayoutIndices AND target is in targetLayoutIndices
+
+    // Efficiency: iterating over layout indices is better than full matrix if matrix is huge,
+    // but here we iterate matrix indices that match our layout.
+
+    sourceLayoutIndices.forEach((sourceIdx, i) => {
+        targetLayoutIndices.forEach((targetIdx, j) => {
+            const val = data.matrix[sourceIdx][targetIdx];
+            if (val > 0) {
+                // Check logical self-loop (if same country on both sides) - usually allowed in Sankey flow but maybe not desirable
+                // In bipartite, i and j are just indices in the layout arrays.
+                // Source node index in 'sankeyNodes' is i
+                // Target node index in 'sankeyNodes' is sourceNodes.length + j
+
+                // If removing self loops where name is same:
+                if (data.names[sourceIdx] !== data.names[targetIdx]) {
+                    sankeyLinks.push({
+                        source: i,
+                        target: sourceNodes.length + j,
+                        value: val,
+                        sourceName: data.names[sourceIdx],
+                        targetName: data.names[targetIdx]
+                    });
+                }
+            }
+        });
+    });
 
     let nldata = {
-        nodes: sankey_nodes,
-        links: selectedLinksForSankey,
+        nodes: sankeyNodes,
+        links: sankeyLinks,
         sankey_layout: {
-            source: sankey_source_names,
-            target: sankey_target_names
+            source: sourceNodes.map(d => d.name),
+            target: targetNodes.map(d => d.name)
         }
     };
 
