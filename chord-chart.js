@@ -37,12 +37,12 @@ let isFirstDraw = true;
 // Create arc functions factory
 function createArcFunctions(config, input) {
     const isRegion = createIsRegion(input);
-    
+
     return {
         arc: d3.arc()
             .innerRadius(innerRadius)
             .outerRadius(d => isRegion(d.name) && config.regions.length > 0 ? outerRadius - 13 : outerRadius),
-        
+
         arcHover: d3.arc()
             .innerRadius(innerRadius)
             .outerRadius(outerRadius)
@@ -54,10 +54,9 @@ function createArcFunctions(config, input) {
 
 // Helper: Function to manually scale chord endpoints
 function scaleChordLayout(currentYearLayoutChords,
-                           currentYearGroupsByIndex,
-                           baseLayoutGroupsByIndex,
-                           maxFlows)
-{
+    currentYearGroupsByIndex,
+    baseLayoutGroupsByIndex,
+    maxFlows) {
     const scaledChords = [];
     const groupScalingInfo = {};
     const epsilon = 1e-6; // Small number for float comparisons/division
@@ -77,7 +76,15 @@ function scaleChordLayout(currentYearLayoutChords,
         const isAtMax = Math.abs(currentFlow - maxFlow) < epsilon;
 
         // How much of the max-flow arc should the current year's flow occupy?
-        const scaleFactor = maxFlow > epsilon ? currentFlow / maxFlow : 0;
+        let scaleFactor = maxFlow > epsilon ? currentFlow / maxFlow : 0;
+
+        // Safety clamp: scaleFactor should never exceed 1.0 (though logic implies it shouldn't if data is correct)
+        if (scaleFactor > 1.0 + epsilon) {
+            console.warn(`Scale factor > 1 detected for node ${i}. Max: ${maxFlow}, Current: ${currentFlow}. Clamping to 1.`);
+            scaleFactor = 1.0;
+        } else if (scaleFactor > 1.0) {
+            scaleFactor = 1.0;
+        }
 
         // The full width of the arc in the stable (max-flow) layout.
         const baseAngleWidth = baseGroup.endAngle - baseGroup.startAngle;
@@ -114,7 +121,7 @@ function scaleChordLayout(currentYearLayoutChords,
 
         // Apply these proportions to the new, scaled arc width.
         if (sInfo.isAtMax) {
-             // If the flow is at its max, use the full base arc width.
+            // If the flow is at its max, use the full base arc width.
             scaledSourceStartAngle = sInfo.baseStartAngle + sourcePropStart * sInfo.baseAngleWidth;
             scaledSourceEndAngle = scaledSourceStartAngle + sourcePropWidth * sInfo.baseAngleWidth;
         } else if (sInfo.scaleFactor > epsilon) {
@@ -124,12 +131,12 @@ function scaleChordLayout(currentYearLayoutChords,
             scaledSourceStartAngle = sInfo.baseStartAngle;
             scaledSourceEndAngle = sInfo.baseStartAngle;
         }
-        
+
         // --- Calculate scaled start and end angles for the TARGET of the chord ---
-         let scaledTargetStartAngle, scaledTargetEndAngle;
+        let scaledTargetStartAngle, scaledTargetEndAngle;
         // Find the proportional start position and width of the chord within its original group arc.
-         const targetPropStart = (chord.target.startAngle - tInfo.currentStartAngle) / tInfo.currentAngleWidth;
-         const targetPropWidth = (chord.target.endAngle - chord.target.startAngle) / tInfo.currentAngleWidth;
+        const targetPropStart = (chord.target.startAngle - tInfo.currentStartAngle) / tInfo.currentAngleWidth;
+        const targetPropWidth = (chord.target.endAngle - chord.target.startAngle) / tInfo.currentAngleWidth;
 
         // Apply these proportions to the new, scaled arc width.
         if (tInfo.isAtMax) {
@@ -143,15 +150,15 @@ function scaleChordLayout(currentYearLayoutChords,
             scaledTargetEndAngle = tInfo.baseStartAngle;
         }
 
-         if ([scaledSourceStartAngle, scaledSourceEndAngle, scaledTargetStartAngle, scaledTargetEndAngle].some(isNaN)) {
+        if ([scaledSourceStartAngle, scaledSourceEndAngle, scaledTargetStartAngle, scaledTargetEndAngle].some(isNaN)) {
             console.warn("NaN angle detected, skipping chord:", chord, " Scaling Info S:", sInfo, " T:", tInfo);
             return;
-         }
+        }
 
-         scaledChords.push({
-             source: { ...chord.source, startAngle: scaledSourceStartAngle, endAngle: scaledSourceEndAngle },
-             target: { ...chord.target, startAngle: scaledTargetStartAngle, endAngle: scaledTargetEndAngle }
-         });
+        scaledChords.push({
+            source: { ...chord.source, startAngle: scaledSourceStartAngle, endAngle: scaledSourceEndAngle },
+            target: { ...chord.target, startAngle: scaledTargetStartAngle, endAngle: scaledTargetEndAngle }
+        });
     });
     return scaledChords;
 }
@@ -159,11 +166,10 @@ function scaleChordLayout(currentYearLayoutChords,
 function drawChords(chordData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight) {
     let data = chordData;
     let flows = commonData.flows;
-    console.log(flows)
     let input = specificRawData;
     const getMeta = createGetMeta({ raw_data: specificRawData, metadata: metadataCsv });
     const isRegion = createIsRegion(input);
-
+    console.log(flows)
     let previous = config.previous || data;
     var aLittleBit = Math.PI / 100000;
 
@@ -175,14 +181,14 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // Manual calculation is used to avoid a bug in the custom chord layout library with diagonal matrices.
     const padAngle = 0.02;
     // The custom chord library seems to double-count flows for directed chords when calculating total circumference, so we do the same for consistency.
-    const totalMaxFlow = chordData.maxFlows.reduce((a, b) => a + b, 0) * 2;
+    const totalMaxFlow = chordData.maxFlows.reduce((a, b) => a + b, 0);
     const angleScale = (2 * Math.PI - data.names.length * padAngle) / totalMaxFlow;
 
     let currentAngle = 0;
     const manualBaseGroups = chordData.maxFlows.map((flow, i) => {
         const startAngle = currentAngle;
         // The value for the group is doubled, so we scale the angle accordingly.
-        const endAngle = startAngle + (flow * 2) * angleScale;
+        const endAngle = startAngle + (flow) * angleScale;
         currentAngle = endAngle + padAngle;
         return {
             index: i,
@@ -201,22 +207,22 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
         if (useMaxScale) {
             // Create an unsorted layout for the current year to get stable group values
-             const totalFlow = data.matrix.flat().reduce((a, b) => a + b, 0) * 2;
-             const angleScale = (2 * Math.PI - data.names.length * padAngle) / totalFlow;
- 
-             let currentAngle = 0;
-             const currentYearGroupsByIndex = {};
-             data.matrix.forEach((row, i) => {
-                 const startAngle = currentAngle;
-                 const sum = (row.reduce((a, b) => a + b, 0) + d3.sum(data.matrix, d => d[i])) * angleScale;
-                 const endAngle = startAngle + sum;
-                 currentAngle = endAngle + padAngle;
-                 currentYearGroupsByIndex[i] = {
-                     value: d3.sum(row) + d3.sum(data.matrix, d => d[i]),
-                     startAngle: startAngle,
-                     endAngle: endAngle
-                 };
-             });
+            const totalFlow = data.matrix.flat().reduce((a, b) => a + b, 0) * 2;
+            const angleScale = (2 * Math.PI - data.names.length * padAngle) / totalFlow;
+
+            let currentAngle = 0;
+            const currentYearGroupsByIndex = {};
+            data.matrix.forEach((row, i) => {
+                const startAngle = currentAngle;
+                const sum = (row.reduce((a, b) => a + b, 0) + d3.sum(data.matrix, d => d[i])) * angleScale;
+                const endAngle = startAngle + sum;
+                currentAngle = endAngle + padAngle;
+                currentYearGroupsByIndex[i] = {
+                    value: d3.sum(row) + d3.sum(data.matrix, d => d[i]),
+                    startAngle: startAngle,
+                    endAngle: endAngle
+                };
+            });
 
             const scaledChordsData = scaleChordLayout(
                 currentYearSortedLayout,
@@ -242,7 +248,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             })
 
         } else {
-             // Enrich with metadata
+            // Enrich with metadata
             return currentYearSortedLayout.map(d => {
                 d.source.name = data.names[d.source.index];
                 const sourceBasicMeta = getMeta(d.source.name);
@@ -340,7 +346,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     }
 
     const groupData = computedGroups(data, config.useMaxFlow);
-    
+
     const groups = groupsContainer
         .selectAll("g.group")
         .data(groupData, d => d.id);
@@ -348,7 +354,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // EXIT - Simple exit animation
     groups.exit()
         .transition()
-        .duration(100)
+        .duration(0)
         .style("opacity", 0.3)
         .remove();
 
@@ -390,7 +396,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     }
 
     const chordsDataComputed = computedChords(data, config.useMaxFlow);
-    
+
     const chords = chordsContainer
         .selectAll("path.chord-path")
         .data(chordsDataComputed, d => d.id);
@@ -398,7 +404,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // EXIT
     chords.exit()
         .transition()
-        .duration(400)
+        .duration(0)
         /* .style("opacity", 0) */
         .remove();
 
@@ -421,7 +427,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     chordsMerged
         .transition()
-        .duration(600)
+        .duration(400)
         /* .ease(d3.easeCubicInOut) */
         .style("opacity", d => isRegion(d.source.name) && config.regions.length > 0 ? 0.1 : 1)
         .attrTween("d", function (d) {
@@ -437,7 +443,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     // ========== COUNTRY LABELS ==========
     /* const countryLabelsData = groupData.filter(d => !isRegion(d.name)); */
-    
+
     const countryLabels = groupsMerged
         .filter(d => !isRegion(d.name))
         .selectAll("text.country-label")
@@ -445,10 +451,10 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     countryLabels.exit().remove();
 
-  const countryLabelsEnter = countryLabels.enter()
-    .append("text")
-    .attr("class", "country-label")
-    .attr("font-size", 9);
+    const countryLabelsEnter = countryLabels.enter()
+        .append("text")
+        .attr("class", "country-label")
+        .attr("font-size", 9);
 
     countryLabelsEnter.merge(countryLabels)
         .text(d => d.angle > Math.PI
@@ -461,7 +467,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             : '<tspan class="flag-emoji">' + getMeta(d.name).flag + '</tspan> ' + d.name
         )
         .transition('country-label')
-        .attrTween("transform", function(d) {
+        .attrTween("transform", function (d) {
             var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || { angle: 0 }, d);
             return function (t) {
                 var t = labelPosition(i(t).angle);
@@ -470,7 +476,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         });
     // ========== REGION LABELS ==========
     /* const regionLabelsData = groupData.filter(d => isRegion(d.name)); */
-    
+
     const maxBarHeight = chartHeight / 2 - 70;
     const arcRegionLabel = d3.arc()
         .innerRadius(maxBarHeight)
@@ -493,36 +499,36 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // UPDATE region label paths with morphing
     regionLabelPathsEnter.merge(regionLabelPaths)
         .transition()
-        .duration(600)
+        .duration(300)
         /* .ease(d3.easeCubicInOut) */
-        .attrTween("d", function(d) {
-            const prev = previousGroups[d.id] || { 
-                startAngle: d.startAngle, 
-                endAngle: d.startAngle + aLittleBit 
+        .attrTween("d", function (d) {
+            const prev = previousGroups[d.id] || {
+                startAngle: d.startAngle,
+                endAngle: d.startAngle + aLittleBit
             };
             const i = d3.interpolate(prev, d);
-            return function(t) {
+            return function (t) {
                 const interpolated = i(t);
                 let pathD = arcRegionLabel(interpolated);
-                
+
                 // Process the path to ensure proper text placement
                 const firstArcSection = /(^.+?)L/;
                 let match = firstArcSection.exec(pathD);
                 if (!match) return pathD;
-                
+
                 let newArc = match[1].replace(/,/g, " ");
-                
+
                 // Reverse the arc if it's in the bottom half for better text placement
                 if (interpolated.startAngle > Math.PI / 2 && interpolated.startAngle < 3 * Math.PI / 2 &&
                     interpolated.endAngle > Math.PI / 2 && interpolated.endAngle < 3 * Math.PI / 2) {
                     const startLoc = /M(.*?)A/;
                     const middleLoc = /A(.*?)0 0 1/;
                     const endLoc = /0 0 1 (.*?)$/;
-                    
+
                     const newStart = endLoc.exec(newArc)?.[1];
                     const newEnd = startLoc.exec(newArc)?.[1];
                     const middleSec = middleLoc.exec(newArc)?.[1];
-                    
+
                     if (newStart && newEnd && middleSec) {
                         newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
                     }
@@ -542,7 +548,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     const regionLabelTextsEnter = regionLabelTexts.enter()
         .append("text")
         .attr("class", "region-label-text")
-        /* .style("opacity", 0); */
+    /* .style("opacity", 0); */
 
     const regionLabelTextsMerged = regionLabelTextsEnter.merge(regionLabelTexts);
 
@@ -560,8 +566,8 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     regionLabelTextsMerged
         .transition()
-        .duration(600)
-/*         .style("opacity", 1); */
+        .duration(300)
+    /*         .style("opacity", 1); */
 
 
 
@@ -569,7 +575,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         var temporaryText = d3.select('svg')
             .append("text")
             .attr("class", "temporary-text")
-            /* .style("opacity", 0); */
+        /* .style("opacity", 0); */
         var getTextLength = function (string) {
             temporaryText.text(string);
             return temporaryText.node().getComputedTextLength();
@@ -614,10 +620,10 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
             }
         })
-        // Fix specific labels 
-        .filter(d => d.name.includes("Ocea")).selectAll("tspan").attr("x", -4);
+            // Fix specific labels 
+            .filter(d => d.name.includes("Ocea")).selectAll("tspan").attr("x", -4);
     }
-        
+
     // ========== TOOLTIPS ==========
     let tooltip = d3.select('body').select('g#tooltip');
     if (tooltip.empty()) {
@@ -726,7 +732,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
             chordsMerged.style("opacity", d => {
                 const sourceIsTargetEntity = d.source.name === entityName;
                 const targetIsTargetEntity = d.target.name === entityName;
-                
+
                 if (sourceIsTargetEntity || targetIsTargetEntity) {
                     return 1;
                 } else {
@@ -739,7 +745,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // Function to reset ribbon highlighting
     function resetRibbonHighlighting() {
         scheduleOpacityUpdate(() => {
-            chordsMerged.style("opacity", d => 
+            chordsMerged.style("opacity", d =>
                 isRegion(d.source.name) && config.regions.length > 0 ? 0.1 : 1
             );
         });
@@ -748,7 +754,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     // Click interactions
     groupsMerged.on('click', function (evt, d) {
         evt.stopPropagation();
-        
+
         if (d.id === d.region) {
             // Clicking a region - expand it
             if (config.regions.length >= config.maxRegionsOpen) {
@@ -764,7 +770,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 config.regions.splice(indexToRemove, 1);
             }
         }
-        
+
         tooltip.style("visibility", "hidden");
         resetRibbonHighlighting();
         update({ regions: [...config.regions] });
@@ -772,13 +778,13 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     // Hover interactions - optimized to reduce violations
     let hoverTimeout;
-    
+
     // Ribbon hover - highlight single ribbon
     chordsMerged
         .on("mouseover", function (evt, d) {
             clearTimeout(hoverTimeout);
             highlightSingleRibbon(d.id);
-            
+
             // Also highlight connected arcs
             groupsMerged.select(".group-arc")
                 .style("opacity", groupD => {
@@ -799,13 +805,13 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     groupsMerged
         .on("mouseover", function (evt, d) {
             clearTimeout(hoverTimeout);
-            
+
             // Highlight the hovered arc
             d3.select(this).select(".group-arc")
                 .transition()
                 .duration(150)
                 .attr("d", arcHover);
-            
+
             // Highlight all ribbons related to this entity (region or country)
             highlightRelatedRibbons(d.name);
         })
@@ -816,7 +822,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                     .transition()
                     .duration(150)
                     .attr("d", arc);
-                
+
                 resetRibbonHighlighting();
                 tooltip.style("visibility", "hidden");
             }, 50);
@@ -826,14 +832,14 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     regionLabelTextsMerged
         .on("mouseover", function (evt, d) {
             clearTimeout(hoverTimeout);
-            
+
             // Find the parent group and highlight its arc
             const parentGroup = d3.select(this.parentNode);
             parentGroup.select(".group-arc")
                 .transition()
                 .duration(100)
                 .attr("d", arcHover);
-            
+
             // Highlight all ribbons related to this region
             highlightRelatedRibbons(d.name);
         })
@@ -845,19 +851,19 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                     .transition()
                     .duration(150)
                     .attr("d", arc);
-                
+
                 resetRibbonHighlighting();
                 tooltip.style("visibility", "hidden");
             }, 50);
         });
 
-  /*   // Add mouseout event for the entire container to reset highlighting
-    container.on("mouseout", function() {
-        hoverTimeout = setTimeout(() => {
-            resetRibbonHighlighting();
-            groupsMerged.select(".group-arc").style("opacity", 1);
-        }, 50);
-    }); */
+    /*   // Add mouseout event for the entire container to reset highlighting
+      container.on("mouseout", function() {
+          hoverTimeout = setTimeout(() => {
+              resetRibbonHighlighting();
+              groupsMerged.select(".group-arc").style("opacity", 1);
+          }, 50);
+      }); */
 
     isFirstDraw = false;
 }

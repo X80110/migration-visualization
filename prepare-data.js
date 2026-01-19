@@ -3,9 +3,19 @@ let maxFlowsCache = new Map();
 
 async function calculateMaxFlows(config, datasetMeta, metadata) {
     const numNames = metadata.names.length;
+
+    // Check if max_total_flow is available in datasetMeta and has correct length
+    if (datasetMeta && datasetMeta.max_total_flow && Array.isArray(datasetMeta.max_total_flow)) {
+        if (datasetMeta.max_total_flow.length === numNames) {
+            console.log("Using pre-computed max_total_flow from dataset metadata.");
+            return datasetMeta.max_total_flow;
+        } else {
+            console.warn(`Pre-computed max_total_flow length (${datasetMeta.max_total_flow.length}) does not match names length (${numNames}). Recalculating.`);
+        }
+    }
+
     const allMaxFlows = new Array(numNames).fill(0);
     const baseConfig = { ...config };
-
     for (const year of datasetMeta.years) {
         baseConfig.year = year;
         const yearPath = fileName(baseConfig).json;
@@ -35,6 +45,7 @@ async function calculateMaxFlows(config, datasetMeta, metadata) {
             console.error(`Failed to load or process matrix for year ${year}: ${yearPath}`, error);
         }
     }
+
     return allMaxFlows;
 }
 
@@ -78,52 +89,7 @@ function formatValue(nStr, seperator) {
     }
     return x1 + x2;
 }
-//   Number.prototype.mod = function (n) {
-//     return ((this % n) + n) % n
-//   };
 
-// // build the data filename (json) with config values  ------------–––-------------------
-// var fileName = (configs) => { // Changed let to var for wider global scope
-//     configs = {...config}
-
-//     // build filename hierarchy
-//     let stockflow = config.stockflow
-//     year = config.year
-
-//     sex2 = config.sex === "all" || "" ?
-//         "" :
-//         "/" + config.sex
-
-//     method2 = /* stockflow === "stock" ?
-//         "" :
-//         "/" + */ config.method || "da_pb_closed"
-
-
-//     let json = 'json/' + stockflow + sex2 + '/' + method2 + '/' + year + '.json'
-//     let dataset_meta = 'json/' + stockflow + sex2 + '/' + method2 + '/dataset_meta.json'
-
-//     // clean non-lineal irregularities
-//     json = json.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
-//     dataset_meta = dataset_meta.replace("__", "_").replace("_.", ".").replace("__", "_").replace("__", "_").replace("//","/")
-
-//     return {
-//         json: json,
-//         dataset_meta: dataset_meta,
-//         values: stockflow,
-//         sex: config.sex,
-//         type: config.type,
-//         method: config.method
-//     }
-// }
-// let filename = fileName(config).json
-
-
-/* const isRegion = (name_string) => {
-    const nameIdx = input.names.indexOf(name_string);
-    if (nameIdx === -1)
-         return false;
-    return input.regions.includes(nameIdx);
-}; */
 function createIsRegion(input) {
     // Extraiem els noms corresponents als índexs de regions
     const regionNames = new Set(input.regions.map(i => input.names[i]));
@@ -352,8 +318,10 @@ async function dataPrepare(input, config) {
 
     const datasetMeta = input_data.dataset_meta;
     const cacheKey = fileName(config).dataset_meta;
+    console.log(cacheKey)
 
     let maxFlows = maxFlowsCache.get(cacheKey);
+
     if (!maxFlows) {
         maxFlows = await calculateMaxFlows(config, datasetMeta, input_data.metadata);
         maxFlowsCache.set(cacheKey, maxFlows);
@@ -503,14 +471,14 @@ async function dataPrepare(input, config) {
             let connections = number_connections.map(d => d.connections)[i]
             let basicMetaData = getMeta(name);
             let region_name = basicMetaData.region_name;
+            let total_flow = outflow + inflow
             {
                 return {
                     region_name,
                     name,
                     outflow,
                     inflow,
-                    /*              net_flow,
-                                 total_flow, */
+                    total_flow,
                     connections
                 }
             }
@@ -733,7 +701,7 @@ async function dataPrepare(input, config) {
             original_id = getMeta(source_data.names[idx]).id
             new_names.push(source_data.names[idx]);
             new_unfiltered_matrix_rows.push(source_data.matrix[idx]);
-            new_maxFlows.push(maxFlows[original_id] / 2)
+            new_maxFlows.push(maxFlows[original_id])
         });
 
         new_unfiltered_matrix_rows.forEach(row_data => { // Use forEach
