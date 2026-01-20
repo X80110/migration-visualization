@@ -22,10 +22,16 @@ const tooltip = d3.select('body').append('g')
 
 function setData(sankeyData, commonData, specificRawData, metadataCsv, config, chartWidth, chartHeight) {
 
-    // Since index.html clears all 'g' elements from #sankey-chart before calling setData,
-    // we need to re-append the container groups for links and nodes here.
-    const Links = sankeyDiagram.append("g").attr("class", "links");
-    const Nodes = sankeyDiagram.append("g").attr("class", "nodes");
+    // Check if groups exist, otherwise append them
+    let Links = sankeyDiagram.select("g.links");
+    if (Links.empty()) {
+        Links = sankeyDiagram.append("g").attr("class", "links");
+    }
+
+    let Nodes = sankeyDiagram.select("g.nodes");
+    if (Nodes.empty()) {
+        Nodes = sankeyDiagram.append("g").attr("class", "nodes");
+    }
 
     const input_data = specificRawData;
 
@@ -141,35 +147,40 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
 
     // Links
     var link = Links.selectAll("path")
-        .data(links);
+        .data(links, d => d.source.name + "_" + d.target.name);
 
     var linkEnter = link.enter().append("path")
         .attr("d", d3.sankeyLinkHorizontal())
         .attr("fill", "none")
         .attr("class", "link")
-        .style("opacity", d => isRegion(d.source.name) && config.regions.length > 0 ? 0.1 : 0.7)
         .attr("stroke-width", d => Math.max(1, d.width))
         .attr("stroke", d => {
             // For bipartite: source is usually Origin, Target is Destination
             // If source is a Region, color by Region.
             return isRegion(d.source.name) ? getRegionColor(d.source.name) : colorCountries(d.source.name)
-        });
+        })
+        .style("opacity", d => isRegion(d.source.name) && isRegion(d.target.name) && config.regions.length > 0 ? 0.1 : 0.7)
 
     linkEnter.merge(link)
         .transition('link')
-        .duration(500)
+        .duration(750) // Slower for smoother look
         .attr("d", d3.sankeyLinkHorizontal())
         .style("opacity", d => isRegion(d.source.name) && isRegion(d.target.name) && config.regions.length > 0 ? 0.1 : 0.7)
         .attr("stroke-width", d => Math.max(1, d.width))
         .attr("stroke", d => isRegion(d.source.name) ? getRegionColor(d.source.name) : colorCountries(d.source.name));
 
-    link.exit().remove();
+    link.exit()
+        .transition()
+        .duration(500)
+        .style("opacity", 0)
+        .remove();
 
     // Nodes
     var node = Nodes.selectAll("g")
-        .data(nodes);
+        .data(nodes, d => d.name);
 
-    var nodeEnter = node.enter().append("g");
+    var nodeEnter = node.enter().append("g")
+        .style("opacity", 0);
 
     nodeEnter.append("rect")
         .attr("class", "node")
@@ -177,22 +188,7 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
         .attr("y", d => d.y0)
         .attr("height", d => d.y1 - d.y0)
         .attr("width", d => d.x1 - d.x0)
-        .attr("fill", d => isRegion(d.name) ? getRegionColor(d.name) : colorCountries(d.name))
-        .style("opacity", d => isRegion(d.name) && config.regions.length > 0 ? 0.1 : 0.7);
-
-    // Update nodes
-    var nodeUpdate = nodeEnter.merge(node);
-
-    nodeUpdate.select("rect")
-        .transition('node')
-        .duration(500)
-        .attr("x", d => d.x0 < width / 2 ? d.x0 - 3 : d.x0 + 3)
-        .attr("y", d => d.y0)
-        .attr("height", d => d.y1 - d.y0)
-        .attr("width", d => d.x1 - d.x0)
-        .attr("fill", d => isRegion(d.name) ? getRegionColor(d.name) : colorCountries(d.name))
-        .style("opacity", d => isRegion(d.name) && config.regions.length > 0 ? 0.1 : 0.7);
-
+        .attr("fill", d => isRegion(d.name) ? getRegionColor(d.name) : colorCountries(d.name));
 
     // Text Labels
     nodeEnter.append("text")
@@ -210,9 +206,30 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
         .attr("x", d => d.x1 + 6)
         .attr("text-anchor", "start");
 
+
+    // Update nodes
+    var nodeUpdate = nodeEnter.merge(node);
+
+    // Fade in both new and existing nodes to correct opacity
+    nodeUpdate
+        .transition('node-group')
+        .duration(750)
+        .style("opacity", 1); // Group opacity
+
+    nodeUpdate.select("rect")
+        .transition('node')
+        .duration(750)
+        .attr("x", d => d.x0 < width / 2 ? d.x0 - 3 : d.x0 + 3)
+        .attr("y", d => d.y0)
+        .attr("height", Math.max(0, d => d.y1 - d.y0)) // Safety
+        .attr("height", d => d.y1 - d.y0)
+        .attr("width", d => d.x1 - d.x0)
+        .attr("fill", d => isRegion(d.name) ? getRegionColor(d.name) : colorCountries(d.name))
+        .style("opacity", d => isRegion(d.name) && config.regions.length > 0 ? 0.1 : 0.7);
+
     nodeUpdate.select("text")
         .transition('text')
-        .duration(500)
+        .duration(750)
         .attr("font-size", d => isRegion(d.name) ? "85%" : "60%")
         .attr("font-weight", d => isRegion(d.name) ? "600" : "400")
         .attr("y", d => (d.y1 + d.y0) / 2 - 4)
@@ -234,9 +251,14 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
             return d.sourceLinks.length > 0
                 ? d.name + " " + meta.flag
                 : meta.flag + " " + d.name;
-        });
+        })
+        .style("opacity", 1); // Ensure text is visible
 
-    node.exit().remove();
+    node.exit()
+        .transition()
+        .duration(500)
+        .style("opacity", 0)
+        .remove();
 
 
     //// INTERACTIONS /////////////////////////////////////////////////////////////////

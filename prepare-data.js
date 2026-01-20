@@ -782,16 +782,14 @@ async function dataPrepare(input, config) {
                 // Source node index in 'sankeyNodes' is i
                 // Target node index in 'sankeyNodes' is sourceNodes.length + j
 
-                // If removing self loops where name is same:
-                if (data.names[sourceIdx] !== data.names[targetIdx]) {
-                    sankeyLinks.push({
-                        source: i,
-                        target: sourceNodes.length + j,
-                        value: val,
-                        sourceName: data.names[sourceIdx],
-                        targetName: data.names[targetIdx]
-                    });
-                }
+                // Removed self-loop filter to allow flows within the same node
+                sankeyLinks.push({
+                    source: i,
+                    target: sourceNodes.length + j,
+                    value: val,
+                    sourceName: data.names[sourceIdx],
+                    targetName: data.names[targetIdx]
+                });
             }
         });
     });
