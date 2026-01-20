@@ -72,12 +72,7 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
         return x1 + x2;
     }
 
-    function isRegion(name) {
-        // Check if name is in regions list
-        const idx = input_data.names.indexOf(name);
-        if (idx === -1) return false;
-        return input_data.regions.includes(idx);
-    }
+    const isRegion = createIsRegion(input_data);
 
     // Assuming filename function needs to be accessed, or we derive it from config
     // We can access global 'filename' function from index.html if needed, 
@@ -85,28 +80,8 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
     const isStock = config.stockflow === "stock";
 
     // Retrieve full metadata for a country/region name
-    function getMeta(name) {
-        const id = input_data.names.indexOf(name);
-        const regionIdx = getRegionIndex(id);
-        const region_name = (regionIdx !== -1) ? input_data.names[regionIdx] : "N/A";
+    const getMeta = createGetMeta({ raw_data: specificRawData, metadata: metadataCsv });
 
-        // Find flag from metadataCsv (which is globalMeta.flags passed as metadataCsv)
-        let flag = "";
-        if (metadataCsv && Array.isArray(metadataCsv)) {
-            const row = metadataCsv.find(d => d.origin_name === name);
-            if (row) flag = row.origin_flag;
-        }
-
-        // Get total flows (needs calculation or lookup from commonData.flows)
-        let outflow = 0, inflow = 0;
-        const flowNode = commonData.flows.find(f => f.name === name);
-        if (flowNode) {
-            outflow = flowNode.outflow;
-            inflow = flowNode.inflow;
-        }
-
-        return { flag, region: regionIdx, region_name, id, outflow, inflow };
-    }
 
     function getRegionIndex(nameIdx) {
         // Find which region range this index belongs to
@@ -198,7 +173,7 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
 
     nodeEnter.append("rect")
         .attr("class", "node")
-        .attr("x", d => d.x0)
+        .attr("x", d => d.x0 < width / 2 ? d.x0 - 3 : d.x0 + 3)
         .attr("y", d => d.y0)
         .attr("height", d => d.y1 - d.y0)
         .attr("width", d => d.x1 - d.x0)
@@ -211,7 +186,7 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
     nodeUpdate.select("rect")
         .transition('node')
         .duration(500)
-        .attr("x", d => d.x0)
+        .attr("x", d => d.x0 < width / 2 ? d.x0 - 3 : d.x0 + 3)
         .attr("y", d => d.y0)
         .attr("height", d => d.y1 - d.y0)
         .attr("width", d => d.x1 - d.x0)
@@ -376,8 +351,8 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
             : `<span style="color:white"> ${meta.region_name}</span><br>
                 <span style="color:white"><b> ${meta.flag} ${d.name}</b></span>`;
 
-        let outflow = formatValue(meta.outflow);
-        let inflow = formatValue(meta.inflow);
+        let outflow = formatValue(commonData.flows.filter(g => g.name === d.name)[0].outflow);
+        let inflow = formatValue(commonData.flows.filter(g => g.name === d.name)[0].inflow);
 
         let htmlContent = "";
         if (isStock) {
