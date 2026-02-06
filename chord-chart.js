@@ -499,7 +499,8 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         .append("path")
         .attr("class", "region-label-arc")
         .attr("id", (d, i) => "region_label_" + d.id)
-        .attr("fill", "none");
+        .attr("fill", "none")
+        .attr("d", arcRegionLabel);
 
     // UPDATE region label paths with morphing
     regionLabelPathsEnter.merge(regionLabelPaths)
@@ -803,7 +804,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 // Reset arc opacities
                 groupsMerged.select(".group-arc").style("opacity", 1);
                 tooltip.style("visibility", "hidden");
-            }, 50);
+            }, 150);
         });
 
     // Arc hover - highlight all related ribbons
