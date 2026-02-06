@@ -91,7 +91,22 @@
 									</svg> <br>Sankey</a>
 								<!-- <a id = "chord-chart-button" class='drop-link drop-viz' onclick="return switchViz('chord')"  href ="#chord" ><img src="static/chord.svg" alt="Chord diagram icon" class="viz-icon-chord"><br> Chord diagram</a> -->
 								<!-- <a id = "sankey-chart-button" class='drop-link drop-viz' onclick="return switchViz('sankey')" href ="#sankey"  ><img src="static/sankey.svg" alt="Sankey diagram icon" class="viz-icon-sankey"> <br>Sankey</a> -->
-								<!-- <a class='drop-link' href='#'><svg width="30px" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"><path d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z" fill="#9C9C9C" /><path d="M476.16 460.8L358.4 358.4l-163.84-5.12 15.36 204.8 87.04 51.2 66.56 215.04 225.28-240.64 5.12-122.88z" fill="#9C9C9C" /><path d="M803.84 296.96l-143.36-97.28-51.2 51.2 20.48 87.04 97.28 35.84 56.32 56.32 61.44 46.08-46.08 56.32-87.04 261.12 138.24-138.24 20.48-184.32z" fill="#9C9C9C" /><path d="M509.44 174.08c184.832 0 335.36 150.528 335.36 335.36S694.272 844.8 509.44 844.8 174.08 694.272 174.08 509.44 324.608 174.08 509.44 174.08m0-61.44C290.304 112.64 112.64 290.304 112.64 509.44S290.304 906.24 509.44 906.24 906.24 728.576 906.24 509.44 728.576 112.64 509.44 112.64z" fill="#9C9C9C"/></svg> <br>Map</a> -->
+								<a id="map-chart-button drop-viz" class='drop-link drop-viz' onclick="switchViz('map')"
+									href='#map'><svg width="30px" viewBox="0 0 1000 1000"
+										xmlns="http://www.w3.org/2000/svg">
+										<path
+											d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z"
+											fill="#9C9C9C" />
+										<path
+											d="M476.16 460.8L358.4 358.4l-163.84-5.12 15.36 204.8 87.04 51.2 66.56 215.04 225.28-240.64 5.12-122.88z"
+											fill="#9C9C9C" />
+										<path
+											d="M803.84 296.96l-143.36-97.28-51.2 51.2 20.48 87.04 97.28 35.84 56.32 56.32 61.44 46.08-46.08 56.32-87.04 261.12 138.24-138.24 20.48-184.32z"
+											fill="#9C9C9C" />
+										<path
+											d="M509.44 174.08c184.832 0 335.36 150.528 335.36 335.36S694.272 844.8 509.44 844.8 174.08 694.272 174.08 509.44 324.608 174.08 509.44 174.08m0-61.44C290.304 112.64 112.64 290.304 112.64 509.44S290.304 906.24 509.44 906.24 906.24 728.576 906.24 509.44 728.576 112.64 509.44 112.64z"
+											fill="#9C9C9C" />
+									</svg> <br>Map</a>
 							</p>
 						</div>
 					</li>
@@ -160,6 +175,9 @@
 				</div>
 				<div id="sankey-chart"> </div>
 			</div>
+			<div id="map" style="display:none">
+				<div id="map-chart"> </div>
+			</div>
 			<div id="reset" class="drop-link" style="display:none">
 				<a name="resetButton" type="button" onclick="resetData()">Collapse regions</a>
 			</div>
@@ -191,7 +209,22 @@
 							<a id="sankey-chart-button" onclick="return switchViz('sankey')" class='drop-link'
 								href="#sankey"><img src="static/sankey.svg" alt="Sankey diagram icon"
 									style="width:60px; vertical-align: middle;"> <br>Sankey<br></a>
-							<!-- <a class='drop-link' onclick="return switchViz('map')" href='#map'><svg width="30px" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"><path d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z" fill="#9C9C9C" /><path d="M476.16 460.8L358.4 358.4l-163.84-5.12 15.36 204.8 87.04 51.2 66.56 215.04 225.28-240.64 5.12-122.88z" fill="#9C9C9C" /><path d="M803.84 296.96l-143.36-97.28-51.2 51.2 20.48 87.04 97.28 35.84 56.32 56.32 61.44 46.08-46.08 56.32-87.04 261.12 138.24-138.24 20.48-184.32z" fill="#9C9C9C" /><path d="M509.44 174.08c184.832 0 335.36 150.528 335.36 335.36S694.272 844.8 509.44 844.8 174.08 694.272 174.08 509.44 324.608 174.08 509.44 174.08m0-61.44C290.304 112.64 112.64 290.304 112.64 509.44S290.304 906.24 509.44 906.24 906.24 728.576 906.24 509.44 728.576 112.64 509.44 112.64z" fill="#9C9C9C"/></svg> <br>Map</a> -->
+							<a id="map-chart-button" class='drop-link' onclick="return switchViz('map')"
+								href='#map'><svg width="30px" viewBox="0 0 1000 1000"
+									xmlns="http://www.w3.org/2000/svg">
+									<path
+										d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z"
+										fill="#9C9C9C" />
+									<path
+										d="M476.16 460.8L358.4 358.4l-163.84-5.12 15.36 204.8 87.04 51.2 66.56 215.04 225.28-240.64 5.12-122.88z"
+										fill="#9C9C9C" />
+									<path
+										d="M803.84 296.96l-143.36-97.28-51.2 51.2 20.48 87.04 97.28 35.84 56.32 56.32 61.44 46.08-46.08 56.32-87.04 261.12 138.24-138.24 20.48-184.32z"
+										fill="#9C9C9C" />
+									<path
+										d="M509.44 174.08c184.832 0 335.36 150.528 335.36 335.36S694.272 844.8 509.44 844.8 174.08 694.272 174.08 509.44 324.608 174.08 509.44 174.08m0-61.44C290.304 112.64 112.64 290.304 112.64 509.44S290.304 906.24 509.44 906.24 906.24 728.576 906.24 509.44 728.576 112.64 509.44 112.64z"
+										fill="#9C9C9C" />
+								</svg> <br>Map</a>
 						</div>
 					</div>
 				</div>
@@ -229,6 +262,8 @@
 <script src="prepare-data.js" defer></script>
 <script src="chord-chart.js" defer></script>
 <script src="sankey-chart.js" defer></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
+<script src="map-chart.js" defer></script>
 
 
 <!-- SETTINGS -->
@@ -660,6 +695,11 @@
 				width,
 				height
 			);
+		} else if (config.currentViz === "map") {
+			console.log("Switching to map...");
+			if (typeof updateMap === "function") {
+				updateMap(prepared, rawData, config);
+			}
 		}
 
 		// Update markdown text
