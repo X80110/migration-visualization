@@ -454,7 +454,12 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     const countryLabelsEnter = countryLabels.enter()
         .append("text")
         .attr("class", "country-label")
-        .attr("font-size", 9);
+        .attr("font-size", 9)
+        .attr("transform", d => `
+        rotate(${(d.angle * 180 / Math.PI - 90)})
+        translate(${outerRadius + 5})
+        ${d.angle > Math.PI ? "rotate(180)" : ""}
+    `);
 
     countryLabelsEnter.merge(countryLabels)
         .text(d => d.angle > Math.PI
@@ -468,7 +473,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         )
         .transition('country-label')
         .attrTween("transform", function (d) {
-            var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || { angle: 0 }, d);
+            var i = d3.interpolate(previous.groups[d.id] || previous.groups[d.region] || meltPreviousGroupArc(d) || { angle: 0 }, d);
             return function (t) {
                 var t = labelPosition(i(t).angle);
                 return 'translate(' + t.x + ' ' + t.y + ') rotate(' + t.r + ')';

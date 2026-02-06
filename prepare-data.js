@@ -772,7 +772,6 @@ async function dataPrepare(input, config) {
 
     // Efficiency: iterating over layout indices is better than full matrix if matrix is huge,
     // but here we iterate matrix indices that match our layout.
-
     sourceLayoutIndices.forEach((sourceIdx, i) => {
         targetLayoutIndices.forEach((targetIdx, j) => {
             const val = data.matrix[sourceIdx][targetIdx];
