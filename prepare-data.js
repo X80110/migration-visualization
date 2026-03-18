@@ -294,7 +294,7 @@ async function dataPrepare(input, config) {
     var meta = input_data.metadata.flags // meta is input.metadata (parsed CSV)
     config.threshold = input_data.dataset_meta.threshold
     threshold = +config.threshold || 10000
-    ranking = config.ranking || "5000"
+    ranking = config.ranking || "All"
 
     const datasetMeta = input_data.dataset_meta;
     const cacheKey = fileName(config).dataset_meta;
