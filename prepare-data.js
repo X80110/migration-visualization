@@ -542,6 +542,52 @@ async function dataPrepare(input, config) {
         filteredData = filteredConnections;
         console.log(filteredData)
 
+        // --- Remove "hollow" regions -----------------------------------------------
+        // A region is hollow if none of its member countries have surviving
+        // country-level links in filteredData.  Showing such a region is misleading:
+        // the user clicks it, nothing appears, and it disappears.
+        //
+        // Strategy: collect every country name that appears in at least one
+        // country↔country link in filteredData, then find which regions have
+        // ZERO such countries.  Drop those regions from filteredData entirely.
+        const countryLinksInFilter = filteredData.filter(
+            d => !isRegion(d.source) && !isRegion(d.target)
+        );
+        const countriesWithLinks = new Set([
+            ...countryLinksInFilter.map(d => d.source),
+            ...countryLinksInFilter.map(d => d.target)
+        ]);
+
+        // Build a set of region names that are "hollow" in the current filter window.
+        // We use input.regions (the original full dataset) to enumerate member countries.
+        const hollowRegions = new Set();
+        input.regions.forEach((regionStartIdx, ri) => {
+            const regionName = input.names[regionStartIdx];
+            const nextRegionStartIdx = (ri + 1 < input.regions.length)
+                ? input.regions[ri + 1]
+                : input.names.length;
+
+            // Check whether any country belonging to this region survived the filter
+            let hasCountryLink = false;
+            for (let ci = regionStartIdx + 1; ci < nextRegionStartIdx; ci++) {
+                if (countriesWithLinks.has(input.names[ci])) {
+                    hasCountryLink = true;
+                    break;
+                }
+            }
+            if (!hasCountryLink) {
+                hollowRegions.add(regionName);
+            }
+        });
+
+        if (hollowRegions.size > 0) {
+            console.log("Dropping hollow regions (no country links in filter window):", [...hollowRegions]);
+            filteredData = filteredData.filter(
+                d => !hollowRegions.has(d.source) && !hollowRegions.has(d.target)
+            );
+        }
+        // ---------------------------------------------------------------------------
+
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source);
 
         function removeNullNames() {
@@ -562,6 +608,33 @@ async function dataPrepare(input, config) {
             return names_indexed
         }
         names = Array.from(new Set(removeNullNames()))
+
+        // Remove "hollow" regions: regions that survived the link filter but have no
+        // country-level connections in filteredData. Such regions would disappear when
+        // the user clicks to expand them, which is confusing. Instead, drop them now.
+        const filteredSources = new Set(filteredData.map(d => d.source));
+        const filteredTargets = new Set(filteredData.map(d => d.target));
+
+        names = names.filter(name => {
+            if (!isRegion(name)) return true; // keep all countries
+
+            // Find which indices in the ORIGINAL data belong to this region's countries
+            const regionIdx = data.names.indexOf(name);
+            const regionsArr = data.regions;
+            const regionPosInArr = regionsArr.indexOf(regionIdx);
+            const endIdx = (regionPosInArr + 1 < regionsArr.length)
+                ? regionsArr[regionPosInArr + 1]
+                : data.names.length;
+
+            // Country names are the names between regionIdx+1 and endIdx (exclusive)
+            const countryNames = data.names.slice(regionIdx + 1, endIdx);
+
+            // Keep the region only if at least one of its countries has surviving links
+            const hasCountryConnections = countryNames.some(
+                cn => filteredSources.has(cn) || filteredTargets.has(cn)
+            );
+            return hasCountryConnections;
+        });
 
         let finalData = filteredData.filter(d =>
             names.includes(d.source) && names.includes(d.target)
