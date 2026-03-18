@@ -656,8 +656,21 @@
 			// Update selectors if needed
 			setSelectors(data.datasetMeta.years);
 
-			// Prepare data (uses cache when possible)
-			const prepared = await dataLoader.prepareData(data, config, dataPrepare);
+				// Prepare data (uses cache when possible)
+			let prepared = await dataLoader.prepareData(data, config, dataPrepare);
+
+			// Auto-collapse any expanded region that became hollow after the filter
+			// change (i.e. it has no country-level links in the new filter window).
+			if (prepared.hollowRegions && prepared.hollowRegions.size > 0 && config.regions.length > 0) {
+				const prunedRegions = config.regions.filter(r => !prepared.hollowRegions.has(r));
+				if (prunedRegions.length < config.regions.length) {
+					const collapsed = config.regions.filter(r => prepared.hollowRegions.has(r));
+					console.log("Auto-collapsing hollow expanded regions:", collapsed);
+					config = { ...config, regions: prunedRegions };
+					// Re-prepare with the pruned region list (cache key is different now)
+					prepared = await dataLoader.prepareData(data, config, dataPrepare);
+				}
+			}
 
 			// Update visualization
 			updateVisualization(prepared, data, config);

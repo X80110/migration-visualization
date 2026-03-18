@@ -285,6 +285,8 @@ function setSelectors(allYears) {
 
 async function dataPrepare(input, config) {
     var input_data = { ...input }
+    // Will be populated by filteredMatrix so the caller can auto-collapse hollow expansions
+    let _hollowRegions = new Set();
 
     // Add names and regions to raw_data from metadata
     input_data.raw_data.names = input_data.metadata.names;
@@ -585,6 +587,8 @@ async function dataPrepare(input, config) {
             filteredData = filteredData.filter(
                 d => !hollowRegions.has(d.source) && !hollowRegions.has(d.target)
             );
+            // Bubble up to dataPrepare so the caller can prune config.regions
+            hollowRegions.forEach(r => _hollowRegions.add(r));
         }
         // ---------------------------------------------------------------------------
 
@@ -880,7 +884,11 @@ async function dataPrepare(input, config) {
             nodes: nldata.nodes,
             links: nldata.links,
             layout: nldata.sankey_layout
-        }
+        },
+        // Set of region names that were removed because they had no country-level
+        // links in the current filter window.  The caller checks this to
+        // automatically collapse any expanded region that became hollow.
+        hollowRegions: _hollowRegions
     };
 
 
