@@ -221,27 +221,7 @@ d3.select("#selectMethod") // populate html
     .attr("label", d => d.label)
     .attr("selected", d => d.id === "da_pb_closed" ? "selected" : null) // 
 
-// ranking labels ------------–––------------------------------------------------------
-let ranking_labels_indexed = ["—", "50", "40", "35", "30", "20", "15"]
-
-let rankings = ranking_labels_indexed.map((d, i) => {
-    id = d
-    label = ranking_labels_indexed[i]
-    config.ranking = 10000
-    return {
-        id,
-        label
-    }
-})
-
-d3.select("#selectedRanking") // populate html
-    .selectAll('myOptions')
-    .data(rankings)
-    .enter()
-    .append('option')
-    .attr("value", d => d.id)
-    .attr("label", d => d.label)
-    .attr("selected", d => d.id === "da_pb_closed" ? "selected" : null)   // 
+// ranking labels handling removed as `#selectedRanking` is an input range
 
 
 // #########################################################################################
@@ -313,8 +293,8 @@ async function dataPrepare(input, config) {
     const getMeta = createGetMeta({ raw_data: input_data.raw_data, metadata: input_data.metadata.flags });
     var meta = input_data.metadata.flags // meta is input.metadata (parsed CSV)
     config.threshold = input_data.dataset_meta.threshold
-    threshold = 10000 || +config.threshold
-    ranking = 10000 || +config.ranking
+    threshold = +config.threshold || 10000
+    ranking = config.ranking || "5000"
 
     const datasetMeta = input_data.dataset_meta;
     const cacheKey = fileName(config).dataset_meta;
@@ -544,13 +524,20 @@ async function dataPrepare(input, config) {
         const connectionsWithRelevance = filteredData.map(conn => {
             const sourceNode = flows.find(node => node.name === conn.source);
             const targetNode = flows.find(node => node.name === conn.target);
-            const relevance = (sourceNode.connections + targetNode.connections) * conn.value;
+            const relevance = (sourceNode.connections + targetNode.connections)/*  * conn.value */;
 
             return { ...conn, relevance };
         });
         connectionsWithRelevance.sort((a, b) => b.value - a.value);
 
-        const filteredConnections = connectionsWithRelevance.slice(0, config.ranking + 250 || connectionsWithRelevance.length);
+        let limit;
+        if (config.ranking === "100") limit = 100;
+        else if (config.ranking === "500") limit = 500;
+        else if (config.ranking === "1000") limit = 1000;
+        else if (config.ranking === "5000") limit = 5000;
+        else limit = connectionsWithRelevance.length;
+
+        const filteredConnections = connectionsWithRelevance.slice(0, limit);
         filteredData = filteredConnections;
 
 

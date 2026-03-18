@@ -141,45 +141,56 @@
 					<div><span>Estimation method:</span></div>
 					<select id="selectMethod"></select>
 				</div>
-				<div class="slider-container">
-					<label for="selectedRanking"></label>
-					<div class="slider-value">Connections displayed</div>
-					<input class="range-slider" type="range" id="selectedRanking" name="slider" min="100" max="900"
-						step="400" value="100000">
-					<div class="ticks">
-						<span>100</span>
-						<span>500</span>
-						<span>All (>1000)</span>
+			</div>
+
+			<div class="viz-container">
+				<div class="sticky-controls-wrapper">
+					<div class="sticky-sentinel"></div>
+					<div class="selectors sticky-menu">
+						<div class="slider-container" style="margin-bottom: 1em;">
+							<label for="selectedRanking"></label>
+							<div class="slider-value">Connections displayed</div>
+							<input class="range-slider" type="range" id="selectedRanking" name="slider" min="0" max="3"
+								step="1" value="3">
+							<div class="ticks">
+								<span>100</span>
+								<span>500</span>
+								<span>1000</span>
+								<span>5000</span>
+							</div>
+						</div>
+
+						<div class="toggle-container"
+							style="display:flex; flex-direction:column; align-items:center; margin-bottom: 1em;">
+							<div style="margin-bottom: 5px;"><span>Relative to alltime maximum:</span></div>
+							<label class="styled-switch">
+								<input type="checkbox" id="scale-toggle" name="scale-toggle">
+								<span class="styled-slider"></span>
+							</label>
+						</div>
+
+						<div id="reset" class="drop-link reset-button-container"
+							style="display:none; align-self: flex-start; margin-left: 0;">
+							<a name="resetButton" type="button" onclick="resetData()">Collapse regions</a>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="control-group checkbox-group">
-				<input type="checkbox" id="scale-toggle" name="scale-toggle">
-				<label for="scale-toggle">Use Max Flow for Arc Scale</label>
-			</div>
-			<div id="reset" class="drop-link" style="display:none">
-				<a name="resetButton" type="button" onclick="resetData()">Collapse regions</a>
-			</div>
-			<div class="selectors">
-			</div>
 
 
-			<div id="chord">
-				<div class="spin" id="spin"></div>
-				<div id="chord-chart"> </div>
-			</div>
-			<div id="sankey" style="display:none">
-				<div class="sourceTarget">
-					<p>Origin </p>
-					<p>Destination </p>
+				<div id="chord">
+					<div class="spin" id="spin"></div>
+					<div id="chord-chart"> </div>
 				</div>
-				<div id="sankey-chart"> </div>
-			</div>
-			<div id="map" style="display:none">
-				<div id="map-chart"> </div>
-			</div>
-			<div id="reset" class="drop-link" style="display:none">
-				<a name="resetButton" type="button" onclick="resetData()">Collapse regions</a>
+				<div id="sankey" style="display:none">
+					<div class="sourceTarget">
+						<p>Origin </p>
+						<p>Destination </p>
+					</div>
+					<div id="sankey-chart"> </div>
+				</div>
+				<div id="map" style="display:none">
+					<div id="map-chart"> </div>
+				</div>
 			</div>
 			<div class="box">
 				<div class="about">
@@ -474,7 +485,7 @@
 		method: "da_pb_closed",
 		year: 2015,
 		threshold: "",
-		ranking: 1,
+		ranking: "5000",
 		regions: [],
 		useMaxFlow: false,
 		currentViz: "chord" // Track current visualization
@@ -579,7 +590,8 @@
 
 		d3.selectAll("#selectedRanking")
 			.on("change", function (d) {
-				const newRanking = +d3.select(this).property("value");
+				const rankingValues = ["100", "500", "1000", "5000"];
+				const newRanking = rankingValues[+d3.select(this).property("value")];
 				update({ ranking: newRanking });
 			});
 		d3.selectAll("#scale-toggle")
@@ -755,6 +767,19 @@
 	document.addEventListener('DOMContentLoaded', function () {
 		// Initialize with anchor or default to chord
 		switchViz(getAnchor())
+
+		// Sticky menu: toggle .is-stuck class when sentinel scrolls out of view
+		const sentinel = document.querySelector('.sticky-sentinel');
+		const stickyMenu = document.querySelector('.sticky-menu');
+		if (sentinel && stickyMenu) {
+			const observer = new IntersectionObserver(
+				([entry]) => {
+					stickyMenu.classList.toggle('is-stuck', !entry.isIntersecting);
+				},
+				{ threshold: 0 }
+			);
+			observer.observe(sentinel);
+		}
 	});
 </script>
 
