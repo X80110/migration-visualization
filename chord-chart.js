@@ -169,7 +169,6 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
     let input = specificRawData;
     const getMeta = createGetMeta({ raw_data: specificRawData, metadata: metadataCsv });
     const isRegion = createIsRegion(input);
-    console.log(flows)
     let previous = config.previous || data;
     var aLittleBit = Math.PI / 100000;
 

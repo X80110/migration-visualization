@@ -519,6 +519,7 @@ async function dataPrepare(input, config) {
             d.rank = region_rank[i]
             d.global_rank = global_rank[i]
         })
+        console.log(flows)
 
         let filteredData = nldata.links
         const connectionsWithRelevance = filteredData.map(conn => {
@@ -539,7 +540,7 @@ async function dataPrepare(input, config) {
 
         const filteredConnections = connectionsWithRelevance.slice(0, limit);
         filteredData = filteredConnections;
-
+        console.log(filteredData)
 
         let dataSelect = filteredData.filter(d => d.source_region != d.target && d.target_region != d.source);
 
