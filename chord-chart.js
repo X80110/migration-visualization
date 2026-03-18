@@ -23,7 +23,7 @@ var chord = chord(true, false)
 
 // Utils: return label position for given angle
 function labelPosition(angle) {
-    var temp = angle.mod(2 * Math.PI);
+    var temp = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
     return {
         x: Math.cos(temp - Math.PI / 2) * labelRadius,
         y: Math.sin(temp - Math.PI / 2) * labelRadius,
@@ -440,6 +440,21 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
                 return ribbon(i(t));
             }
         });
+
+    // Helper: find previous group arc for a newly-appearing country
+    // (e.g. when expanding a region, animate from the region's arc)
+    function meltPreviousGroupArc(d) {
+        const meta = getMeta(d.name);
+        if (meta && meta.region_name && previousGroups) {
+            // Try to find the parent region in previousGroups by name
+            for (const key in previousGroups) {
+                if (previousGroups[key].name === meta.region_name) {
+                    return previousGroups[key];
+                }
+            }
+        }
+        return null;
+    }
 
     // ========== COUNTRY LABELS ==========
     /* const countryLabelsData = groupData.filter(d => !isRegion(d.name)); */
