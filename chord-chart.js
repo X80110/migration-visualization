@@ -344,7 +344,18 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         groupsContainer = container.append("g").attr("class", "groups");
     }
 
-    const groupData = computedGroups(data, config.useMaxFlow);
+    const angleThreshold = 0.005;
+    const validGroupNames = new Set();
+
+    const groupData = computedGroups(data, config.useMaxFlow).filter(d => {
+        const isReg = isRegion(d.name);
+        const arcAngle = Math.abs(d.endAngle - d.startAngle);
+        if (isReg || arcAngle >= angleThreshold) {
+            validGroupNames.add(d.name);
+            return true;
+        }
+        return false;
+    });
 
     const groups = groupsContainer
         .selectAll("g.group")
@@ -381,6 +392,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         /* .ease(d3.easeCubicInOut) */
         /* .style("opacity", 0.80) */
         .attrTween("d", function (d) {
+            console.log(d)
             const prev = previousGroups[d.id] || { startAngle: d.startAngle, endAngle: d.startAngle + aLittleBit };
             const i = d3.interpolate(prev, d);
             return function (t) {
@@ -394,7 +406,9 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         chordsContainer = container.append("g").attr("class", "chords");
     }
 
-    const chordsDataComputed = computedChords(data, config.useMaxFlow);
+    const chordsDataComputed = computedChords(data, config.useMaxFlow).filter(d => {
+        return validGroupNames.has(d.source.name) && validGroupNames.has(d.target.name);
+    });
 
     const chords = chordsContainer
         .selectAll("path.chord-path")

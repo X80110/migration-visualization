@@ -757,20 +757,49 @@ async function dataPrepare(input, config) {
 
     // Function to create matrix and names for Chord
     function buildChordData(layout_indices, source_data) {
+        // Filter out small arcs (e.g., endAngle - startAngle < 0.004)
+        const minAngleThresh = 0.004;
+        const padAngle = 0.02;
+
+        let nodeTotals = layout_indices.map(idx => {
+            let rowSum = d3.sum(layout_indices, colIdx => source_data.matrix[idx][colIdx] || 0);
+            let colSum = d3.sum(layout_indices, rowIdx => source_data.matrix[rowIdx][idx] || 0);
+            let original_id = getMeta(source_data.names[idx]).id;
+            let maxFlow = maxFlows[original_id] || 0;
+            return { idx, total: rowSum + colSum, maxFlow };
+        });
+
+        let grandTotal = d3.sum(nodeTotals, d => config.useMaxFlow ? d.maxFlow : d.total);
+        if (grandTotal === 0) grandTotal = 1;
+        
+        let angleScale = Math.max(0, (2 * Math.PI - layout_indices.length * padAngle) / grandTotal);
+
+        let filtered_layout_indices = layout_indices.filter(idx => {
+            let n = nodeTotals.find(d => d.idx === idx);
+            let valueToScale = config.useMaxFlow ? n.maxFlow : n.total;
+            let expectedAngle = valueToScale * angleScale;
+            
+            // Do not filter out regions to avoid breaking region expansion logic
+            let isRegionNode = isRegion(source_data.names[idx]);
+            if (isRegionNode) return true;
+            
+            return expectedAngle >= minAngleThresh;
+        });
+
         let new_names = [];
         let new_unfiltered_matrix_rows = [];
         let new_matrix = [];
         let new_maxFlows = [];
 
-        layout_indices.forEach(idx => { // Use forEach for clarity if map's return isn't used
-            original_id = getMeta(source_data.names[idx]).id
+        filtered_layout_indices.forEach(idx => { 
+            let original_id = getMeta(source_data.names[idx]).id;
             new_names.push(source_data.names[idx]);
             new_unfiltered_matrix_rows.push(source_data.matrix[idx]);
-            new_maxFlows.push(maxFlows[original_id])
+            new_maxFlows.push(maxFlows[original_id]);
         });
 
-        new_unfiltered_matrix_rows.forEach(row_data => { // Use forEach
-            let filtered_row = layout_indices.map(col_idx => row_data[col_idx]);
+        new_unfiltered_matrix_rows.forEach(row_data => { 
+            let filtered_row = filtered_layout_indices.map(col_idx => row_data[col_idx]);
             new_matrix.push(filtered_row);
         });
 
