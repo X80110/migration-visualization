@@ -8,8 +8,16 @@ let particles = [];
 let flowPaths = [];
 let worldData = null;
 
-// Projection and path generator
-let projection = d3.geoNaturalEarth1()
+// Map Parameters Debug Config
+let mapParams = {
+    density: 20,
+    size: 2,
+    curvature: 0.3,
+    speedBase: 0.001,
+    projectionType: "geoNaturalEarth1"
+};
+
+let projection = d3[mapParams.projectionType]()
     .scale(160)
     .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2]);
 
@@ -17,15 +25,201 @@ let path = d3.geoPath()
     .pointRadius(2)
     .projection(projection);
 
+let globalFlowData = [];
+let isUserInteracting = false;
+let currentRotate = [0, 0];
+let lastZoomTransform = null;
+
+let baseScale = 160;
+let baseTranslate = [MAP_WIDTH / 2, MAP_HEIGHT / 2];
+
+function calculateDefaultProjection() {
+    if (!worldData || !d3[mapParams.projectionType]) return;
+
+    // Create temporary projection with scale 1 to measure natural bounds
+    let tempProj = d3[mapParams.projectionType]().rotate([0, 0, 0]).translate([0, 0]).scale(1);
+    let pathGenerator = d3.geoPath().projection(tempProj);
+
+    let obj = mapParams.projectionType === "geoOrthographic" ? { type: "Sphere" } : worldData;
+    let bounds = pathGenerator.bounds(obj);
+
+    let objHeight = bounds[1][1] - bounds[0][1];
+    let targetHeight = MAP_HEIGHT - 40; // 20px padding top/bottom
+
+    // Scale strictly to fit height
+    baseScale = targetHeight / objHeight;
+
+    // Center it according to the scaled bounds
+    baseTranslate = [
+        MAP_WIDTH / 2 - (bounds[1][0] + bounds[0][0]) / 2 * baseScale,
+        MAP_HEIGHT / 2 - (bounds[1][1] + bounds[0][1]) / 2 * baseScale
+    ];
+}
+
+let mapTransform = d3.zoomIdentity;
+let mapZoomLogic = d3.zoom()
+    .scaleExtent([0.5, 8])
+    .on("start", () => {
+        isUserInteracting = true;
+    })
+    .on("zoom", (e) => {
+        if (mapParams.projectionType === "geoOrthographic") {
+            if (lastZoomTransform) {
+                if (e.sourceEvent && (e.sourceEvent.type === "mousemove" || e.sourceEvent.type === "touchmove")) {
+                    currentRotate[0] += (e.transform.x - lastZoomTransform.x) * 90 / MAP_WIDTH;
+                    currentRotate[1] -= (e.transform.y - lastZoomTransform.y) * 90 / MAP_HEIGHT;
+                    currentRotate[1] = Math.max(-90, Math.min(90, currentRotate[1]));
+                }
+            }
+            lastZoomTransform = e.transform;
+            mapTransform = d3.zoomIdentity.translate(mapTransform.x, mapTransform.y).scale(e.transform.k);
+        } else {
+            mapTransform = e.transform;
+        }
+    })
+    .on("end", () => {
+        isUserInteracting = false;
+        lastZoomTransform = null;
+    });
+
+function resetMapZoom() {
+    currentRotate = [0, 0];
+    lastZoomTransform = null;
+    if (mapCanvas) d3.select(mapCanvas).transition().duration(750).call(mapZoomLogic.transform, d3.zoomIdentity);
+}
+
+function zoomInMap() {
+    if (mapCanvas) d3.select(mapCanvas).transition().duration(300).call(mapZoomLogic.scaleBy, 1.3);
+}
+
+function zoomOutMap() {
+    if (mapCanvas) d3.select(mapCanvas).transition().duration(300).call(mapZoomLogic.scaleBy, 1 / 1.3);
+}
+
+let hoveredCountryFeature = null;
+let getMetaFunc = null;
+let getRegionColorFunc = null;
+let currentRawData = null;
+let nodeMapGlobal = new Map();
+let flowsGlobal = null;
+let configGlobal = null;
+
+function getNodeColor(name) {
+    if (!getRegionColorFunc || !getMetaFunc) return "#cccccc";
+    const basicMeta = getMetaFunc(name);
+    if (!basicMeta) return "#cccccc";
+    let color_country = getRegionColorFunc(basicMeta.region_name);
+    let hsl = d3.hsl(color_country);
+
+    // Softer, less aggressive highlights
+    hsl.s *= 0.75; // Lower saturation
+    hsl.l = Math.min(0.6, hsl.l + 0.55); // Slightly brighter
+
+    const r_palette = [hsl.brighter(0.6), hsl.darker(1.6), hsl, hsl.brighter(0.8), hsl.darker(1)];
+    const id = Number(basicMeta.id);
+    const region = Number(basicMeta.region);
+    if (isNaN(id) || isNaN(region)) return r_palette[0];
+    let palleteIndex = ((id - region) % 5 + 5) % 5;
+    return r_palette[palleteIndex];
+}
+
+// Tooltip logic
+function showMapTooltip(evt, feature) {
+    let tooltip = d3.select('body').select('div#tooltip');
+    if (tooltip.empty()) {
+        tooltip = d3.select('body').append('div')
+            .attr('id', 'tooltip')
+            .style('background-color', '#ffffff')
+            .style('padding', '1em')
+            .style('border-radius', '4px')
+            .style('position', 'absolute')
+            .style('text-align', 'center')
+            .style('visibility', 'hidden')
+            .style('pointer-events', 'none')
+            .style('box-shadow', 'rgba(0, 0, 0, 0.35) 0px 5px 15px');
+    }
+
+    // If we have meta info
+    if (!getMetaFunc || !currentRawData) return;
+
+    const name = feature.properties.name;
+    const basicMeta = getMetaFunc(name);
+    // basicMeta could be undefined if country not in matrix
+    if (!basicMeta) {
+        tooltip.style("visibility", "hidden");
+        return;
+    }
+
+    const flowInfo = flowsGlobal && flowsGlobal.find(f => f.name === name) || {};
+    const fullMeta = { ...basicMeta, ...flowInfo };
+
+    const sourceDisplay = `<span style="color:${getNodeColor(name)}"> ${fullMeta.flag + " " + name}</span>`;
+
+    const outflowDisplay = formatValue(fullMeta.outflow || 0);
+    const inflowDisplay = formatValue(fullMeta.inflow || 0);
+
+    const currentFn = configGlobal ? fileName(configGlobal).json : "";
+    const labels = currentFn.includes('stock')
+        ? { out: 'Total emigrants', in: 'Total immigrants' }
+        : { out: 'Total Outflow', in: 'Total Inflow' };
+
+    tooltip
+        .html(`${sourceDisplay}<br>${labels.out}: <b>${outflowDisplay}</b><br>${labels.in}: <b>${inflowDisplay}</b>`)
+        .style('background-color', '#ffffff')
+        .style("top", (evt.pageY + 20) + "px")
+        .style("left", (evt.pageX + 30) + "px")
+        .style("visibility", "visible");
+}
+
+function handleMapMouseMove(evt) {
+    if (!worldData) return;
+
+    const rect = mapCanvas.getBoundingClientRect();
+    // Scale mouse coordinates to canvas resolution
+    const scaleX = mapCanvas.width / rect.width;
+    const scaleY = mapCanvas.height / rect.height;
+
+    const x = (evt.clientX - rect.left) * scaleX;
+    const y = (evt.clientY - rect.top) * scaleY;
+
+    // Find if mouse is within any country path
+    // The most reliable way for d3 canvas maps is projection.invert
+    // but d3.geoContains is expensive to run in mousemove for all geometries.
+    // Instead we can use canvas isPointInPath if we recreate the path or just use projection.invert
+    const lonlat = projection.invert([x, y]);
+    let found = null;
+    if (lonlat) {
+        found = worldData.features.find(f => d3.geoContains(f, lonlat));
+    }
+
+    if (found !== hoveredCountryFeature) {
+        hoveredCountryFeature = found;
+        if (found) {
+            mapCanvas.style.cursor = 'pointer';
+            showMapTooltip(evt, found);
+        } else {
+            mapCanvas.style.cursor = 'default';
+            d3.select('body').select('div#tooltip').style("visibility", "hidden");
+        }
+    } else if (found) {
+        // move tooltip
+        d3.select('body').select('div#tooltip')
+            .style("top", (evt.pageY + 20) + "px")
+            .style("left", (evt.pageX + 30) + "px");
+    }
+}
+
+function handleMapMouseOut(evt) {
+    hoveredCountryFeature = null;
+    d3.select('body').select('div#tooltip').style("visibility", "hidden");
+}
+
 // Particle class for animated dots
 class Particle {
-    constructor(pathData, flowValue, maxFlow) {
-        this.path = pathData;
-        this.progress = Math.random(); // Random starting position
-        this.speed = 0.001 + (flowValue / maxFlow) * 0.002; // Speed varies slightly with flow
-        this.flowValue = flowValue;
-        this.color = pathData.color;
-        this.size = 2;
+    constructor(speed, size) {
+        this.progress = Math.random();
+        this.speed = speed;
+        this.size = size;
     }
 
     update() {
@@ -35,31 +229,46 @@ class Particle {
         }
     }
 
-    getPosition() {
+    draw(ctx, path) {
         const t = this.progress;
         // Cubic Bezier curve interpolation
-        const x = Math.pow(1 - t, 3) * this.path.start.x +
-            3 * Math.pow(1 - t, 2) * t * this.path.control1.x +
-            3 * (1 - t) * Math.pow(t, 2) * this.path.control2.x +
-            Math.pow(t, 3) * this.path.end.x;
+        const x = Math.pow(1 - t, 3) * path.start.x +
+            3 * Math.pow(1 - t, 2) * t * path.control1.x +
+            3 * (1 - t) * Math.pow(t, 2) * path.control2.x +
+            Math.pow(t, 3) * path.end.x;
 
-        const y = Math.pow(1 - t, 3) * this.path.start.y +
-            3 * Math.pow(1 - t, 2) * t * this.path.control1.y +
-            3 * (1 - t) * Math.pow(t, 2) * this.path.control2.y +
-            Math.pow(t, 3) * this.path.end.y;
+        const y = Math.pow(1 - t, 3) * path.start.y +
+            3 * Math.pow(1 - t, 2) * t * path.control1.y +
+            3 * (1 - t) * Math.pow(t, 2) * path.control2.y +
+            Math.pow(t, 3) * path.end.y;
 
-        return { x, y };
-    }
-
-    draw(ctx) {
-        const pos = this.getPosition();
-        ctx.fillStyle = this.color;
-        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = path.color;
+        ctx.globalAlpha = 0.6 * (path.alpha !== undefined ? path.alpha : 1);
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, this.size, 0, Math.PI * 2);
+        ctx.arc(x, y, this.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1;
     }
+}
+
+function getHorizonOcclusionAlpha(lonlat) {
+    if (mapParams.projectionType !== "geoOrthographic") return 1;
+
+    // In orthographic, center of projection is always facing camera.
+    // The currentRotate gives us the center coordinates: [-lon, -lat]
+    const center = [-currentRotate[0], -currentRotate[1]];
+
+    const dist = d3.geoDistance(center, lonlat);
+
+    // Horizon is at PI/2 (approx 1.5708 radians)
+    // Fade completely to 0 just before the horizon to hide sharp cuts
+    const fadeStart = 1.25;
+    const horizon = Math.PI / 2 - 0.05;
+
+    if (dist > horizon) return 0;
+    if (dist < fadeStart) return 1;
+
+    return 1 - (dist - fadeStart) / (horizon - fadeStart);
 }
 
 function getMapCanvas() {
@@ -84,6 +293,11 @@ function getMapCanvas() {
     mapCanvas.style.width = "100%";
     mapCanvas.style.height = "auto";
     container.appendChild(mapCanvas);
+
+    mapCanvas.addEventListener("mousemove", handleMapMouseMove);
+    mapCanvas.addEventListener("mouseout", handleMapMouseOut);
+
+    d3.select(mapCanvas).call(mapZoomLogic);
 
     mapContext = mapCanvas.getContext("2d");
     return mapCanvas;
@@ -116,7 +330,7 @@ function createCurvedPath(start, end, color) {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     // Create an arc that goes upward (or appropriate direction)
-    const curvature = 0.3;
+    const curvature = mapParams.curvature;
     const midX = (start.x + end.x) / 2;
     const midY = (start.y + end.y) / 2;
 
@@ -134,24 +348,169 @@ function createCurvedPath(start, end, color) {
 }
 
 function drawCountries(ctx, world) {
-    ctx.fillStyle = "#e8e8e8";
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 0.5;
+    let connectedToHover = new Set();
+    if (hoveredCountryFeature && hoveredCountryFeature.properties.name) {
+        const hoverName = hoveredCountryFeature.properties.name;
+        connectedToHover.add(hoverName);
+        flowPaths.forEach(fp => {
+            if (fp.sourceName === hoverName) connectedToHover.add(fp.targetName);
+            if (fp.targetName === hoverName) connectedToHover.add(fp.sourceName);
+        });
+    }
 
     world.features.forEach(feature => {
         ctx.beginPath();
         path.context(ctx)(feature);
+
+        let cName = feature.properties.name;
+
+        if (hoveredCountryFeature) {
+            if (cName === hoveredCountryFeature.properties.name) {
+                // Hovered exactly
+                ctx.fillStyle = getNodeColor(cName);
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1;
+            } else if (connectedToHover.has(cName)) {
+                // Connected
+                ctx.fillStyle = getNodeColor(cName);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.lineWidth = 0.5;
+            } else {
+                // Dimmed
+                ctx.fillStyle = "rgba(89, 140, 174, 0.1)";
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+                ctx.lineWidth = 0.2;
+            }
+        } else {
+            // Default (no hover)
+            ctx.fillStyle = "#598cae35";
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+            ctx.lineWidth = 1.3;
+        }
+
         ctx.fill();
         ctx.stroke();
     });
 }
 
+function drawLabels(ctx, world) {
+    let drawnBoxes = [];
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    let connectedToHover = new Set();
+    let hoverName = null;
+    if (hoveredCountryFeature && hoveredCountryFeature.properties.name) {
+        hoverName = hoveredCountryFeature.properties.name;
+        globalFlowData.forEach(flow => {
+            if (flow.sourceName === hoverName) connectedToHover.add(flow.targetName);
+            if (flow.targetName === hoverName) connectedToHover.add(flow.sourceName);
+        });
+    }
+
+    const checkOverlap = (box) => {
+        for (let i = 0; i < drawnBoxes.length; i++) {
+            let b = drawnBoxes[i];
+            if (box.x < b.x + b.w && box.x + box.w > b.x &&
+                box.y < b.y + b.h && box.y + box.h > b.y) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const drawFeatureLabel = (feature, isHighlight) => {
+        const name = feature.properties.name;
+        if (!name) return;
+
+        let centroid, area;
+        try {
+            centroid = path.centroid(feature);
+            area = path.area(feature);
+        } catch (e) { return; }
+
+        if (!centroid || isNaN(centroid[0]) || isNaN(centroid[1])) return;
+
+        // Base area threshold for non-highlighted (prevents clutter)
+        // Adjust threshold based on subjective visibility
+        if (!isHighlight && area < 800) return;
+
+        // Orthographic backface cullingf
+        if (mapParams.projectionType === "geoOrthographic") {
+            let geoCen = null;
+            const cNode = nodeMapGlobal.get(name);
+            if (cNode && cNode.lonlat) {
+                geoCen = cNode.lonlat;
+            } else {
+                geoCen = d3.geoCentroid(feature);
+            }
+            const center = [-currentRotate[0], -currentRotate[1]];
+            const dist = d3.geoDistance(center, geoCen);
+            if (dist > Math.PI / 2) return;
+        }
+
+        const fontSize = isHighlight ? 12 : 10;
+        ctx.font = `${isHighlight ? "semibold" : "normal"} ${fontSize}px 'Jost', sans-serif`;
+        const textWidth = ctx.measureText(name).width;
+
+        // Padding for collision box
+        const padding = 2;
+        const box = {
+            x: centroid[0] - textWidth / 2 - padding,
+            y: centroid[1] - fontSize / 2 - padding,
+            w: textWidth + padding * 2,
+            h: fontSize + padding * 2
+        };
+
+        // Exclude if overlaps and it's not a highlight
+        if (!isHighlight && checkOverlap(box)) return;
+
+        // Store box to prevent future defaults from overlapping it
+        drawnBoxes.push(box);
+
+        if (isHighlight) {
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.strokeText(name, centroid[0], centroid[1] + 1);
+
+            ctx.fillStyle = name === hoverName ? "#333333" : getNodeColor(name);
+            ctx.fillText(name, centroid[0], centroid[1] + 1);
+        } else {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+            ctx.fillText(name, centroid[0], centroid[1] + 1);
+        }
+    };
+
+    // Draw highlights first to reserve their space
+    world.features.forEach(feature => {
+        if (feature.properties.name === hoverName || connectedToHover.has(feature.properties.name)) {
+            drawFeatureLabel(feature, true);
+        }
+    });
+
+    // Draw defaults
+    world.features.forEach(feature => {
+        if (feature.properties.name !== hoverName && !connectedToHover.has(feature.properties.name)) {
+            drawFeatureLabel(feature, false);
+        }
+    });
+}
+
 function drawFlowPaths(ctx) {
-    // Draw subtle path lines
-    ctx.globalAlpha = 0.1;
     ctx.lineWidth = 1;
 
     flowPaths.forEach(pathData => {
+        let baseAlpha = 0.1;
+        if (hoveredCountryFeature) {
+            const hName = hoveredCountryFeature.properties.name;
+            if (pathData.sourceName !== hName && pathData.targetName !== hName) {
+                return; // Skip drawing paths not connected to hovered country
+            }
+            baseAlpha = 0.5; // Make connected paths more visible
+        }
+
+        ctx.globalAlpha = baseAlpha * (pathData.alpha !== undefined ? pathData.alpha : 1);
         ctx.strokeStyle = pathData.color;
         ctx.beginPath();
         ctx.moveTo(pathData.start.x, pathData.start.y);
@@ -169,22 +528,105 @@ function drawFlowPaths(ctx) {
 function animate() {
     if (!mapContext) return;
 
-    // Clear canvas
+    // Clearing background map
     mapContext.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+    if (mapParams.projectionType === "geoOrthographic") {
+        if (!isUserInteracting) {
+            currentRotate[0] += 0.15; // Auto rotate
+        }
+        projection.scale(baseScale * mapTransform.k);
+        projection.translate(baseTranslate);
+
+        projection.rotate([currentRotate[0], currentRotate[1], 0]);
+        if (projection.clipAngle) projection.clipAngle(90);
+    } else {
+        projection.scale(baseScale * mapTransform.k);
+        projection.translate([
+            mapTransform.x + mapTransform.k * baseTranslate[0],
+            mapTransform.y + mapTransform.k * baseTranslate[1]
+        ]);
+        projection.rotate([0, 0, 0]);
+        if (projection.clipAngle) projection.clipAngle(null);
+    }
 
     // Draw base map
     if (worldData) {
+        if (mapParams.projectionType === "geoOrthographic") {
+            mapContext.beginPath();
+            path.context(mapContext)({ type: "Sphere" });
+            mapContext.fillStyle = "#f4f4f4"; // Matches article background
+            mapContext.shadowColor = "rgba(0, 0, 0, 0.10)";
+            mapContext.shadowBlur = 30;
+            mapContext.shadowOffsetX = 0;
+            mapContext.shadowOffsetY = 8;
+            mapContext.fill();
+
+            // Reset shadow to avoid affecting lines and dots
+            mapContext.shadowColor = "transparent";
+            mapContext.shadowBlur = 0;
+            mapContext.shadowOffsetX = 0;
+            mapContext.shadowOffsetY = 0;
+        }
         drawCountries(mapContext, worldData);
     }
 
-    // Draw flow paths
+    // Recompute path shapes this frame
+    flowPaths = [];
+    globalFlowData.forEach(flow => {
+        let pathAlpha = 1;
+        if (mapParams.projectionType === "geoOrthographic") {
+            let alphaSrc = getHorizonOcclusionAlpha(flow.sourceLonLat);
+            let alphaDst = getHorizonOcclusionAlpha(flow.targetLonLat);
+            pathAlpha = Math.min(alphaSrc, alphaDst);
+            if (pathAlpha <= 0) return; // Completely occluded
+        }
+
+        let pSrc = projection(flow.sourceLonLat);
+        let pDst = projection(flow.targetLonLat);
+        // pSrc/pDst are null if they are on back-face of orthographic
+        if (!pSrc || !pDst) return;
+
+        // Exclude lines trying to wrap around the whole globe (optional heuristic)
+        const dx = pDst[0] - pSrc[0];
+        const dy = pDst[1] - pSrc[1];
+        if (mapParams.projectionType !== "geoOrthographic" && Math.sqrt(dx * dx + dy * dy) > MAP_WIDTH * 0.8) return;
+
+        const pathData = createCurvedPath(
+            { x: pSrc[0], y: pSrc[1] },
+            { x: pDst[0], y: pDst[1] },
+            flow.color
+        );
+        pathData.sourceName = flow.sourceName;
+        pathData.targetName = flow.targetName;
+        pathData.particles = flow.particles;
+        pathData.alpha = pathAlpha;
+        flowPaths.push(pathData);
+    });
+
+    // Draw flow paths based on visible ones
     drawFlowPaths(mapContext);
 
-    // Update and draw particles
-    particles.forEach(particle => {
-        particle.update();
-        particle.draw(mapContext);
+    // Update and draw path-attached particles
+    flowPaths.forEach(pathData => {
+        if (hoveredCountryFeature) {
+            const hName = hoveredCountryFeature.properties.name;
+            if (pathData.sourceName !== hName && pathData.targetName !== hName) {
+                // Keep moving them so they don't pile up, but don't draw
+                pathData.particles.forEach(p => p.update());
+                return;
+            }
+        }
+        pathData.particles.forEach(p => {
+            p.update();
+            p.draw(mapContext, pathData);
+        });
     });
+
+    // Draw Labels on top
+    if (worldData) {
+        drawLabels(mapContext, worldData);
+    }
 
     animationFrameId = requestAnimationFrame(animate);
 }
@@ -206,13 +648,21 @@ async function drawMap(prepared, rawData, config) {
     const canvas = getMapCanvas();
     if (!canvas) return;
 
+    calculateDefaultProjection();
+
     // Stop any existing animation
     stopAnimation();
 
     // Get helper functions
-    const getMeta = createGetMeta({ raw_data: rawData.matrix, metadata: rawData.metadata.flags });
-    const getRegionColor = createGetRegionColor(rawData.matrix);
+    getMetaFunc = createGetMeta({ raw_data: rawData.matrix, metadata: rawData.metadata.flags });
+    getRegionColorFunc = createGetRegionColor(rawData.matrix);
     const isRegion = createIsRegion(rawData.matrix);
+
+    currentRawData = rawData;
+    configGlobal = config;
+    if (prepared && prepared.common && prepared.common.flows) {
+        flowsGlobal = prepared.common.flows;
+    }
 
     // Extract actual flows between countries directly from the raw data
     const matrix = rawData.matrix.matrix;
@@ -233,6 +683,7 @@ async function drawMap(prepared, rawData, config) {
     // Clear previous data
     particles = [];
     flowPaths = [];
+    globalFlowData = [];
 
     // Create a node lookup
     const countryNodes = [];
@@ -251,19 +702,19 @@ async function drawMap(prepared, rawData, config) {
         }
         if (!feature) continue;
 
-        const centroid = path.centroid(feature);
-        const meta = getMeta(name);
-        
+        const centroid = d3.geoCentroid(feature);
+        const meta = getMetaFunc(name);
+
         countryNodes.push({
             name: name,
             region_name: meta.region_name,
-            x: centroid[0],
-            y: centroid[1]
+            lonlat: centroid
         });
     }
 
-    const nodeMap = new Map();
-    countryNodes.forEach(d => nodeMap.set(d.name, d));
+    nodeMapGlobal.clear();
+    countryNodes.forEach(d => nodeMapGlobal.set(d.name, d));
+    const nodeMap = nodeMapGlobal;
 
     // Create flow paths and particles
     const minFlowThreshold = maxSingleFlow * 0.01; // Only show flows > 1% of max connection
@@ -288,22 +739,21 @@ async function drawMap(prepared, rawData, config) {
             const flowValue = matrix[i][j];
             if (flowValue < minFlowThreshold) continue;
 
-            // Create curved path
-            const color = getRegionColor(sourceNode.region_name);
-            const pathData = createCurvedPath(
-                { x: sourceNode.x, y: sourceNode.y },
-                { x: targetNode.x, y: targetNode.y },
-                color
-            );
-
-            flowPaths.push(pathData);
-
-            // Create particles based on flow density
-            const numParticles = Math.ceil((flowValue / maxSingleFlow) * 20) + 1;
-
+            // Build flow node logic
+            const numParticles = Math.ceil((flowValue / maxSingleFlow) * mapParams.density) + 1;
+            const pArr = [];
             for (let p = 0; p < numParticles; p++) {
-                particles.push(new Particle(pathData, flowValue, maxSingleFlow));
+                pArr.push(new Particle(mapParams.speedBase + (flowValue / maxSingleFlow) * (mapParams.speedBase * 2), mapParams.size));
             }
+
+            globalFlowData.push({
+                sourceName: sourceName,
+                targetName: targetName,
+                sourceLonLat: sourceNode.lonlat,
+                targetLonLat: targetNode.lonlat,
+                color: getRegionColorFunc(sourceNode.region_name),
+                particles: pArr
+            });
         }
     }
 
@@ -314,5 +764,54 @@ async function drawMap(prepared, rawData, config) {
 }
 
 function updateMap(prepared, rawData, config) {
+    // Only refresh projection if it changed in debug UI
+    if (d3[mapParams.projectionType]) {
+        calculateDefaultProjection();
+        projection = d3[mapParams.projectionType]().scale(baseScale).translate(baseTranslate);
+        path.projection(projection);
+    }
+
     drawMap(prepared, rawData, config);
 }
+
+// Debug UI setup
+function initMapDebugUI() {
+    const ids = ['density', 'size', 'curve', 'speed'];
+    ids.forEach(id => {
+        const el = document.getElementById(`debug-${id}`);
+        if (el) {
+            el.addEventListener('input', (e) => {
+                document.getElementById(`debug-${id}-val`).innerText = e.target.value;
+                if (id === 'density') mapParams.density = parseFloat(e.target.value);
+                if (id === 'size') mapParams.size = parseFloat(e.target.value);
+                if (id === 'curve') mapParams.curvature = parseFloat(e.target.value);
+                if (id === 'speed') mapParams.speedBase = parseFloat(e.target.value);
+
+                // Redraw map with new params if possible
+                if (currentRawData && configGlobal && worldData) {
+                    updateMap(null, currentRawData, configGlobal);
+                }
+            });
+        }
+    });
+
+    const proj = document.getElementById('debug-projection');
+    if (proj) {
+        proj.addEventListener('change', (e) => {
+            mapParams.projectionType = e.target.value;
+            // Also reset zoom on projection change
+            mapTransform = d3.zoomIdentity;
+            currentRotate = [0, 0];
+            lastZoomTransform = null;
+            if (mapCanvas) d3.select(mapCanvas).call(mapZoomLogic.transform, d3.zoomIdentity);
+
+            if (currentRawData && configGlobal && worldData) {
+                updateMap(null, currentRawData, configGlobal);
+            }
+        });
+    }
+}
+
+// Call initMapDebugUI when DOM is ready
+document.addEventListener('DOMContentLoaded', initMapDebugUI);
+

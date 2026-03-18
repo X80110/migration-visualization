@@ -189,8 +189,52 @@
 					</div>
 					<div id="sankey-chart"> </div>
 				</div>
-				<div id="map" style="display:none">
+				<div id="map" style="display:none; position:relative;">
+					<div id="map-zoom-controls" class="map-zoom-ui">
+						<button title="Zoom In" onclick="zoomInMap()">+</button>
+						<button title="Zoom Out" onclick="zoomOutMap()">-</button>
+						<button title="Reset Zoom" onclick="resetMapZoom()" class="reset-btn">R</button>
+					</div>
 					<div id="map-chart"> </div>
+					<div id="map-debug-panel" class="map-overlay-panel">
+						<div class="map-control-row">
+							<div class="map-control-item">
+								<label>Density</label>
+								<input class="range-slider" type="range" id="debug-density" min="1" max="200"
+									value="100">
+								<span id="debug-density-val" class="debug-val">100</span>
+							</div>
+							<div class="map-control-item">
+								<label>Size</label>
+								<input class="range-slider" type="range" id="debug-size" min="0.5" max="5" step="0.1"
+									value="1.5">
+								<span id="debug-size-val" class="debug-val">1.5</span>
+							</div>
+							<div class="map-control-item">
+								<label>Curve</label>
+								<input class="range-slider" type="range" id="debug-curve" min="0" max="1" step="0.05"
+									value="0.1">
+								<span id="debug-curve-val" class="debug-val">0.1</span>
+							</div>
+							<div class="map-control-item">
+								<label>Speed</label>
+								<input class="range-slider" type="range" id="debug-speed" min="0.0001" max="0.02"
+									step="0.0001" value="0.001">
+								<span id="debug-speed-val" class="debug-val">0.001</span>
+							</div>
+							<div class="map-control-item">
+								<label>Projection</label>
+								<select id="debug-projection" class="map-select">
+									<option value="geoNaturalEarth1">Natural Earth</option>
+									<option value="geoMercator">Mercator</option>
+									<option value="geoEquirectangular">Equirectangular</option>
+									<option value="geoOrthographic">Orthographic</option>
+									<option value="geoMollweide">Mollweide</option>
+									<option value="geoStereographic">Stereographic</option>
+								</select>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="box">
@@ -514,6 +558,12 @@
 			if (el) el.style.display = 'none';
 		});
 
+		// Hide/Show sticky menu
+		const stickyWrapper = document.querySelector('.sticky-controls-wrapper');
+		if (stickyWrapper) {
+			stickyWrapper.style.display = (selectedViz === 'map') ? 'none' : '';
+		}
+
 		// Show selected visualization
 		const currentVizEl = document.getElementById(selectedViz);
 		if (currentVizEl) currentVizEl.style.display = '';
@@ -656,7 +706,7 @@
 			// Update selectors if needed
 			setSelectors(data.datasetMeta.years);
 
-				// Prepare data (uses cache when possible)
+			// Prepare data (uses cache when possible)
 			let prepared = await dataLoader.prepareData(data, config, dataPrepare);
 
 			// Auto-collapse any expanded region that became hollow after the filter
