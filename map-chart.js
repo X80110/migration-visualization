@@ -10,11 +10,11 @@ let worldData = null;
 
 // Map Parameters Debug Config
 let mapParams = {
-    density: 20,
-    size: 2,
-    curvature: 0.3,
-    speedBase: 0.001,
-    projectionType: "geoNaturalEarth1"
+    density: 100,
+    size: 1.6,
+    curvature: 0.05,
+    speedBase: 0.007,
+    projectionType: "geoOrthographic"
 };
 
 let projection = d3[mapParams.projectionType]()
@@ -572,7 +572,6 @@ function animate() {
 
     // Recompute path shapes this frame
     flowPaths = [];
-    console.log(globalFlowData)
     globalFlowData.forEach(flow => {
         let pathAlpha = 1;
         if (mapParams.projectionType === "geoOrthographic") {
@@ -689,7 +688,7 @@ async function drawMap(prepared, rawData, config) {
     world.features.forEach(f => {
         if (!f.properties || !f.properties.name) return;
         const nameInTopo = f.properties.name;
-        
+
         let matrixName = topoToMatrixNames[nameInTopo];
         if (!matrixName) {
             const lowerName = nameInTopo.toLowerCase();

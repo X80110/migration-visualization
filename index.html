@@ -199,39 +199,39 @@
 					<div id="map-debug-panel" class="map-overlay-panel">
 						<div class="map-control-row">
 							<div class="map-control-item">
-								<label>Density</label>
-								<input class="range-slider" type="range" id="debug-density" min="1" max="200"
-									value="100">
-								<span id="debug-density-val" class="debug-val">100</span>
-							</div>
-							<div class="map-control-item">
-								<label>Size</label>
-								<input class="range-slider" type="range" id="debug-size" min="0.5" max="5" step="0.1"
-									value="1.5">
-								<span id="debug-size-val" class="debug-val">1.5</span>
-							</div>
-							<div class="map-control-item">
-								<label>Curve</label>
-								<input class="range-slider" type="range" id="debug-curve" min="0" max="1" step="0.05"
-									value="0.1">
-								<span id="debug-curve-val" class="debug-val">0.1</span>
-							</div>
-							<div class="map-control-item">
-								<label>Speed</label>
-								<input class="range-slider" type="range" id="debug-speed" min="0.0001" max="0.02"
-									step="0.0001" value="0.001">
-								<span id="debug-speed-val" class="debug-val">0.001</span>
-							</div>
-							<div class="map-control-item">
-								<label>Projection</label>
-								<select id="debug-projection" class="map-select">
-									<option value="geoNaturalEarth1">Natural Earth</option>
-									<option value="geoMercator">Mercator</option>
-									<option value="geoEquirectangular">Equirectangular</option>
-									<option value="geoOrthographic">Orthographic</option>
-									<option value="geoMollweide">Mollweide</option>
-									<option value="geoStereographic">Stereographic</option>
-								</select>
+                                <label>Density</label>
+                                <input class="range-slider" type="range" id="debug-density" min="1" max="200"
+                                    value="100">
+                                <span id="debug-density-val" class="debug-val">100</span>
+                            </div>
+                            <div class="map-control-item">
+                                <label>Size</label>
+                                <input class="range-slider" type="range" id="debug-size" min="0.5" max="5" step="0.1"
+                                    value="1.5">
+                                <span id="debug-size-val" class="debug-val">1.5</span>
+                            </div>
+                            <div class="map-control-item">
+                                <label>Curve</label>
+                                <input class="range-slider" type="range" id="debug-curve" min="0" max="1" step="0.05"
+                                    value="0.1">
+                                <span id="debug-curve-val" class="debug-val">0.1</span>
+                            </div>
+                            <div class="map-control-item">
+                                <label>Speed</label>
+                                <input class="range-slider" type="range" id="debug-speed" min="0.0001" max="0.02"
+                                    step="0.0001" value="0.001">
+                                <span id="debug-speed-val" class="debug-val">0.001</span>
+                            </div>
+                            <div class="map-control-item">
+                                <label>Projection</label>
+                                <select id="debug-projection" class="map-select">
+                                    <option value="geoOrthographic">Orthographic</option>
+                                    <option value="geoNaturalEarth1">Natural Earth</option>
+                                    <option value="geoMercator">Mercator</option>
+                                    <option value="geoEquirectangular">Equirectangular</option>
+                                    <option value="geoMollweide">Mollweide</option>
+                                    <option value="geoStereographic">Stereographic</option>
+                                </select>
 							</div>
 						</div>
 					</div>
@@ -265,9 +265,9 @@
 							<a id="sankey-chart-button" onclick="return switchViz('sankey')" class='drop-link'
 								href="#sankey"><img src="static/sankey.svg" alt="Sankey diagram icon"
 									style="width:60px; vertical-align: middle;"> <br>Sankey<br></a>
-							<a id="map-chart-button" class='drop-link' onclick="return switchViz('map')"
-								href='#map'><svg width="30px" viewBox="0 0 1000 1000"
-									xmlns="http://www.w3.org/2000/svg">
+							 <a id="map-chart-button" class='drop-link' onclick="return switchViz('map')" href='#map'
+                                style="width:60px; "><svg width="60px" viewBox="0 0 1000 1000"
+                                    xmlns="http://www.w3.org/2000/svg">
 									<path
 										d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z"
 										fill="#9C9C9C" />
