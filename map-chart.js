@@ -152,7 +152,6 @@ function showMapTooltip(evt, feature) {
 
     const flowInfo = flowsGlobal && flowsGlobal.find(f => f.name === name) || {};
     const fullMeta = { ...basicMeta, ...flowInfo };
-
     const sourceDisplay = `<span style="color:${getNodeColor(name)}"> ${fullMeta.flag + " " + name}</span>`;
 
     const outflowDisplay = formatValue(fullMeta.outflow || 0);
@@ -573,6 +572,7 @@ function animate() {
 
     // Recompute path shapes this frame
     flowPaths = [];
+    console.log(globalFlowData)
     globalFlowData.forEach(flow => {
         let pathAlpha = 1;
         if (mapParams.projectionType === "geoOrthographic") {
@@ -602,11 +602,11 @@ function animate() {
         pathData.particles = flow.particles;
         pathData.alpha = pathAlpha;
         flowPaths.push(pathData);
+
     });
 
     // Draw flow paths based on visible ones
     drawFlowPaths(mapContext);
-
     // Update and draw path-attached particles
     flowPaths.forEach(pathData => {
         if (hoveredCountryFeature) {
@@ -667,6 +667,50 @@ async function drawMap(prepared, rawData, config) {
     // Extract actual flows between countries directly from the raw data
     const matrix = rawData.matrix.matrix;
     const names = rawData.matrix.names;
+
+    // Normalize topology names to matrix names
+    const topoToMatrixNames = {
+        "United States of America": "United States",
+        "Dem. Rep. Congo": "DR Congo",
+        "Eq. Guinea": "Equatorial Guinea",
+        "eSwatini": "Eswatini",
+        "S. Sudan": "South Sudan",
+        "Macedonia": "North Macedonia",
+        "Dominican Rep.": "Dominican Republic",
+        "Central African Rep.": "Central African Republic",
+        "Bosnia and Herz.": "Bosnia & Herzegovina",
+        "Falkland Is.": "Falkland Islands",
+        "W. Sahara": "Western Sahara",
+        "Côte d'Ivoire": "Cote d'Ivoire",
+        "Solomon Is.": "Solomon Islands",
+        "Trinidad and Tobago": "Trinidad & Tobago"
+    };
+
+    world.features.forEach(f => {
+        if (!f.properties || !f.properties.name) return;
+        const nameInTopo = f.properties.name;
+        
+        let matrixName = topoToMatrixNames[nameInTopo];
+        if (!matrixName) {
+            const lowerName = nameInTopo.toLowerCase();
+            matrixName = names.find(n => n.toLowerCase() === lowerName);
+        }
+        if (!matrixName) {
+            const lowerName = nameInTopo.toLowerCase();
+            matrixName = names.find(n => {
+                if (isRegion(n)) return false;
+                const lowerN = n.toLowerCase();
+                // Avoid incorrect cross-matching of similarly named countries
+                if (nameInTopo === "Congo" && n === "DR Congo") return false;
+                if (nameInTopo === "Guinea" && n === "Equatorial Guinea") return false;
+                if (nameInTopo === "Sudan" && n === "South Sudan") return false;
+                return lowerName.includes(lowerN) || lowerN.includes(lowerName);
+            });
+        }
+        if (matrixName) {
+            f.properties.name = matrixName;
+        }
+    });
 
     let maxSingleFlow = 1;
     for (let i = 0; i < names.length; i++) {
