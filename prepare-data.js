@@ -836,22 +836,50 @@ async function dataPrepare(input, config) {
     // config.regions[1] = target expansion
 
     // Ensure config.regions has at least 2 elements if not present
-    const regionsConfig = config.regions || [];
+        const regionsConfig = config.regions || [];
     const sourceLayoutIndices = getExpandedLayout(regionsConfig[0]);
     const targetLayoutIndices = getExpandedLayout(regionsConfig[1]);
+
+    // Filter out nodes with zero connections on their respective side (except regions)
+    const activeSources = new Set();
+    const activeTargets = new Set();
+
+    sourceLayoutIndices.forEach(sourceIdx => {
+        if (isRegion(data.names[sourceIdx])) {
+            activeSources.add(sourceIdx);
+        }
+    });
+    targetLayoutIndices.forEach(targetIdx => {
+        if (isRegion(data.names[targetIdx])) {
+            activeTargets.add(targetIdx);
+        }
+    });
+
+    sourceLayoutIndices.forEach(sourceIdx => {
+        targetLayoutIndices.forEach(targetIdx => {
+            const val = data.matrix[sourceIdx][targetIdx];
+            if (val > 0) {
+                activeSources.add(sourceIdx);
+                activeTargets.add(targetIdx);
+            }
+        });
+    });
+
+    const filteredSourceIndices = sourceLayoutIndices.filter(idx => activeSources.has(idx));
+    const filteredTargetIndices = targetLayoutIndices.filter(idx => activeTargets.has(idx));
 
     // We need to build specific lists of names for source and target sides
     // This effectively creates the "nodes" for the sankey
 
     // 1. Create Source Nodes (Left Side)
-    const sourceNodes = sourceLayoutIndices.map(idx => ({
+    const sourceNodes = filteredSourceIndices.map(idx => ({
         name: data.names[idx],
         id: getMeta(data.names[idx]).id,
         type: 'source'
     }));
 
     // 2. Create Target Nodes (Right Side)
-    const targetNodes = targetLayoutIndices.map(idx => ({
+    const targetNodes = filteredTargetIndices.map(idx => ({
         name: data.names[idx],
         id: getMeta(data.names[idx]).id,
         type: 'target'
@@ -859,23 +887,12 @@ async function dataPrepare(input, config) {
 
     const sankeyNodes = [...sourceNodes, ...targetNodes];
     const sankeyLinks = [];
-    const n = sourceNodes.length + targetNodes.length; // offset not needed if we push objects directly, but useful for matrix interaction
 
-    // Iterate through the FULL matrix (data.matrix) but only create links if
-    // source is in sourceLayoutIndices AND target is in targetLayoutIndices
-
-    // Efficiency: iterating over layout indices is better than full matrix if matrix is huge,
-    // but here we iterate matrix indices that match our layout.
-    sourceLayoutIndices.forEach((sourceIdx, i) => {
-        targetLayoutIndices.forEach((targetIdx, j) => {
+    // Iterate through the filtered matrix and create links
+    filteredSourceIndices.forEach((sourceIdx, i) => {
+        filteredTargetIndices.forEach((targetIdx, j) => {
             const val = data.matrix[sourceIdx][targetIdx];
             if (val > 0) {
-                // Check logical self-loop (if same country on both sides) - usually allowed in Sankey flow but maybe not desirable
-                // In bipartite, i and j are just indices in the layout arrays.
-                // Source node index in 'sankeyNodes' is i
-                // Target node index in 'sankeyNodes' is sourceNodes.length + j
-
-                // Removed self-loop filter to allow flows within the same node
                 sankeyLinks.push({
                     source: i,
                     target: sourceNodes.length + j,

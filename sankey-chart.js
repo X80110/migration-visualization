@@ -177,7 +177,7 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
 
     // Nodes
     var node = Nodes.selectAll("g")
-        .data(nodes, d => d.name);
+        .data(nodes, d => d.name + "_" + d.type);
 
     var nodeEnter = node.enter().append("g")
         .style("opacity", 0);
@@ -198,7 +198,8 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
         .attr("y", d => (d.y1 + d.y0) / 2)
         .text(d => {
             const meta = getMeta(d.name);
-            return d.sourceLinks.length > 0
+            const isSource = d.type === 'source' || (d.x0 < chartWidth / 2);
+            return isSource
                 ? d.name + " " + meta.flag
                 : meta.flag + " " + d.name;
         })
@@ -248,7 +249,8 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
         })
         .text(d => {
             const meta = getMeta(d.name);
-            return d.sourceLinks.length > 0
+            const isSource = d.type === 'source' || (d.x0 < chartWidth / 2);
+            return isSource
                 ? d.name + " " + meta.flag
                 : meta.flag + " " + d.name;
         })
