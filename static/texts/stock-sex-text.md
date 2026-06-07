@@ -6,7 +6,7 @@ Values are based on the [migrant population data](https://www.un.org/development
 
 [Download]( https://www.un.org/development/desa/pd/content/international-migrant-stock)
 
-For high-resolution, year-by-year migration data driven by an ensemble of deep learning models, visit our new [Annual Global Migration Data Explorer](URL to come).
+For high-resolution, year-by-year migration data driven by an ensemble of deep learning models, visit our new [Global Annual Migration Data Explorer](https://www.socsc.hku.hk/rhps/global-migration/).
 
 #### Reference
 United Nations Department of Economic and Social Affairs Population Division (2020). [*International Migrant Stock 2020*](https://www.un.org/development/desa/pd/content/international-migrant-stock) (POP/DB/MIG/Stock/Rev.2020)

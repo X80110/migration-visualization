@@ -8,7 +8,7 @@ Full details of the method are presented in [Abel and Cohen (2019)](https://www.
 
 [Download](https://doi.org/10.6084/m9.figshare.7731233) 
 
-For high-resolution, year-by-year migration data driven by an ensemble of deep learning models, visit our new [Annual Global Migration Data Explorer](URL to come).
+For high-resolution, year-by-year migration data driven by an ensemble of deep learning models, visit our new [Global Annual Migration Data Explorer](https://www.socsc.hku.hk/rhps/global-migration/).
 
 #### Reference
 Abel, G.J., Cohen, J.E. (2019). [Bilateral international migration flow estimates for 200 countries.](https://www.nature.com/articles/s41597-019-0089-3) *Sci Data* **6** 82
