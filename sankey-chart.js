@@ -3,10 +3,31 @@
 
 // Initialize Sankey Chart SVG
 // The SVG persists, but its contents (groups) are cleared by index.html switchViz logic
+const isMobile = window.innerWidth <= 892;
+const minX = isMobile ? -(width / 10) : -(width / 5); // -80 on mobile, -160 on desktop
+const viewWidth = isMobile ? width - 140 : width; // 660 on mobile, 800 on desktop
+
 const sankeyDiagram = d3.select("#sankey-chart")
     .append("svg")
     // Use viewBox for responsiveness, but note chartWidth/Height passed to setData are specific
-    .attr("viewBox", [-(width / 5), -10, width, height + 50]);
+    .attr("viewBox", [minX, -40, viewWidth, height + 80]);
+
+// Add static Origin and Destination labels
+const labelsGroup = sankeyDiagram.append("g").attr("class", "labels-group");
+
+labelsGroup.append("text")
+    .attr("class", "sankey-label origin-label")
+    .attr("x", 0)
+    .attr("y", -15)
+    .attr("text-anchor", "start")
+    .text("ORIGIN");
+
+labelsGroup.append("text")
+    .attr("class", "sankey-label destination-label")
+    .attr("x", 500) // width - 300 = 500
+    .attr("y", -15)
+    .attr("text-anchor", "end")
+    .text("DESTINATION");
 
 
 const tooltip = d3.select('body').append('g')
@@ -361,9 +382,9 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
             .duration(50)
             .style('background-color', '#ffffff')
             .style('padding', '1em')
-            .style("top", (evt.pageY + 20) + "px")
-            .style("left", (evt.pageX + 30) + "px")
             .style('visibility', 'visible');
+
+        positionTooltip(evt, tooltip.node());
     }
 
     function tooltipRegion(evt, d) {
@@ -392,9 +413,9 @@ function setData(sankeyData, commonData, specificRawData, metadataCsv, config, c
         tooltip
             .html(htmlContent)
             .style('background-color', isRegion(d.name) ? getRegionColor(d.name) : colorCountries(d.name))
-            .style("top", (evt.pageY + 20) + "px")
-            .style("left", (evt.pageX + 30) + "px")
             .style("visibility", "visible");
+
+        positionTooltip(evt, tooltip.node());
     }
 
     linkEnter

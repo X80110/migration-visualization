@@ -31,10 +31,12 @@
 
 			<div class="logo">
 				<h1> <a href="./">Global Migration Data Explorer</a></h1>
-				by
-				<a href="http://www.guyabel.com">Guy J. Abel</a>
-				&amp;
-				<a href="http://X80110.github.io/about-me">Xavier Bolló</a>
+
+				<div class="authors">
+					by
+					<a href="http://www.guyabel.com">Guy J. Abel</a> &
+					<a href="http://X80110.github.io/about-me">Xavier Bolló</a>
+				</div>
 			</div>
 			<div>
 				<input class="menu-btn" type="checkbox" id="menu-btn" />
@@ -45,14 +47,14 @@
 						<div class='dropdown'>
 							<p>Migrant<br>Flows</p>
 							<p class="dropdown-section">
-								<a class='drop-link' href='index.html'>Totals</a>
-								<a class='drop-link' href='flows_by_sex.html'>Sex-Specific</a>
+								<a class='drop-link' style="width:90%" href='index.html'>Totals</a>
+								<a class='drop-link' style="width:90%" href='flows_by_sex.html'>Sex-Specific</a>
 								<!-- <a class='drop-link' href='flows_by_type.html'>by type</a> -->
 
 							<p>Migrant<br>Populations</p>
 							<p class="dropdown-section">
-								<a class='drop-link' href='stocks.html'>Totals</a>
-								<a class='drop-link' href='stocks_by_sex.html'>Sex-Specific</a>
+								<a class='drop-link' style="width:90%" href='stocks.html'>Totals</a>
+								<a class='drop-link' style="width:90%" href='stocks_by_sex.html'>Sex-Specific</a>
 
 						</div>
 					</li>
@@ -61,6 +63,22 @@
 						<div class='dropdown'>
 							<!-- <p>Visualization</p>          -->
 							<p class="dropdown-section viz-section">
+								<a id="map-chart-button drop-viz" class='drop-link drop-viz' style="width:90%"
+									onclick="switchViz('map')" href='#map'><svg width="40px" viewBox="0 0 1000 1000"
+										xmlns="http://www.w3.org/2000/svg">
+										<path
+											d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z"
+											fill="#9C9C9C" />
+										<path
+											d="M476.16 460.8L358.4 358.4l-163.84-5.12 15.36 204.8 87.04 51.2 66.56 215.04 225.28-240.64 5.12-122.88z"
+											fill="#9C9C9C" />
+										<path
+											d="M803.84 296.96l-143.36-97.28-51.2 51.2 20.48 87.04 97.28 35.84 56.32 56.32 61.44 46.08-46.08 56.32-87.04 261.12 138.24-138.24 20.48-184.32z"
+											fill="#9C9C9C" />
+										<path
+											d="M509.44 174.08c184.832 0 335.36 150.528 335.36 335.36S694.272 844.8 509.44 844.8 174.08 694.272 174.08 509.44 324.608 174.08 509.44 174.08m0-61.44C290.304 112.64 112.64 290.304 112.64 509.44S290.304 906.24 509.44 906.24 906.24 728.576 906.24 509.44 728.576 112.64 509.44 112.64z"
+											fill="#9C9C9C" />
+									</svg> <br>Map</a>
 								<a id="chord-chart-button" class='drop-link drop-viz' style="width:90%"
 									onclick="return switchViz('chord')" href="#chord"><svg width="30px" fill="#9C9C9C"
 										xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
@@ -91,22 +109,6 @@
 									</svg> <br>Sankey</a>
 								<!-- <a id = "chord-chart-button" class='drop-link drop-viz' onclick="return switchViz('chord')"  href ="#chord" ><img src="static/chord.svg" alt="Chord diagram icon" class="viz-icon-chord"><br> Chord diagram</a> -->
 								<!-- <a id = "sankey-chart-button" class='drop-link drop-viz' onclick="return switchViz('sankey')" href ="#sankey"  ><img src="static/sankey.svg" alt="Sankey diagram icon" class="viz-icon-sankey"> <br>Sankey</a> -->
-								<a id="map-chart-button drop-viz" class='drop-link drop-viz' style="width:90%"
-									onclick="switchViz('map')" href='#map'><svg width="40px" viewBox="0 0 1000 1000"
-										xmlns="http://www.w3.org/2000/svg">
-										<path
-											d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z"
-											fill="#9C9C9C" />
-										<path
-											d="M476.16 460.8L358.4 358.4l-163.84-5.12 15.36 204.8 87.04 51.2 66.56 215.04 225.28-240.64 5.12-122.88z"
-											fill="#9C9C9C" />
-										<path
-											d="M803.84 296.96l-143.36-97.28-51.2 51.2 20.48 87.04 97.28 35.84 56.32 56.32 61.44 46.08-46.08 56.32-87.04 261.12 138.24-138.24 20.48-184.32z"
-											fill="#9C9C9C" />
-										<path
-											d="M509.44 174.08c184.832 0 335.36 150.528 335.36 335.36S694.272 844.8 509.44 844.8 174.08 694.272 174.08 509.44 324.608 174.08 509.44 174.08m0-61.44C290.304 112.64 112.64 290.304 112.64 509.44S290.304 906.24 509.44 906.24 906.24 728.576 906.24 509.44 728.576 112.64 509.44 112.64z"
-											fill="#9C9C9C" />
-									</svg> <br>Map</a>
 							</p>
 						</div>
 					</li>
@@ -133,8 +135,7 @@
 					<div><span>Period:</span></div>
 					<label for="range" id="start-value"></label>
 					<label for="range" id="end-value"></label>
-					<input class="slider" type="range" list="tickmarks" id="selectYear"
-						oninput="yearRange.innerText = this.value" min=1990 max=2015 step=5 value=2020>
+					<input class="slider" type="range" list="tickmarks" id="selectYear" min=1990 max=2015 step=5 value=2015>
 					<div class="sliderticks" id="sliderticks"></div>
 				</div>
 				<div class="method">
@@ -147,32 +148,40 @@
 				<div class="sticky-controls-wrapper">
 					<div class="sticky-sentinel"></div>
 					<div class="selectors sticky-menu">
-						<div class="slider-container" style="margin-bottom: 1em;">
-							<label for="selectedRanking"></label>
-							<div class="slider-value">Connections displayed</div>
-							<input class="range-slider" type="range" id="selectedRanking" name="slider" min="0" max="4"
-								step="1" value="4">
-							<div class="ticks">
-								<span>100</span>
-								<span>500</span>
-								<span>1000</span>
-								<span>5000</span>
-								<span>All</span>
+						<button class="sticky-menu-toggle-btn" onclick="toggleStickyMenu(this)">
+							<span class="toggle-text">More options</span>
+							<span class="toggle-icon">▼</span>
+						</button>
+						<div class="sticky-menu-content">
+							<div class="sticky-menu-content-inner">
+								<div class="slider-container" style="margin-bottom: 1em;">
+									<label for="selectedRanking"></label>
+									<div class="slider-value">Connections displayed</div>
+									<input class="range-slider" type="range" id="selectedRanking" name="slider" min="0"
+										max="4" step="1" value="4">
+									<div class="ticks">
+										<span>100</span>
+										<span>500</span>
+										<span>1000</span>
+										<span>5000</span>
+										<span>All</span>
+									</div>
+								</div>
+
+								<div class="toggle-container"
+									style="display:flex; flex-direction:column; align-items:center; margin-bottom: 1em;">
+									<div style="margin-bottom: 5px;"><span>Relative to alltime maximum:</span></div>
+									<label class="styled-switch">
+										<input type="checkbox" id="scale-toggle" name="scale-toggle">
+										<span class="styled-slider"></span>
+									</label>
+								</div>
+
+								<div id="reset" class="drop-link reset-button-container"
+									style="display:none; align-self: flex-start; margin-left: 0;">
+									<a name="resetButton" type="button" onclick="resetData()">Collapse regions</a>
+								</div>
 							</div>
-						</div>
-
-						<div class="toggle-container"
-							style="display:flex; flex-direction:column; align-items:center; margin-bottom: 1em;">
-							<div style="margin-bottom: 5px;"><span>Relative to alltime maximum:</span></div>
-							<label class="styled-switch">
-								<input type="checkbox" id="scale-toggle" name="scale-toggle">
-								<span class="styled-slider"></span>
-							</label>
-						</div>
-
-						<div id="reset" class="drop-link reset-button-container"
-							style="display:none; align-self: flex-start; margin-left: 0;">
-							<a name="resetButton" type="button" onclick="resetData()">Collapse regions</a>
 						</div>
 					</div>
 				</div>
@@ -196,42 +205,50 @@
 						<button title="Reset Zoom" onclick="resetMapZoom()" class="reset-btn">R</button>
 					</div>
 					<div id="map-chart"> </div>
-					<div id="map-debug-panel" class="map-overlay-panel">
-						<div class="map-control-row">
-							<div class="map-control-item">
-                                <label>Density</label>
-                                <input class="range-slider" type="range" id="debug-density" min="1" max="200"
-                                    value="100">
-                                <span id="debug-density-val" class="debug-val">100</span>
-                            </div>
-                            <div class="map-control-item">
-                                <label>Size</label>
-                                <input class="range-slider" type="range" id="debug-size" min="0.5" max="5" step="0.1"
-                                    value="1.5">
-                                <span id="debug-size-val" class="debug-val">1.5</span>
-                            </div>
-                            <div class="map-control-item">
-                                <label>Curve</label>
-                                <input class="range-slider" type="range" id="debug-curve" min="0" max="1" step="0.05"
-                                    value="0.1">
-                                <span id="debug-curve-val" class="debug-val">0.1</span>
-                            </div>
-                            <div class="map-control-item">
-                                <label>Speed</label>
-                                <input class="range-slider" type="range" id="debug-speed" min="0.0001" max="0.02"
-                                    step="0.0001" value="0.001">
-                                <span id="debug-speed-val" class="debug-val">0.001</span>
-                            </div>
-                            <div class="map-control-item">
-                                <label>Projection</label>
-                                <select id="debug-projection" class="map-select">
-                                    <option value="geoOrthographic">Orthographic</option>
-                                    <option value="geoNaturalEarth1">Natural Earth</option>
-                                    <option value="geoMercator">Mercator</option>
-                                    <option value="geoEquirectangular">Equirectangular</option>
-                                    <option value="geoMollweide">Mollweide</option>
-                                    <option value="geoStereographic">Stereographic</option>
-                                </select>
+					<div id="map-debug-panel" class="map-overlay-panel collapsed">
+						<button class="map-panel-toggle-btn" onclick="toggleMapPanel(this)">
+							<span class="toggle-text">More options</span>
+							<span class="toggle-icon">▼</span>
+						</button>
+						<div class="map-panel-content">
+							<div class="map-panel-content-inner">
+								<div class="map-control-row">
+									<div class="map-control-item">
+										<label>Density</label>
+										<input class="range-slider" type="range" id="debug-density" min="1" max="200"
+											value="100">
+										<span id="debug-density-val" class="debug-val">100</span>
+									</div>
+									<div class="map-control-item">
+										<label>Size</label>
+										<input class="range-slider" type="range" id="debug-size" min="0.5" max="5"
+											step="0.1" value="1.5">
+										<span id="debug-size-val" class="debug-val">1.5</span>
+									</div>
+									<div class="map-control-item">
+										<label>Curve</label>
+										<input class="range-slider" type="range" id="debug-curve" min="0" max="1"
+											step="0.05" value="0.1">
+										<span id="debug-curve-val" class="debug-val">0.1</span>
+									</div>
+									<div class="map-control-item">
+										<label>Speed</label>
+										<input class="range-slider" type="range" id="debug-speed" min="0.0001"
+											max="0.02" step="0.0001" value="0.001">
+										<span id="debug-speed-val" class="debug-val">0.001</span>
+									</div>
+									<div class="map-control-item">
+										<label>Projection</label>
+										<select id="debug-projection" class="map-select">
+											<option value="geoOrthographic">Orthographic</option>
+											<option value="geoNaturalEarth1">Natural Earth</option>
+											<option value="geoMercator">Mercator</option>
+											<option value="geoEquirectangular">Equirectangular</option>
+											<option value="geoMollweide">Mollweide</option>
+											<option value="geoStereographic">Stereographic</option>
+										</select>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -265,9 +282,9 @@
 							<a id="sankey-chart-button" onclick="return switchViz('sankey')" class='drop-link'
 								href="#sankey"><img src="static/sankey.svg" alt="Sankey diagram icon"
 									style="width:60px; vertical-align: middle;"> <br>Sankey<br></a>
-							 <a id="map-chart-button" class='drop-link' onclick="return switchViz('map')" href='#map'
-                                style="width:60px; "><svg width="60px" viewBox="0 0 1000 1000"
-                                    xmlns="http://www.w3.org/2000/svg">
+							<a id="map-chart-button" class='drop-link' onclick="return switchViz('map')" href='#map'
+								style="width:60px; "><svg width="60px" viewBox="0 0 1000 1000"
+									xmlns="http://www.w3.org/2000/svg">
 									<path
 										d="M384 168.96c-65.024 21.504-122.88 71.68-122.88 71.68l97.28 40.96 128-61.44 20.48-61.44s-65.536-8.704-122.88 10.24z"
 										fill="#9C9C9C" />
@@ -568,6 +585,20 @@
 		const currentVizEl = document.getElementById(selectedViz);
 		if (currentVizEl) currentVizEl.style.display = '';
 
+		// Hide scale toggle container for Sankey
+		const scaleToggle = document.getElementById('scale-toggle');
+		if (scaleToggle) {
+			const toggleContainer = scaleToggle.closest('.toggle-container');
+			if (toggleContainer) {
+				toggleContainer.style.display = (selectedViz === 'sankey') ? 'none' : 'flex';
+			}
+		}
+
+		// Stop map animation if leaving map
+		if (selectedViz !== 'map' && typeof stopAnimation === 'function') {
+			stopAnimation();
+		}
+
 		// Update config
 		config.currentViz = selectedViz;
 		config.regions = []; // Reset regions when switching
@@ -787,6 +818,37 @@
 		update({ regions: [] });
 	}
 
+	function toggleStickyMenu(button) {
+		const menu = button.closest('.sticky-menu');
+		const textSpan = button.querySelector('.toggle-text');
+		const iconSpan = button.querySelector('.toggle-icon');
+
+		if (menu.classList.contains('expanded')) {
+			menu.classList.remove('expanded');
+			textSpan.textContent = 'More options';
+			iconSpan.textContent = '▼';
+		} else {
+			menu.classList.add('expanded');
+			textSpan.textContent = 'Hide options';
+			iconSpan.textContent = '▲';
+		}
+	}
+
+	function toggleMapPanel(button) {
+		const panel = button.closest('.map-overlay-panel');
+		const textSpan = button.querySelector('.toggle-text');
+
+		if (panel.classList.contains('expanded')) {
+			panel.classList.remove('expanded');
+			panel.classList.add('collapsed');
+			textSpan.textContent = 'More options';
+		} else {
+			panel.classList.remove('collapsed');
+			panel.classList.add('expanded');
+			textSpan.textContent = 'Hide options';
+		}
+	}
+
 	// Helper function to show errors
 	function showError(message) {
 		const markdownEl = document.getElementById("markdown_text");
@@ -815,13 +877,14 @@
 
 			// Add class to appropriate link
 			const paths = fileName(config);
-			if (paths.json.includes("flow")) {
-				const el = document.querySelector("#markdown_text > p:nth-child(8) > a");
-				if (el) el.className = 'drop-link';
-			} else if (paths.json.includes("stock")) {
-				const el = document.getElementById("markdown_text").querySelectorAll('a')[2];
-				if (el) el.className = 'drop-link';
-			}
+
+			const links = document.querySelectorAll('#markdown_text a');
+
+			links.forEach(link => {
+				if (link.textContent.trim().includes('Download')) {
+					link.classList.add('drop-link');
+				}
+			});
 		} catch (error) {
 			console.error("Failed to update markdown text:", error);
 		}
@@ -844,6 +907,95 @@
 			);
 			observer.observe(sentinel);
 		}
+
+		// Mobile hamburger menu behavior
+		const menuItems = document.querySelectorAll('ul.menu > li');
+		menuItems.forEach(li => {
+			const dropdown = li.querySelector('.dropdown');
+			if (dropdown) {
+				li.addEventListener('click', function (event) {
+					// Only apply JS behavior on mobile (screen width <= 892px)
+					if (window.innerWidth <= 892) {
+						// Let standard links inside the dropdown be clickable normally
+						if (event.target.closest('.dropdown a') || event.target.closest('.dropdown button')) {
+							return;
+						}
+
+						event.preventDefault();
+						event.stopPropagation(); // Prevents bubbling up to document click listener
+
+						const isAlreadyActive = li.classList.contains('active-dropdown');
+
+						// Close all other dropdowns
+						menuItems.forEach(item => item.classList.remove('active-dropdown'));
+
+						if (!isAlreadyActive) {
+							li.classList.add('active-dropdown');
+						}
+					}
+				});
+			}
+		});
+
+		const menuBtn = document.getElementById('menu-btn');
+		if (menuBtn) {
+			menuBtn.addEventListener('change', function () {
+				if (!menuBtn.checked) {
+					// Reset all dropdowns when menu is closed
+					const currentMenuItems = document.querySelectorAll('ul.menu > li');
+					currentMenuItems.forEach(item => item.classList.remove('active-dropdown'));
+				}
+			});
+		}
+
+		// Close options menus and hamburger menu on clicking outside/selecting
+		document.addEventListener('click', function (event) {
+			// 1. Mobile hamburger menu click outside / link selection
+			if (window.innerWidth <= 892) {
+				// If clicking a link in the menu, close it
+				if (event.target.closest('ul.menu a')) {
+					const mainMenuBtn = document.getElementById('menu-btn');
+					if (mainMenuBtn && mainMenuBtn.checked) {
+						mainMenuBtn.checked = false;
+						const currentMenuItems = document.querySelectorAll('ul.menu > li');
+						currentMenuItems.forEach(item => item.classList.remove('active-dropdown'));
+					}
+				} else {
+					// If clicking completely outside the header, close it
+					const header = document.querySelector('.header');
+					if (header && !header.contains(event.target)) {
+						const mainMenuBtn = document.getElementById('menu-btn');
+						if (mainMenuBtn && mainMenuBtn.checked) {
+							mainMenuBtn.checked = false;
+							const currentMenuItems = document.querySelectorAll('ul.menu > li');
+							currentMenuItems.forEach(item => item.classList.remove('active-dropdown'));
+						}
+					}
+				}
+			}
+
+			// 2. Sticky menu click outside
+			const currentStickyMenu = document.querySelector('.sticky-menu');
+			if (currentStickyMenu && currentStickyMenu.classList.contains('expanded')) {
+				if (!currentStickyMenu.contains(event.target)) {
+					const toggleBtn = currentStickyMenu.querySelector('.sticky-menu-toggle-btn');
+					if (toggleBtn) {
+						toggleStickyMenu(toggleBtn);
+					}
+				}
+			}
+
+			// 3. Map overlay panel click outside
+			const mapPanel = document.querySelector('.map-overlay-panel');
+			if (mapPanel && mapPanel.classList.contains('expanded')) {
+				if (!mapPanel.contains(event.target)) {
+					const toggleBtn = mapPanel.querySelector('.map-panel-toggle-btn');
+					if (toggleBtn) {
+						toggleMapPanel(toggleBtn);
+					}
+				}
+			}
+		});
 	});
 </script>
 

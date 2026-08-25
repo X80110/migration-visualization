@@ -231,21 +231,13 @@ function setSelectors(allYears) {
         console.error("setSelectors called with no years.");
         return;
     }
-    const lastYearPlusFive = (+allYears[allYears.length - 1] + 5).toString()
+    const lastYearPlusFive = (+allYears[allYears.length - 1] + 5).toString();
 
-    let allRangeYears = allYears.concat(lastYearPlusFive)
+    let allRangeYears = allYears.concat(lastYearPlusFive);
     let sliderticks = document.getElementById("sliderticks");
     let slider = document.getElementById("selectYear");
-    let sliderValue = parseInt(slider.value)
+    if (!slider || !sliderticks) return;
 
-    function getTicks(year) {
-        let ticks = allYears.map(col =>
-            +col === +year ?
-                `<p><b>${col}</b></p   >` :
-                `<p>${col}</p   >`
-        ).join("");
-        sliderticks.innerHTML = ticks
-    }
     slider.setAttribute("min", allYears[0]);
     slider.setAttribute("max", allYears[allYears.length - 1]);
 
@@ -253,31 +245,28 @@ function setSelectors(allYears) {
         function getTicks(year) {
             let ticks = allYears.map(col =>
                 +col === +year ?
-                    `<p><b>${col}</b></p   >` :
-                    `<p>${col}</p   >`
+                    `<p><b>${col}</b></p>` :
+                    `<p>${col}</p>`
             ).join("");
-            sliderticks.innerHTML = ticks
+            sliderticks.innerHTML = ticks;
         }
-        getTicks(sliderValue)
+        getTicks(slider.value);
         slider.oninput = function () {
-            let value = parseInt(this.value)
-            getTicks(value)
-        }
+            getTicks(this.value);
+        };
     } else if (fileName(config).json.includes("flow")) {
         function getTicks(year) {
-
             let ticks = allRangeYears.map(col =>
                 +col === +year || +col === +year + 5 ?
-                    `<p><b>${col}</b></p   >` :
-                    `<p>${col}</p   >`
+                    `<p><b>${col}</b></p>` :
+                    `<p>${col}</p>`
             ).join("");
-            sliderticks.innerHTML = ticks
+            sliderticks.innerHTML = ticks;
         }
-        getTicks(sliderValue)
+        getTicks(slider.value);
         slider.oninput = function () {
-            let value = parseInt(this.value)
-            getTicks(value)
-        }
+            getTicks(this.value);
+        };
     }
 }
 
@@ -388,23 +377,21 @@ async function dataPrepare(input, config) {
         let nodes = matrix_connections
         // Create object to push links during loop
         let links = []
-        let l = 0 // <- iterator
-        for (let j in matrix_connections) {
-            let target_region = matrix_connections[j].region // <- include region why not
+        for (let j = 0; j < matrix_connections.length; j++) {
+            let target_region = matrix_connections[j].region
             let target = matrix_connections[j].name
-            // loop (into each 1st level array)
-            for (let k in matrix_connections[j].connections) {
+            for (let k = 0; k < matrix_connections[j].connections.length; k++) {
+                if (!matrix_connections[k]) continue
                 let source = matrix_connections[k].name
-                let source_region = matrix_connections[k].region // <- include region why not
+                let source_region = matrix_connections[k].region
                 let value = matrix_connections[j].connections[k]
-                links[l] = {
+                links.push({
                     source_region,
                     source,
                     target_region,
                     target,
                     value
-                }
-                l = l + 1
+                })
             }
         }
         // GRAPH STRUCTURE
@@ -938,4 +925,41 @@ async function dataPrepare(input, config) {
     };
 
 
+}
+
+// Global helper to position tooltips safely within viewport bounds (especially on mobile/right edge)
+function positionTooltip(evt, tooltipEl) {
+    if (!tooltipEl) return;
+
+    const mouseX = evt.pageX;
+    const mouseY = evt.pageY;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+    // Use a robust fallback for dimensions if element is not fully laid out yet
+    const tooltipWidth = tooltipEl.offsetWidth || 220;
+    const tooltipHeight = tooltipEl.offsetHeight || 100;
+
+    let left = mouseX + 15;
+    if (left + tooltipWidth > viewportWidth + scrollX) {
+        left = mouseX - tooltipWidth - 15;
+    }
+    if (left < scrollX + 5) {
+        left = scrollX + 5;
+    }
+
+    let top = mouseY + 15;
+    if (top + tooltipHeight > viewportHeight + scrollY) {
+        top = mouseY - tooltipHeight - 15;
+    }
+    if (top < scrollY + 5) {
+        top = scrollY + 5;
+    }
+
+    tooltipEl.style.left = left + "px";
+    tooltipEl.style.top = top + "px";
 }

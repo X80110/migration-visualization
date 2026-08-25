@@ -392,7 +392,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         /* .ease(d3.easeCubicInOut) */
         /* .style("opacity", 0.80) */
         .attrTween("d", function (d) {
-            console.log(d)
+            /* console.log(d) */
             const prev = previousGroups[d.id] || { startAngle: d.startAngle, endAngle: d.startAngle + aLittleBit };
             const i = d3.interpolate(prev, d);
             return function (t) {
@@ -638,7 +638,7 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
                 if (textLength > paddedArcLength && line.length === 1) {
                     textLength = getTextLength(tspan.text());
-                    console.log(tspan.text())
+                    /* console.log(tspan.text()) */
                 }
 
                 if (textLength > paddedArcLength && line.length > 1) {
@@ -697,9 +697,9 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         tooltip
             .html(`<b>${sourceDisplay}</b> ${valueDisplay} ${targetDisplay}`)
             .style('background-color', '#ffffff')
-            .style("top", (evt.pageY + 20) + "px")
-            .style("left", (evt.pageX + 30) + "px")
             .style("visibility", "visible");
+
+        positionTooltip(evt, tooltip.node());
     }
 
     function tooltipRegion(evt, d_group) {
@@ -722,9 +722,9 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
         tooltip
             .html(`${sourceDisplay}<br>${labels.out}: <b>${outflowDisplay}</b><br>${labels.in}: <b>${inflowDisplay}</b>`)
             .style('background-color', isRegion(d_group.name) ? getRegionColor(d_group.name) : colorCountries(d_group.name))
-            .style("top", (evt.pageY + 20) + "px")
-            .style("left", (evt.pageX + 30) + "px")
             .style("visibility", "visible");
+
+        positionTooltip(evt, tooltip.node());
     }
 
     // ========== INTERACTIONS ==========
@@ -787,7 +787,6 @@ function drawChords(chordData, commonData, specificRawData, metadataCsv, config,
 
     // Click interactions
     groupsMerged.on('click', function (evt, d) {
-        evt.stopPropagation();
 
         if (d.id === d.region) {
             // Clicking a region - expand it
